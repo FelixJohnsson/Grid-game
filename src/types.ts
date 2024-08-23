@@ -21,6 +21,14 @@ enum ItemEffect {
   Energy = 'Energy',
 }
 
+export enum BuildingType {
+  House = 'House',
+  Lumberjack = 'Lumberjack',
+  Mine = 'Mine',
+  Farm = 'Farm',
+  Barracks = 'Barracks',
+}
+
 export interface Item {
   name: string;
   icon: string;
@@ -29,7 +37,7 @@ export interface Item {
 }
 
 export interface BuildingDetails {
-  title: string;
+  title: BuildingType;
   description: string;
   icon: string;
   cost: { wood: number; food: number; stone: number; money: number };
