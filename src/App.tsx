@@ -16,7 +16,6 @@ function App() {
     const person = new Person(6, 6);
     LocalWorldState.addPerson(person);
 
-    // Trigger a re-render by updating the state
     setPersons([...LocalWorldState.getPersons()]);
   }, []);
 

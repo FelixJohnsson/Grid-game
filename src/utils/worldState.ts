@@ -1,6 +1,6 @@
 import { GridItem, BuildingDetails } from '../types';
 import Person from './Person';
-import Map from './Map'
+import Map from './MapState'
 
 // This world state class will be used for the singular map of one player world state
 // This will in the future be just a part of the world state, which will be a collection of all player world states
