@@ -1,4 +1,4 @@
-import { BuildingDetails } from "../utils/buildingData";
+import { BuildingDetails } from '../types';
 
 const BuildingWidget = ({
   building,
@@ -22,7 +22,13 @@ const BuildingWidget = ({
       >
         <h2 className="text-2xl font-bold mb-4">{building.title}</h2>
         <p className="mb-4 text-gray-700">{building.description}</p>
-        { building.icon }
+        <p className="mb-4 text-gray-700">Cost</p>
+        <p className="mb-4 text-gray-700">Wood: {building.cost.wood}</p>
+        <p className="mb-4 text-gray-700">Food: {building.cost.food}</p>
+        <p className="mb-4 text-gray-700">Stone: {building.cost.stone}</p>
+        <p className="mb-4 text-gray-700">Money: {building.cost.money}</p>
+
+        {building.icon}
         <div className="flex justify-between">
           <button
             className="bg-blue-500 text-white py-1 px-4 rounded"
