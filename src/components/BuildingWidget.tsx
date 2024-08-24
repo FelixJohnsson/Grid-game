@@ -1,11 +1,11 @@
-import { BuildingDetails } from '../types';
+import Building from "../utils/Building";
 
 const BuildingWidget = ({
   building,
   onClose,
   onPlaceDown,
 }: {
-  building: BuildingDetails | null;
+  building: Building | null;
   onClose: () => void;
   onPlaceDown: () => void;
 }) => {

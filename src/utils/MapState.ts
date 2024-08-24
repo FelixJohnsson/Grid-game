@@ -1,4 +1,5 @@
-import { GridItem, BuildingDetails } from "../types";
+import { GridItem } from "../types";
+import Building from "./Building";
 import Person from './Person'
 
 class Map {
@@ -68,7 +69,7 @@ class Map {
     console.warn(`${y} ${x}`, this.map[y][x])
   }
 
-  addBuildingToGrid(x: number, y: number, building: BuildingDetails): void {
+  addBuildingToGrid(x: number, y: number, building: Building): void {
     const isOccupied = this.doesGridItemHaveBuilding(x, y);
     if (!isOccupied) {
           this.map[y][x].building = building;

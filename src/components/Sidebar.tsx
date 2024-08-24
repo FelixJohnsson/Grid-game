@@ -1,4 +1,4 @@
-import { buildingData } from '../utils/buildingData';
+import { buildingData } from '../utils/Building';
 
 const BuildingSidebar = ({
   isOpen,

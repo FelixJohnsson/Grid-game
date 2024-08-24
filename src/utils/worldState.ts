@@ -1,5 +1,6 @@
-import { GridItem, BuildingDetails } from '../types';
+import { GridItem } from '../types';
 import Person from './Person';
+import Building from './Building';
 import Map from './MapState'
 
 // This world state class will be used for the singular map of one player world state
@@ -11,7 +12,7 @@ export class WorldState {
     private gridSize: number;
     public map: GridItem[][];
     private persons: Person[];    
-    private buildings: BuildingDetails[];
+    private buildings: Building[];
 
   constructor(gridSize: number) {
     this.gridSize = gridSize;
@@ -61,13 +62,14 @@ export class WorldState {
         }
     }
 
-    getBuildings(): BuildingDetails[] {
+    getBuildings(): Building[] {
         return this.buildings;
     }
 
 
-    addBuilding(building: BuildingDetails): void {
+    addBuilding(building: Building): void {
         this.buildings.push(building);
+        this.updateMap(building.location.x, building.location.y, { building });
     }
 
     updateMap(x: number, y: number, newItem: Partial<GridItem>): void {

@@ -1,7 +1,8 @@
 import { faker } from '@faker-js/faker';
-import { BuildingDetails, Jobs, Item } from '../types';
+import { Jobs, Item } from '../types';
 import LocalWorldState, { WorldState } from './worldState';
 import Brain from './brain';
+import Building from './Building';
 
 class Person {
   age: number;
@@ -12,7 +13,7 @@ class Person {
   description: string;
   icon: string;
   occupation: Jobs;
-  isWorkingAt: BuildingDetails | null;
+  isWorkingAt: Building | null;
   color: string;
   location: { x: number; y: number };
   isMoving: boolean;

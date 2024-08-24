@@ -6,9 +6,7 @@ const Map = () => {
   const [localMap, setLocalMap] = useState<GridItem[][]>();
   
   useEffect(() => {
-    setInterval(() => {
     setLocalMap(LocalWorldState.getMap());
-    }, 1000);
   }, []);
 
   return (
@@ -23,8 +21,13 @@ const Map = () => {
                   {
                     gridItem.inhabitants.map((person) => {
                       return (
-                      <div key={person.name} className="text-lg text-black bg-slate-100">{person.initials}</div>
+                      <div key={person.name} className="text-lg text-black h-full bg-slate-100">{person.initials}</div>
                     )})
+                  }
+                  {
+                    gridItem.building ? (
+                      <div className={`text-lg text-black h-full ${gridItem.building.color}`}>{gridItem.building.icon}</div>
+                    ) : null
                   }
                 </div>
               )})
