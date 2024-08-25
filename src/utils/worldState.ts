@@ -1,7 +1,7 @@
 import { GridItem } from '../types';
 import Person from './Person';
 import Building from './Building';
-import Map from './MapState'
+import MapState from './MapState'
 
 // This world state class will be used for the singular map of one player world state
 // This will in the future be just a part of the world state, which will be a collection of all player world states
@@ -10,19 +10,23 @@ import Map from './MapState'
 
 export class WorldState {
     private gridSize: number;
-    public map: GridItem[][];
+    public mapState: MapState;
     private persons: Person[];    
     private buildings: Building[];
 
-  constructor(gridSize: number) {
-    this.gridSize = gridSize;
-    this.map = new Map(this.gridSize).getMap();
-    this.persons = [];
-    this.buildings = [];
-  }
+    constructor(gridSize: number) {
+        this.gridSize = gridSize;
+        this.mapState = new MapState(this.gridSize);
+        this.persons = [];
+        this.buildings = [];
+    }
+
+    updateMapState(): void {
+
+    }
 
     getMap(): GridItem[][] {
-        return this.map;
+        return this.mapState.getMap();
     }
 
     createNewPerson(x: number, y: number): Person {
@@ -41,31 +45,36 @@ export class WorldState {
     }
 
     isItPossibleToMoveTo(x: number, y: number): boolean {
-        console.log('Checking if it is possible to move to ' + x + ', ' + y);
         if (x < 0 || y < 0 || x >= this.gridSize || y >= this.gridSize) {
-            console.log('Cannot move to ' + x + ', ' + y + ' because it is out of bounds');
             return false;
         }
-        console.log('Checking if it is possible to move to ' + x + ', ' + y + ' and the result is ' + this.map[y][x].isGround || this.map[y][x].isRoad || this.map[y][x].isBuilding);
-        return this.map[y][x].isGround || this.map[y][x].isRoad || this.map[y][x].isBuilding;
+        return this.mapState.getMap()[y][x].isGround || this.mapState.getMap()[y][x].isRoad || this.mapState.getMap()[y][x].isBuilding;
     }
 
     movePerson(person: Person, currentX: number, currentY: number, targetX: number, targetY: number): void {
-        const possible = this.isItPossibleToMoveTo(targetX, targetY);
+        // We assume that a check that it's possible to move has been made
+        console.warn('The brain has decided to move ' + person.name + ' from ' + currentX + ', ' + currentY + ' to ' + targetX + ', ' + targetY);
+        // Remove from current location
+        this.updateMap(currentX, currentY, { inhabitants: [] }); // We should actually remove the person from the inhabitants array
 
-        if (!possible) {
-            throw new Error('Cannot move to ' + targetX + ', ' + targetY);
-        } else {
-            this.map[currentY][currentX].inhabitants = this.map[currentY][currentX].inhabitants.filter((p) => p !== person);
-            this.map[targetY][targetX].inhabitants.push(person);
-            person.location = { x: targetX, y: targetY };
-        }
+        // Add to new location
+        this.updateMap(targetX, targetY, { inhabitants: [person] });
+
+        // Update person's location
+        person.location.x = targetX;
+        person.location.y = targetY;
+
+        // Update person's location in the persons array
+        const index = this.persons.findIndex(p => p.name === person.name);
+        this.persons[index] = person;
+
+        // Get the coordinates of the person
+        console.log('Person ' + person.name + ' is now at ' + person.location.x + ', ' + person.location.y);
     }
 
     getBuildings(): Building[] {
         return this.buildings;
     }
-
 
     addBuilding(building: Building): void {
         this.buildings.push(building);
@@ -73,29 +82,29 @@ export class WorldState {
     }
 
     updateMap(x: number, y: number, newItem: Partial<GridItem>): void {
-        this.map[y][x] = { ...this.map[y][x], ...newItem };
+        this.mapState.getMap()[y][x] = { ...this.mapState.getMap()[y][x], ...newItem };
     }
 
     doesGridItemExist(x: number, y: number): boolean {
-        return x >= 0 && y >= 0 && x < this.map.length && y < this.map[0].length;
+        return x >= 0 && y >= 0 && x < this.mapState.getMap().length && y < this.mapState.getMap()[0].length;
     }
 
     getGridItem(x: number, y: number): GridItem {
         if (!this.doesGridItemExist(x, y)) {
             throw new Error('Invalid grid item at ' + x + ', ' + y);
         }
-        return this.map[y][x];
+        return this.mapState.getMap()[y][x];
     }
 
     doesGridItemHaveBuilding(x: number, y: number): boolean {
-        return this.map[y][x].building !== null;
+        return this.mapState.getMap()[y][x].building !== null;
     }
 
     doesGridItemHavePerson(x: number, y: number): boolean {
-        return this.map[y][x].inhabitants.length > 0;
+        return this.mapState.getMap()[y][x].inhabitants.length > 0;
     }
 }
 
-const LocalWorldState = new WorldState(50);
+const LocalWorldState = new WorldState(6);
 
 export default LocalWorldState;

@@ -2,22 +2,11 @@ import { GridItem } from "../types";
 import Building from "./Building";
 import Person from './Person'
 
-class Map {
+class MapState {
   private map: GridItem[][];
 
   constructor(gridSize: number) {
-    if (this.checkIfJSONMapExists()) {
-      const savedMap = this.getLocalStorageMap();
-      if (savedMap) {
-        this.map = savedMap
-      } else {
-        this.map = this.createMap(gridSize);
-        this.saveToLocalStorage(this.map);
-      }
-    } else {
-      this.map = this.createMap(gridSize);
-      this.saveToLocalStorage(this.map);
-    }
+    this.map = this.createMap(gridSize);
   }
 
   private createMap(gridSize: number): GridItem[][] {
@@ -59,14 +48,8 @@ class Map {
     return this.map[y][x].building !== null;
   }
 
-  createNewPerson(): Person {
-    return new Person(6, 6);
-  }
-
   addPersonToGrid(x: number, y: number, person: Person): void {
     this.map[y][x].inhabitants.push(person);
-
-    console.warn(`${y} ${x}`, this.map[y][x])
   }
 
   addBuildingToGrid(x: number, y: number, building: Building): void {
@@ -96,4 +79,4 @@ class Map {
   }
 }
 
-export default Map;
+export default MapState;

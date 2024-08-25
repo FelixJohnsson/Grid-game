@@ -55,6 +55,9 @@ class Brain {
 
     turnOn(){
         console.log('Brain is on for ' + this.person.name);
+        setInterval(() => {
+            this.decideToMove();
+        }, 3000);
     }
 
     turnOff(){
@@ -67,6 +70,24 @@ class Brain {
 
     talk(){
         console.log('Talking...');
+    }
+
+    decideToMove(){
+        this.person.isMoving = true;
+        const up = { x: this.person.location.x, y: this.person.location.y - 1 };
+        const down = { x: this.person.location.x, y: this.person.location.y + 1 };
+        const left = { x: this.person.location.x - 1, y: this.person.location.y };
+        const right = { x: this.person.location.x + 1, y: this.person.location.y };
+
+        const directions = [up, down, left, right];
+        const randomDirection = faker.helpers.arrayElement(directions);
+
+        const isItPossibleToMoveThere = this.person.currentWorldState.isItPossibleToMoveTo(randomDirection.x, randomDirection.y);
+
+        if (isItPossibleToMoveThere) {
+            console.log(`${this.person.name} is moving to ${randomDirection.x}, ${randomDirection.y}`);
+            this.person.currentWorldState.movePerson(this.person, this.person.location.x, this.person.location.y, randomDirection.x, randomDirection.y);
+        }
     }
 
     move(){

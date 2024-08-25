@@ -1,6 +1,6 @@
 import './App.css';
-import Map from './components/Map';
-import LocalWorldState from './utils/worldState';
+import cloneDeep from 'lodash/cloneDeep';
+import LocalWorldState, { WorldState } from './utils/worldState';
 import Person from './utils/Person';
 import Building from './utils/Building';
 import { useEffect, useRef, useState } from 'react';
@@ -10,21 +10,29 @@ function App() {
 
   const [persons, setPersons] = useState<Person[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
+  const [map, setMap] = useState<WorldState>(LocalWorldState);
 
   useEffect(() => {
     if (didRun.current) return;
     didRun.current = true;
 
-    const person = new Person(6, 6);
+    const person = new Person(2, 2);
     LocalWorldState.addPerson(person);
 
-    const lumberjack = new Building('lumberjack', { x: 8, y: 8 });
+    const lumberjack = new Building('lumberjack', { x: 0, y: 2 });
     LocalWorldState.addBuilding(lumberjack);
 
     setPersons([...LocalWorldState.getPersons()]);
     setBuildings([...LocalWorldState.getBuildings()]);
-    
+
+    LocalWorldState.updateMapState();
+
+    setInterval(() => {
+      setMap(cloneDeep(LocalWorldState));
+  }, 1000);
   }, []);
+
+
 
   return (
     <div className="App">
@@ -42,8 +50,30 @@ function App() {
             </div>
           ))
         }
-      <Map />
-
+        {
+          map.getMap().map((row, y) => (
+            <div key={y} className="flex">
+              {
+                row.map((gridItem, x) => {
+                  return (
+                  <div key={x} className={`w-10 h-10 border ${gridItem.isGround ? 'bg-green-500' : 'bg-white'}`}>
+                    {
+                      gridItem.inhabitants.map((person) => {
+                        return (
+                        <div key={person.name} className="text-lg text-black h-full bg-slate-100">{person.initials}</div>
+                      )})
+                    }
+                    {
+                      gridItem.building ? (
+                        <div className={`text-lg text-black h-full ${gridItem.building.color}`}>{gridItem.building.icon}</div>
+                      ) : null
+                    }
+                  </div>
+                )})
+              }
+            </div>
+          ))
+        }
     </div>
   );
 }

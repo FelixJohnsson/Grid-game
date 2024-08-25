@@ -70,25 +70,6 @@ class Person {
     this.brain.turnOn();
   }
 
-  decideToMove() {
-    console.log(`${this.name} is deciding to move`);
-    // Simple logic to decide if the person should move
-    this.isMoving = true;
-    const up = { x: this.location.x, y: this.location.y - 1 };
-    const down = { x: this.location.x, y: this.location.y + 1 };
-    const left = { x: this.location.x - 1, y: this.location.y };
-    const right = { x: this.location.x + 1, y: this.location.y };
-
-    const directions = [up, down, left, right];
-    const randomDirection = faker.helpers.arrayElement(directions);
-
-    const isItPossibleToMoveThere = this.currentWorldState.isItPossibleToMoveTo(randomDirection.x, randomDirection.y);
-
-    if (isItPossibleToMoveThere) {
-      this.currentWorldState.movePerson(this, this.location.x, this.location.y, randomDirection.x, randomDirection.y);
-    }
-  }
-
   startWorking() {
     if (!this.isWorking) {
       this.isWorking = true;

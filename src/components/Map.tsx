@@ -1,18 +1,10 @@
-import { useEffect, useState } from 'react';
-import LocalWorldState from '../utils/worldState'; 
 import { GridItem } from '../types';
 
-const Map = () => {
-  const [localMap, setLocalMap] = useState<GridItem[][]>();
-  
-  useEffect(() => {
-    setLocalMap(LocalWorldState.getMap());
-  }, []);
-
+const Map = ({mapState}:{ mapState:  GridItem[][]}) => {
   return (
     <div>
       {
-        localMap?.map((row, y) => (
+        mapState.map((row, y) => (
           <div key={y} className="flex">
             {
               row.map((gridItem, x) => {
