@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { Jobs, Item } from '../types';
+import { Jobs, Item, Task } from '../types';
 import LocalWorldState, { WorldState } from './worldState';
 import Brain from './brain';
 import Building from './Building';
@@ -68,6 +68,17 @@ class Person {
 
   turnOnBrain() {
     this.brain.turnOn();
+  }
+
+  addTask = (task: Task) => {
+    this.brain.addTask(task);
+  }
+
+  addEmployer = (building: Building) => {
+    if (this.isChild) return;
+    this.isWorkingAt = building;
+    building.workers.push(this);
+    this.occupation = building.title === 'Lumberjack' ? Jobs.Lumberjack : building.title === 'Mine' ? Jobs.Miner : building.title === 'Farm' ? Jobs.Farmer : Jobs.Unemployed;
   }
 
   startWorking() {

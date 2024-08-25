@@ -1,4 +1,3 @@
-import { GridItem } from '../types';
 import Person from './Person';
 import Building from './Building';
 import MapState from './MapState'
@@ -105,6 +104,6 @@ export class WorldState {
     }
 }
 
-const LocalWorldState = new WorldState(6);
+const LocalWorldState = new WorldState(20);
 
 export default LocalWorldState;

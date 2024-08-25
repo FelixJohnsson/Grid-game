@@ -1,0 +1,84 @@
+[
+  {
+    "Age": 36,
+    "Name": "Camren Reichel",
+    "Initials": "Ca",
+    "IsChild": false,
+    "Gender": "female",
+    "Description": "",
+    "Icon": "P",
+    "Occupation": "Unemployed",
+    "IsWorkingAt": null,
+    "Color": "",
+    "Location": {
+      "X": 0,
+      "Y": 0
+    },
+    "IsMoving": false,
+    "IsTalking": false,
+    "IsSitting": false,
+    "IsHolding": false,
+    "IsEating": false,
+    "IsSleeping": false,
+    "IsWorking": false,
+    "Thinking": "",
+    "WantsTo": "",
+    "Inventory": [],
+    "CurrentWorldState": {
+      "Map": null,
+      "Buildings": null,
+      "Persons": null,
+      "Resources": {
+        "Inhabitants": null,
+        "Wood": 0,
+        "Food": 0,
+        "Stone": 0,
+        "Ores": 0,
+        "Money": 0
+      }
+    },
+    "Genes": [],
+    "Brain": {}
+  },
+  {
+    "Age": 34,
+    "Name": "Uriel Schumm",
+    "Initials": "Ur",
+    "IsChild": false,
+    "Gender": "male",
+    "Description": "",
+    "Icon": "P",
+    "Occupation": "Unemployed",
+    "IsWorkingAt": null,
+    "Color": "",
+    "Location": {
+      "X": 0,
+      "Y": 0
+    },
+    "IsMoving": false,
+    "IsTalking": false,
+    "IsSitting": false,
+    "IsHolding": false,
+    "IsEating": false,
+    "IsSleeping": false,
+    "IsWorking": false,
+    "Thinking": "",
+    "WantsTo": "",
+    "Inventory": [],
+    "CurrentWorldState": {
+      "Map": null,
+      "Buildings": null,
+      "Persons": null,
+      "Resources": {
+        "Inhabitants": null,
+        "Wood": 0,
+        "Food": 0,
+        "Stone": 0,
+        "Ores": 0,
+        "Money": 0
+      }
+    },
+    "Genes": [],
+    "Brain": {}
+  }
+]

@@ -3,6 +3,7 @@ import Person from './Person';
 
 export const buildingData: Record<string, Building> = {
   house: {
+    name: '',
     title: BuildingType.House,
     description: BuildingDescription.House,
     icon: BuildingIcon.House,
@@ -13,6 +14,7 @@ export const buildingData: Record<string, Building> = {
     color: BuildingColor.House,
   },
   lumberjack: {
+    name: '',
     title: BuildingType.Lumberjack,
     description: BuildingDescription.Lumberjack,
     icon: BuildingIcon.Lumberjack,
@@ -23,6 +25,7 @@ export const buildingData: Record<string, Building> = {
     color: BuildingColor.Lumberjack,
   },
   mine: {
+    name: '',
     title: BuildingType.Mine,
     description: BuildingDescription.Mine,
     icon: BuildingIcon.Mine,
@@ -33,6 +36,7 @@ export const buildingData: Record<string, Building> = {
     color: BuildingColor.Mine,
   },
   farm: {
+    name: '',
     title: BuildingType.Farm,
     description: BuildingDescription.Farm,
     icon: BuildingIcon.Farm,
@@ -43,6 +47,7 @@ export const buildingData: Record<string, Building> = {
     color: BuildingColor.Farm,
   },
   barracks: {
+    name: '',
     title: BuildingType.Barracks,
     description: BuildingDescription.Barracks,
     icon: BuildingIcon.Barracks,
@@ -55,6 +60,7 @@ export const buildingData: Record<string, Building> = {
 };
 
 class Building {
+  name: string;
   title: BuildingType;
   description: BuildingDescription;
   icon: BuildingIcon;
@@ -64,7 +70,8 @@ class Building {
   location: { x: number, y: number };
   color: string;
 
-  constructor(title: string, location: { x: number, y: number }) {
+  constructor(title: string, name: string, location: { x: number, y: number }) {
+    this.name = name;
     const building = buildingData[title];
     this.title = building.title;
     this.description = building.description;
