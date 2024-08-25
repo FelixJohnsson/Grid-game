@@ -39,4 +39,14 @@ export const getBuildings = async (): Promise<T.Building[]> => {
     return data.message;
 };
 
+interface WorldResponse {
+    message: T.World;
+    status: number;
+}
+
+export const getWorld = async (): Promise<T.World> => {
+    const data: WorldResponse = await api.get("world");
+    return data.message;
+};
+
 export default api;

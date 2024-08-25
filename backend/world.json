@@ -1,0 +1,431 @@
+{
+  "tiles": [
+    [
+      {
+        "type": 0,
+        "persons": [
+          {
+            "Age": 34,
+            "Name": "Uriel Schumm",
+            "Initials": "Ur",
+            "IsChild": false,
+            "Gender": "female",
+            "Description": "",
+            "Icon": "P",
+            "Occupation": "Unemployed",
+            "IsWorkingAt": null,
+            "Color": "",
+            "Location": {
+              "X": 0,
+              "Y": 0
+            },
+            "IsMoving": false,
+            "IsTalking": false,
+            "IsSitting": false,
+            "IsHolding": false,
+            "IsEating": false,
+            "IsSleeping": false,
+            "IsWorking": false,
+            "Thinking": "",
+            "WantsTo": "",
+            "Inventory": [],
+            "CurrentWorldState": {
+              "Map": null,
+              "Buildings": null,
+              "Persons": null,
+              "Resources": {
+                "Inhabitants": null,
+                "Wood": 0,
+                "Food": 0,
+                "Stone": 0,
+                "Ores": 0,
+                "Money": 0
+              }
+            },
+            "Genes": [],
+            "Brain": {}
+          }
+        ]
+      },
+      {
+        "type": 0,
+        "persons": [
+          {
+            "Age": 34,
+            "Name": "Tobin Schumm",
+            "Initials": "Ts",
+            "IsChild": false,
+            "Gender": "male",
+            "Description": "",
+            "Icon": "P",
+            "Occupation": "Unemployed",
+            "IsWorkingAt": null,
+            "Color": "",
+            "Location": {
+              "X": 0,
+              "Y": 0
+            },
+            "IsMoving": false,
+            "IsTalking": false,
+            "IsSitting": false,
+            "IsHolding": false,
+            "IsEating": false,
+            "IsSleeping": false,
+            "IsWorking": false,
+            "Thinking": "",
+            "WantsTo": "",
+            "Inventory": [],
+            "CurrentWorldState": {
+              "Map": null,
+              "Buildings": null,
+              "Persons": null,
+              "Resources": {
+                "Inhabitants": null,
+                "Wood": 0,
+                "Food": 0,
+                "Stone": 0,
+                "Ores": 0,
+                "Money": 0
+              }
+            },
+            "Genes": [],
+            "Brain": {}
+          }
+        ]
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      }
+    ],
+    [
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      }
+    ],
+    [
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      }
+    ],
+    [
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      }
+    ],
+    [
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      }
+    ],
+    [
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0,
+        "building": {
+          "Type": "House",
+          "Name": "House 1",
+          "State": "Idle",
+          "Description": "The House provides your inhabitants with shelter.",
+          "Icon": "H",
+          "Color": "bg-blue-500",
+          "Location": {
+            "X": 5,
+            "Y": 5
+          },
+          "Workers": null,
+          "Resources": {
+            "Inhabitants": null,
+            "Wood": 0,
+            "Food": 0,
+            "Stone": 0,
+            "Ores": 0,
+            "Money": 0
+          }
+        }
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      }
+    ],
+    [
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      }
+    ],
+    [
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      }
+    ],
+    [
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      }
+    ],
+    [
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      }
+    ]
+  ]
+}

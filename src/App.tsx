@@ -1,70 +1,109 @@
 import './App.css';
 import { useEffect, useState } from 'react';
-import { getPersons, getBuildings } from './api/api';
-import { Person } from './api/types';
+import { getWorld } from './api/api';
+import * as T from './api/types';
 
 function App() {
-  const [persons, setPersons] = useState<Person[]>();
-  const [buildings, setBuildings] = useState<any[]>();
-  const [loading, setLoading] = useState<boolean>(false);
+  const [persons, setPersons] = useState<T.Person[]>();
+  const [buildings, setBuildings] = useState<T.Building[]>();
+  const [world, setWorld] = useState<T.World>();
 
   useEffect(() => {
-    setLoading(true);
-    getPersons().then((data) => {
-      setPersons(data);
+    getWorld().then((data) => {
+      console.warn(data);
+      setWorld(data);
+
+      // Loop through the tiles in the world and assign the persons and buildings to the state
+      data.tiles.forEach((row) => {
+        row.forEach((tile) => {
+          if (tile.persons) {
+            for (const person of tile.persons) {
+              // Push the person to the persons state
+              setPersons((persons) => {
+                if (persons) {
+                  return [...persons, person];
+                } else {
+                  return [person];
+                }
+              });
+            }
+            
+          }
+          if (tile.building) {
+            setBuildings([tile.building]);
+          }
+        });
+      });
+
     });
-    getBuildings().then((data) => {
-      setBuildings(data);
-        setLoading(false);
-    });
+
   }, []);
 
   return (
     <div className="App">
-      { loading ? <p>Loading...</p> : 
+      <div className="flex flex-col items-center">
+      <div>
+        <h1 className="text-lg underline">Persons</h1>
         <div>
-          {persons?.map((person) => {
-            console.warn(person);
-            return (
-              <div className="pt-6" key={person.Name}>
-                <p className="text-lg underline">This is your person</p>
-                <p className="text-md">Name: {person.Name}</p>
-                <p className="text-md">Age: {person.Age}</p>
-                <p className="text-md">Is child?: {person.IsChild ? 'Yes' : 'No'}</p>
-                <p className="text-md">Location: {'X: ' + person.Location.X + ', Y: ' + person.Location.Y}</p>
+          {persons ? (
+            persons.map((person, i) => (
+              <div key={i}>
+                <p className="bg-orange-500 text-sm">{person.Name}</p>
               </div>
-              )
-            })
-          }
-          {
-            buildings?.map((building) => {
-              console.warn(building);
-              return (
-                <div className="pt-6" key={building.Name}>
-                  <p className="text-lg underline">This is your building</p>
-                  <p className="text-md">Name: {building.Name}</p>
-                  <p className="text-md">Type: {building.Type}</p>
-                  <p className="text-md">State: {building.State}</p>
-                  <p className="text-md">Location: {'X: ' + building.Location.X + ', Y: ' + building.Location.Y}</p>
-                  <p className="text-md underline">Workers</p>
-                  {
-                    building.Workers ? building.Workers?.map((worker: any) => {
-                      return (
-                        <div className="pt-6" key={worker.Name}>
-                          <p className="text-md">Name: {worker.Name}</p>
-                          <p className="text-md">Age: {worker.Age}</p>
-                          <p className="text-md">Is child?: {worker.IsChild ? 'Yes' : 'No'}</p>
-                          <p className="text-md">Location: {'X: ' + worker.Location.X + ', Y: ' + worker.Location.Y}</p>
-                        </div>
-                      )
-                    }) : <p>No workers</p>
-                  }
-                </div>
-              )
-            })
-          }
+            ))
+          ) : null}
         </div>
-      }  
+      </div>
+
+      <div>
+        <h1 className="text-lg underline pt-6">Buildings</h1>
+        <div>
+          {buildings ? (
+            buildings.map((building, i) => (
+              <div key={i}>
+                <p className={building.Color}>{building.Name}</p>
+              </div>
+            ))
+          ) : null}
+        </div>
+      </div>
+      </div>
+      
+      <div className="w-full flex justify-center pt-6">
+        {
+        world ? (
+          <div>
+            <div>
+              {world.tiles.map((row, y) => (
+                <div key={y} style={{ display: 'flex' }}>
+                  {row.map((tile, x) => (
+                    <div
+                      key={x}
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: tile.type === T.TileType.Grass ? 'green' : tile.type === T.TileType.Water ? 'blue' : 'gray',
+                      }}
+                    >
+                      {tile.building ? (
+                        <div className={tile.building.Color}>{tile.building.Icon}</div>
+                      ) : null}
+                      {tile.persons ? (
+                        <div>
+                          {tile.persons.map((person, i) => (
+                            <div key={i} className="bg-orange-500">{person.Initials}</div>
+                          ))}
+                        </div>  
+                          ) : null}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null
+      }
+      </div>
     </div>
   );
 }

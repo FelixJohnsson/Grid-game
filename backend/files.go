@@ -270,3 +270,52 @@ func updateBuilding(b Building) error {
 	return nil
 }
 
+// ------------------------------------------ World ------------------------------------------
+
+// loadWorldFromFile loads the world from the file
+func loadWorldFromFile() (World, error) {
+	file, err := os.Open("world.json")
+	if err != nil {
+		if os.IsNotExist(err) {
+			// Return an empty world if the file does not exist
+			return World{}, nil
+		}
+		return World{}, fmt.Errorf("error opening file: %v", err)
+	}
+	defer file.Close()
+
+	var world World
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&world); err != nil {
+		return World{}, fmt.Errorf("error decoding JSON from file: %v", err)
+	}
+
+	return world, nil
+}
+
+// saveWorldToFile saves the world to the file
+func saveWorldToFile(world World) error {
+	file, err := os.Create("world.json")
+	if err != nil {
+		return fmt.Errorf("error creating file: %v", err)
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ") // Pretty-print the JSON
+	if err := encoder.Encode(world); err != nil {
+		return fmt.Errorf("error encoding JSON to file: %v", err)
+	}
+
+	return nil
+}
+
+// updateWorld updates the world and saves it to the file
+func updateWorld(world World) error {
+	// Save the updated world back to the file
+	if err := saveWorldToFile(world); err != nil {
+		return fmt.Errorf("error saving world to file: %v", err)
+	}
+
+	return nil
+}

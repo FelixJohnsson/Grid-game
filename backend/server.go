@@ -20,7 +20,7 @@ type PersonResponse struct {
 }
 
 type WorldResponse struct {
-	Message string `json:"message"`
+	Message World `json:"message"`
 	Status  int    `json:"status"`
 }
 
@@ -61,6 +61,10 @@ func personHandler(w http.ResponseWriter, r *http.Request) {
 	logRequest(r)
 
 	persons := getPersons()
+		
+	if len(persons) == 0 {
+		createNewPerson()
+	}
 
 	response := PersonResponse{
 		Message: persons,
@@ -82,6 +86,10 @@ func buildingHandler(w http.ResponseWriter, r *http.Request) {
 
 	buildings := getBuildings()
 
+	if len(buildings) == 0 {
+		createNewBuilding(House, "House 1", Location{0, 0})
+	}
+
 	response := BuildingResponse{
 		Message: buildings,
 		Status:  200,
@@ -100,8 +108,13 @@ func worldHandler(w http.ResponseWriter, r *http.Request) {
 
 	logRequest(r)
 
+	world := getWorld()
+	if world.Tiles == nil {
+		world = createNewWorld(10, 10)
+	}
+
 	response := WorldResponse{
-		Message: "Welcome to the world",
+		Message: world,
 		Status:  200,
 	}
 
@@ -159,15 +172,6 @@ func writeJSONResponse(w http.ResponseWriter, response interface{}) {
 }
 
 func main() {
-	persons := getPersons()
-	buildings := getBuildings()
-	if len(persons) == 0 {
-		createNewPerson()
-	}
-	if len(buildings) == 0 {
-		createNewBuilding(House, "House 1", Location{0, 0})
-	}
-
 	// Define routes with CORS middleware
 	http.Handle("/people", corsMiddleware(http.HandlerFunc(personHandler)))
 	http.Handle("/buildings", corsMiddleware(http.HandlerFunc(buildingHandler)))
