@@ -1,7 +1,9 @@
-import './App.css';
-import { useEffect, useState } from 'react';
-import { getWorld } from './api/api';
-import * as T from './api/types';
+import "./App.css";
+import { useEffect, useState } from "react";
+import { getWorld } from "./api/api";
+import * as T from "./api/types";
+import Map from "./components/Map";
+import InformationBar from "./components/InformationBar";
 
 function App() {
   const [persons, setPersons] = useState<T.Person[]>();
@@ -9,6 +11,8 @@ function App() {
   const [world, setWorld] = useState<T.World>();
 
   useEffect(() => {
+    setBuildings([]);
+    setPersons([]);
     getWorld().then((data) => {
       console.warn(data);
       setWorld(data);
@@ -27,83 +31,19 @@ function App() {
                 }
               });
             }
-            
           }
           if (tile.building) {
             setBuildings([tile.building]);
           }
         });
       });
-
     });
-
   }, []);
 
   return (
     <div className="App">
-      <div className="flex flex-col items-center">
-      <div>
-        <h1 className="text-lg underline">Persons</h1>
-        <div>
-          {persons ? (
-            persons.map((person, i) => (
-              <div key={i}>
-                <p className="bg-orange-500 text-sm">{person.Name}</p>
-              </div>
-            ))
-          ) : null}
-        </div>
-      </div>
-
-      <div>
-        <h1 className="text-lg underline pt-6">Buildings</h1>
-        <div>
-          {buildings ? (
-            buildings.map((building, i) => (
-              <div key={i}>
-                <p className={building.Color}>{building.Name}</p>
-              </div>
-            ))
-          ) : null}
-        </div>
-      </div>
-      </div>
-      
-      <div className="w-full flex justify-center pt-6">
-        {
-        world ? (
-          <div>
-            <div>
-              {world.tiles.map((row, y) => (
-                <div key={y} style={{ display: 'flex' }}>
-                  {row.map((tile, x) => (
-                    <div
-                      key={x}
-                      style={{
-                        width: '20px',
-                        height: '20px',
-                        backgroundColor: tile.type === T.TileType.Grass ? 'green' : tile.type === T.TileType.Water ? 'blue' : 'gray',
-                      }}
-                    >
-                      {tile.building ? (
-                        <div className={tile.building.Color}>{tile.building.Icon}</div>
-                      ) : null}
-                      {tile.persons ? (
-                        <div>
-                          {tile.persons.map((person, i) => (
-                            <div key={i} className="bg-orange-500">{person.Initials}</div>
-                          ))}
-                        </div>  
-                          ) : null}
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null
-      }
-      </div>
+      <InformationBar persons={persons} buildings={buildings} />
+      <Map world={world} />
     </div>
   );
 }
