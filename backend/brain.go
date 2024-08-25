@@ -57,7 +57,7 @@ func (b *Brain) mainLoop() {
             return
         default:
             // Brain logic goes here
-            b.processInputs()
+			b.processInputs([]string{"input1", "input2", "input3"})
 
             // Sleep or yield for a bit to prevent CPU hogging
             time.Sleep(1000 * time.Millisecond)
@@ -65,9 +65,10 @@ func (b *Brain) mainLoop() {
     }
 }
 
-func (b *Brain) processInputs() {
-    // Example: Check surroundings, inputs, etc.
-    fmt.Println("Processing inputs...")
+func (b *Brain) processInputs(inputs []string) {
+    // This will probably have to be the WorldState struct but a smaller area
+	// For now we could just decide if the person is in a friendly or hostile area
+    fmt.Println(b.owner.Name + " is processing inputs...")
 }
 
 func (b *Brain) makeDecisions() {
