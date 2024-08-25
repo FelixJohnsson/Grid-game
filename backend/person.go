@@ -7,8 +7,6 @@ import (
 
 	"github.com/brianvoe/gofakeit/v6"
 )
-
-
 type Item struct {
 	Name string
 }
@@ -31,19 +29,6 @@ const (
 	Soldier    Jobs = "Soldier"
 	Unemployed Jobs = "Unemployed"
 )
-
-type Brain struct {
-	owner *Person
-}
-
-func (b *Brain) turnOn() {
-	fmt.Println("Brain is now active.")
-}
-
-func (b *Brain) addTask(task string) {
-	// Implement task addition logic
-}
-
 type Person struct {
 	Age              int
 	Name             string
@@ -68,15 +53,16 @@ type Person struct {
 	Inventory        []Item
 	CurrentWorldState WorldState
 	Genes            []string
-	Brain            Brain
+	Brain            
 }
 
 func NewPerson(x, y int) *Person {
 	rand.Seed(time.Now().UnixNano())
-	age := rand.Intn(53) + 2
+	age := rand.Intn(63) + 2
 	name := gofakeit.Name()
 	initials := string(name[0]) + string(name[1])
 	gender := gofakeit.Gender()
+	brain := NewBrain()
 
 	person := &Person{
 		Age:              age,
@@ -101,7 +87,7 @@ func NewPerson(x, y int) *Person {
 		WantsTo:          "",
 		Inventory:        []Item{},
 		Genes:            []string{},
-		Brain:            Brain{},
+		Brain:            *brain,
 	}
 
 	person.Brain.owner = person
@@ -113,10 +99,11 @@ func NewPerson(x, y int) *Person {
 }
 
 func (p *Person) turnOnBrain() {
+	fmt.Printf("%s is turning on their brain\n", p.Name)
 	p.Brain.turnOn()
 }
 
-func (p *Person) addTask(task string) {
+func (p *Person) addTask(task action) {
 	p.Brain.addTask(task)
 }
 

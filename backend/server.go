@@ -177,6 +177,8 @@ func main() {
 	http.Handle("/buildings", corsMiddleware(http.HandlerFunc(buildingHandler)))
 	http.Handle("/world", corsMiddleware(http.HandlerFunc(worldHandler)))
 
+	createNewPerson()
+
 	// Default handler for the root path or undefined paths
 	http.Handle("/", corsMiddleware(http.HandlerFunc(defaultHandler)))
 

@@ -1,4 +1,6 @@
 import * as T from "../api/types";
+import Building from "./Building";
+import Person from "./Person";
 
 type Props = {
   world: T.World | undefined;
@@ -11,13 +13,13 @@ const Map = ({ world }: Props) => {
         <div>
           <div>
             {world.tiles.map((row, y) => (
-              <div key={y} style={{ display: "flex" }}>
+              <div key={y} className="flex">
                 {row.map((tile, x) => (
                   <div
                     key={x}
                     style={{
-                      width: "20px",
-                      height: "20px",
+                      width: "30px",
+                      height: "30px",
                       backgroundColor:
                         tile.type === T.TileType.Grass
                           ? "green"
@@ -27,16 +29,12 @@ const Map = ({ world }: Props) => {
                     }}
                   >
                     {tile.building ? (
-                      <div className={tile.building.Color}>
-                        {tile.building.Icon}
-                      </div>
+                      <Building building={tile.building} />
                     ) : null}
                     {tile.persons ? (
                       <div>
-                        {tile.persons.map((person, i) => (
-                          <div key={i} className="bg-orange-500">
-                            {person.Initials}
-                          </div>
+                        {tile.persons.map((person) => (
+                          <Person person={person} />
                         ))}
                       </div>
                     ) : null}

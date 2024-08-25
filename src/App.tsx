@@ -1,4 +1,3 @@
-import "./App.css";
 import { useEffect, useState } from "react";
 import { getWorld } from "./api/api";
 import * as T from "./api/types";
