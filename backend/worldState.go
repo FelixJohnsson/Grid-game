@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
@@ -47,6 +48,75 @@ func (w *World) SetTile(x, y int, t TileType) {
 // GetTile returns the tile at the given location.
 func (w *World) GetTile(x, y int) Tile {
 	return w.Tiles[y][x]
+}
+type Vision struct {
+	Buildings []BuildingCleaned       `json:"buildings"`
+	Persons   []PersonCleaned  `json:"persons"`
+}
+
+type PersonCleaned struct {
+	Name     string   `json:"name"`
+	Location Location `json:"location"`
+}
+
+type BuildingCleaned struct {
+	Name     string   `json:"name"`
+	Type     string   `json:"type"`
+	Location Location `json:"location"`
+}
+
+// GetVision returns the tiles in the vision range of the person at the given location.
+func (w *World) GetVision(x, y, visionRange int) string {
+	var buildings []BuildingCleaned
+	var persons []PersonCleaned
+
+	// Loop through the vision range
+	for i := -visionRange; i <= visionRange; i++ {
+		for j := -visionRange; j <= visionRange; j++ {
+			// Calculate the coordinates in the world
+			tx, ty := x+i, y+j
+
+			// Ensure the coordinates are within the world boundaries
+			if tx >= 0 && tx < len(w.Tiles[0]) && ty >= 0 && ty < len(w.Tiles) {
+				tile := w.Tiles[ty][tx]
+
+				// Add building if it exists
+				if tile.Building != nil {
+					cleanedBuilding := BuildingCleaned{
+						Name:     tile.Building.Name,
+						Type:     string(tile.Building.Type),
+						Location: tile.Building.Location,
+					}
+					buildings = append(buildings, cleanedBuilding)
+				}
+
+				// Add people if they exist
+				for _, person := range tile.Persons {
+					cleanedPerson := PersonCleaned{
+						Name:     person.FullName,
+						Location: person.Location,
+					}
+					persons = append(persons, cleanedPerson)
+				}
+			}
+		}
+	}
+
+	// Prepare the vision result
+	vision := Vision{
+		Buildings: buildings,
+		Persons:   persons,
+	}
+
+	// Convert to JSON
+	jsonData, err := json.Marshal(vision)
+	if err != nil {
+		fmt.Println("Error marshalling to JSON:", err)
+		return ""
+	}
+
+	// Return the JSON vision
+	return string(jsonData)
 }
 
 // AddBuilding adds a building to the tile at the given location.

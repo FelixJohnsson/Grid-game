@@ -76,14 +76,14 @@ func removePerson(p Person) error {
 	// Find the person in the array
 	index := -1
 	for i, person := range persons {
-		if person.Name == p.Name {
+		if person.FirstName == p.FirstName {
 			index = i
 			break
 		}
 	}
 
 	if index == -1 {
-		return fmt.Errorf("person with name %s not found", p.Name)
+		return fmt.Errorf("person with name %s not found", p.FirstName)
 	}
 
 	// Remove the person from the array
@@ -108,14 +108,14 @@ func updatePerson(p Person) error {
 	// Find the person in the array
 	index := -1
 	for i, person := range persons {
-		if person.Name == p.Name {
+		if person.FirstName == p.FirstName {
 			index = i
 			break
 		}
 	}
 
 	if index == -1 {
-		return fmt.Errorf("person with name %s not found", p.Name)
+		return fmt.Errorf("person with name %s not found", p.FirstName)
 	}
 
 	// Update the person in the array
@@ -139,7 +139,7 @@ func getPersonByName(name string) (*Person, error) {
 
 	// Find the person in the array
 	for _, person := range persons {
-		if person.Name == name {
+		if person.FirstName == name {
 			return &person, nil
 		}
 	}

@@ -124,7 +124,7 @@ func (b *Building) AddWorker(p Person) {
 // RemoveWorker removes a person from the building's workers
 func (b *Building) RemoveWorker(p Person) {
 	for i, worker := range b.Workers {
-		if worker.Name == p.Name {
+		if worker.FullName == p.FullName {
 			b.Workers = append(b.Workers[:i], b.Workers[i+1:]...)
 			break
 		}

@@ -7,8 +7,29 @@
     "Icon": "H",
     "Color": "bg-blue-500",
     "Location": {
-      "X": 5,
-      "Y": 5
+      "X": 3,
+      "Y": 3
+    },
+    "Workers": null,
+    "Resources": {
+      "Inhabitants": null,
+      "Wood": 0,
+      "Food": 0,
+      "Stone": 0,
+      "Ores": 0,
+      "Money": 0
+    }
+  },
+  {
+    "Type": "Lumberjack",
+    "Name": "Wood Cabin 1",
+    "State": "Idle",
+    "Description": "The Lumberjack gathers wood for your village.",
+    "Icon": "L",
+    "Color": "bg-orange-900",
+    "Location": {
+      "X": 1,
+      "Y": 1
     },
     "Workers": null,
     "Resources": {

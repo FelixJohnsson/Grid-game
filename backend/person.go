@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
 )
@@ -29,9 +28,18 @@ const (
 	Soldier    Jobs = "Soldier"
 	Unemployed Jobs = "Unemployed"
 )
+
+type Relationship struct {
+	WithPerson Person
+	Relationship string
+	Intensity int
+}
 type Person struct {
 	Age              int
-	Name             string
+	Title 		     string
+	FirstName        string
+	FamilyName       string
+	FullName 	     string
 	Initials         string
 	IsChild          bool
 	Gender           string
@@ -51,23 +59,28 @@ type Person struct {
 	Thinking         string
 	WantsTo          string
 	Inventory        []Item
-	CurrentWorldState WorldState
+	Relationships    []Relationship
+	CurrentWorldState World
 	Genes            []string
-	Brain            
+	Brain			 Brain
+	VisionRange 	 int
+	World 			 World
 }
 
-func NewPerson(x, y int) *Person {
-	rand.Seed(time.Now().UnixNano())
+func NewPerson() *Person {
 	age := rand.Intn(63) + 2
-	name := gofakeit.Name()
-	initials := string(name[0]) + string(name[1])
+	firstName := gofakeit.FirstName()
+	familyName := gofakeit.LastName()
 	gender := gofakeit.Gender()
 	brain := NewBrain()
 
 	person := &Person{
 		Age:              age,
-		Name:             name,
-		Initials:         initials,
+		Title:            "",
+		FirstName:        firstName,
+		FamilyName:       familyName,
+		FullName:         firstName + " " + familyName,
+		Initials:         string(firstName[0]) + string(familyName[0]),
 		IsChild:          age < 18,
 		Gender:           gender,
 		Description:      "",
@@ -75,7 +88,7 @@ func NewPerson(x, y int) *Person {
 		Occupation:       Unemployed,
 		IsWorkingAt:      nil,
 		Color:            "",
-		Location:         Location{X: x, Y: y},
+		Location:         Location{X: 0, Y: 0},
 		IsMoving:         false,
 		IsTalking:        false,
 		IsSitting:        false,
@@ -86,12 +99,15 @@ func NewPerson(x, y int) *Person {
 		Thinking:         "",
 		WantsTo:          "",
 		Inventory:        []Item{},
+		Relationships:    []Relationship{},
 		Genes:            []string{},
+
 		Brain:            *brain,
+		VisionRange:      10,
 	}
 
 	person.Brain.owner = person
-	fmt.Printf("%s has been created\n", person.Name)
+	fmt.Printf("%s has been created\n", person.FullName)
 
 	person.turnOnBrain()
 
@@ -99,7 +115,7 @@ func NewPerson(x, y int) *Person {
 }
 
 func (p *Person) turnOnBrain() {
-	fmt.Printf("%s is turning on their brain\n", p.Name)
+	fmt.Printf("%s is turning on their brain\n", p.FullName)
 	p.Brain.turnOn()
 }
 
@@ -134,47 +150,47 @@ func (p *Person) startWorking() {
 func (p *Person) stopWorking() {
 	if p.IsWorking {
 		p.IsWorking = false
-		fmt.Printf("%s has stopped working\n", p.Name)
+		fmt.Printf("%s has stopped working\n", p.FullName)
 	}
 }
 
 func (p *Person) eat() {
 	if !p.IsEating {
 		p.IsEating = true
-		fmt.Printf("%s is eating\n", p.Name)
+		fmt.Printf("%s is eating\n", p.FullName)
 	}
 }
 
 func (p *Person) sleep() {
 	if !p.IsSleeping {
 		p.IsSleeping = true
-		fmt.Printf("%s is sleeping\n", p.Name)
+		fmt.Printf("%s is sleeping\n", p.FullName)
 	}
 }
 
 func (p *Person) wakeUp() {
 	if p.IsSleeping {
 		p.IsSleeping = false
-		fmt.Printf("%s has woken up\n", p.Name)
+		fmt.Printf("%s has woken up\n", p.FullName)
 	}
 }
 
 func (p *Person) talk() {
 	if !p.IsTalking {
 		p.IsTalking = true
-		fmt.Printf("%s is talking\n", p.Name)
+		fmt.Printf("%s is talking\n", p.FullName)
 	}
 }
 
 func (p *Person) stopTalking() {
 	if p.IsTalking {
 		p.IsTalking = false
-		fmt.Printf("%s has stopped talking\n", p.Name)
+		fmt.Printf("%s has stopped talking\n", p.FullName)
 	}
 }
 
 func createNewPerson() {
-	person := NewPerson(0, 0)
+	person := NewPerson()
 	addPerson(*person)
 }
 

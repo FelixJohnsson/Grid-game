@@ -1,0 +1,143 @@
+{
+  "tiles": [
+    [
+      {
+        "type": 0,
+        "persons": [
+          {
+            "Age": 42,
+            "Title": "",
+            "FirstName": "Alford",
+            "FamilyName": "Yundt",
+            "FullName": "Alford Yundt",
+            "Initials": "AY",
+            "IsChild": false,
+            "Gender": "female",
+            "Description": "",
+            "Icon": "P",
+            "Occupation": "Unemployed",
+            "IsWorkingAt": null,
+            "Color": "",
+            "Location": {
+              "X": 0,
+              "Y": 0
+            },
+            "IsMoving": false,
+            "IsTalking": false,
+            "IsSitting": false,
+            "IsHolding": false,
+            "IsEating": false,
+            "IsSleeping": false,
+            "IsWorking": false,
+            "Thinking": "",
+            "WantsTo": "",
+            "Inventory": [],
+            "Relationships": [],
+            "CurrentWorldState": {
+              "tiles": null
+            },
+            "Genes": [],
+            "Brain": {},
+            "VisionRange": 10,
+            "World": {
+              "tiles": null
+            }
+          }
+        ]
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      }
+    ],
+    [
+      {
+        "type": 0
+      },
+      {
+        "type": 0,
+        "building": {
+          "Type": "Lumberjack",
+          "Name": "Wood Cabin 1",
+          "State": "Idle",
+          "Description": "The Lumberjack gathers wood for your village.",
+          "Icon": "L",
+          "Color": "bg-orange-900",
+          "Location": {
+            "X": 1,
+            "Y": 1
+          },
+          "Workers": null,
+          "Resources": {
+            "Inhabitants": null,
+            "Wood": 0,
+            "Food": 0,
+            "Stone": 0,
+            "Ores": 0,
+            "Money": 0
+          }
+        }
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      }
+    ],
+    [
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      }
+    ],
+    [
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0
+      },
+      {
+        "type": 0,
+        "building": {
+          "Type": "House",
+          "Name": "House 1",
+          "State": "Idle",
+          "Description": "The House provides your inhabitants with shelter.",
+          "Icon": "H",
+          "Color": "bg-blue-500",
+          "Location": {
+            "X": 3,
+            "Y": 3
+          },
+          "Workers": null,
+          "Resources": {
+            "Inhabitants": null,
+            "Wood": 0,
+            "Food": 0,
+            "Stone": 0,
+            "Ores": 0,
+            "Money": 0
+          }
+        }
+      }
+    ]
+  ]
+}

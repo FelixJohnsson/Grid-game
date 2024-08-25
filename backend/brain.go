@@ -10,7 +10,6 @@ type action struct {
 	name string
 	priority int
 }
-
 type Brain struct {
 	owner  *Person
     active bool
@@ -57,18 +56,22 @@ func (b *Brain) mainLoop() {
             return
         default:
             // Brain logic goes here
-			b.processInputs([]string{"input1", "input2", "input3"})
+			b.processInputs()
 
             // Sleep or yield for a bit to prevent CPU hogging
-            time.Sleep(1000 * time.Millisecond)
+            time.Sleep(15000 * time.Millisecond)
         }
     }
 }
 
-func (b *Brain) processInputs(inputs []string) {
+func (b *Brain) processInputs() {
     // This will probably have to be the WorldState struct but a smaller area
 	// For now we could just decide if the person is in a friendly or hostile area
-    fmt.Println(b.owner.Name + " is processing inputs...")
+    
+    // Get the vision of the person
+    world, _ := loadWorldFromFile()
+    vision := world.GetVision(0, 0, 1)
+    fmt.Println("Vision:", vision)
 }
 
 func (b *Brain) makeDecisions() {
