@@ -60,6 +60,7 @@ type Person struct {
 	WantsTo          string
 	Inventory        []Item
 	Relationships    []Relationship
+	Personality 	 string
 	CurrentWorldState World
 	Genes            []string
 	Brain			 Brain
@@ -100,6 +101,7 @@ func NewPerson() *Person {
 		WantsTo:          "",
 		Inventory:        []Item{},
 		Relationships:    []Relationship{},
+		Personality:      "Talkative",
 		Genes:            []string{},
 
 		Brain:            *brain,
@@ -213,7 +215,6 @@ func (p *Person) talk() {
 		fmt.Printf("%s is talking\n", p.FullName)
 	}
 }
-
 func (p *Person) stopTalking() {
 	if p.IsTalking {
 		p.IsTalking = false

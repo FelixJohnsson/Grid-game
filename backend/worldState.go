@@ -135,6 +135,30 @@ func (w *World) UpdateState() {
 		}
 	}
 }
+func (w *World) GetPersonByName(name string) *Person {
+	for _, row := range w.Tiles {
+		for _, tile := range row {
+			for _, person := range tile.Persons {
+				if person.FullName == name {
+					return person
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// RequestTask requests a task from the brain for the person by name at the given location.
+func (w *World) RequestTaskFrom(fullName string, x, y int) bool {
+	tile := w.Tiles[y][x]
+	for _, person := range tile.Persons {
+		if person.FullName == fullName {
+			requestedTask := RequestedAction{action: "Talk", fromPerson: fullName}
+			return person.Brain.RequestTask(requestedTask)
+		}
+	}
+	return false
+}
 
 // getWorld returns the current world state, creating a new one if necessary.
 func getWorld() World {

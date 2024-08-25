@@ -130,7 +130,7 @@ func updatePerson(p Person) error {
 }
 
 // getPersonByName retrieves a person by name from the array
-func getPersonByName(name string) (*Person, error) {
+func getPersonByNameFromFile(name string) (*Person, error) {
 	// Load existing persons
 	persons, err := loadPersonsFromFile()
 	if err != nil {

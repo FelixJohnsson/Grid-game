@@ -4,11 +4,19 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/brianvoe/gofakeit/v6"
 )
 
 type action struct {
 	name string
+    target string
 	priority int
+}
+
+type RequestedAction struct {
+    action string
+    fromPerson string
 }
 type Brain struct {
 	owner  *Person
@@ -26,7 +34,8 @@ func NewBrain() *Brain {
         ctx:     ctx,
         cancel:  cancel,
         actions: []action{
-            {"Idle", 1},
+            {"Idle", "", 1},
+            
         },
     }
 }
@@ -61,7 +70,7 @@ func (b *Brain) mainLoop() {
             b.makeDecisions(obs)
 
             // Sleep or yield for a bit to prevent CPU hogging
-            time.Sleep(15000 * time.Millisecond)
+            time.Sleep(5000 * time.Millisecond)
         }
     }
 }
@@ -88,14 +97,22 @@ func (b *Brain) makeDecisions(obs Vision) {
                         relationship.Intensity++
                         if relationship.Intensity > 15 {
                             relationship.Relationship = "Aquantance"
-                        } else if relationship.Intensity > 40 {
+                        } 
+                        if relationship.Intensity > 40 {
                             relationship.Relationship = "Friend"
-                        } else if relationship.Intensity > 60 {
+                        } 
+                        if relationship.Intensity > 60 {
                             relationship.Relationship = "Close Friend"
-                        } else if relationship.Intensity > 80 {
+                        } 
+                        if relationship.Intensity > 80 {
                             relationship.Relationship = "Best Friend"
-                        } else if relationship.Intensity > 90 {
+                        } 
+                        if relationship.Intensity > 90 {
                             relationship.Relationship = "Family"
+                        } 
+                        if relationship.Intensity > 100 {
+                            relationship.Relationship = "Soulmate"
+                            relationship.Intensity = 100
                         }
 
                         b.owner.updateRelationship(person.FullName, relationship.Relationship, relationship.Intensity)
@@ -103,12 +120,121 @@ func (b *Brain) makeDecisions(obs Vision) {
                 }
             } else {
                 b.owner.addRelationship(person, "Stranger", 0)
+                if (b.owner.Personality == "Talkative") {
+                    b.owner.addTask(action{"Talk", person.FullName, -2})
+                    // Request action from the other person
+                    
+
+                    
+                }
             }
         } else {
             fmt.Println("Found myself")
         }
     }
     fmt.Println(b.owner.Relationships)
+}
+
+// RequestTask requests a task from the brain.
+func (b *Brain) RequestTask(requestedTask RequestedAction) bool {
+    if !b.active {
+        fmt.Println("Brain is inactive.")
+        return false
+    }
+
+    // Check relationship with the person
+    for _, relationship := range b.owner.Relationships {
+        if relationship.WithPerson == requestedTask.fromPerson {
+            if relationship.Relationship == "Stranger" {
+                if b.owner.Personality == "Talkative" {
+                    b.addTask(action{"Talk", requestedTask.fromPerson, -2})
+                    return true
+                }
+                if b.owner.Personality == "Shy" {
+                    return false
+                }
+                // Generate a random number between 1 and 10
+                random := gofakeit.Number(1, 10)
+                if random > 5 {
+                    b.addTask(action{"Talk", requestedTask.fromPerson, 5})
+                    return true
+                }
+            }
+            if relationship.Relationship == "Aquantance" {
+                if b.owner.Personality == "Talkative" {
+                    b.addTask(action{"Talk", requestedTask.fromPerson, -2})
+                    return true
+                }
+                if b.owner.Personality == "Shy" {
+                    random := gofakeit.Number(1, 10)
+                    if random > 8 {
+                        b.addTask(action{"Talk", requestedTask.fromPerson, 10})
+                        return true
+                    }
+                    return false
+                }
+                // Generate a random number between 1 and 10
+                random := gofakeit.Number(1, 10)
+                if random > 3 {
+                    b.addTask(action{"Talk", requestedTask.fromPerson, 5})
+                    return true
+                }
+            }
+            if relationship.Relationship == "Friend" {
+                if b.owner.Personality == "Talkative" {
+                    b.addTask(action{"Talk", requestedTask.fromPerson, -2})
+                    return true
+                }
+                if b.owner.Personality == "Shy" {
+                    random := gofakeit.Number(1, 10)
+                    if random > 5 {
+                        b.addTask(action{"Talk", requestedTask.fromPerson, 7})
+                        return true
+                    }
+                    return false
+                }
+                // Generate a random number between 1 and 10
+                random := gofakeit.Number(1, 10)
+                if random > 1 {
+                    b.addTask(action{"Talk", requestedTask.fromPerson, 5})
+                    return true
+                }
+            }
+            if relationship.Relationship == "Close Friend" {
+                if b.owner.Personality == "Talkative" {
+                    b.addTask(action{"Talk", requestedTask.fromPerson, -10})
+                    return true
+                }
+                b.addTask(action{"Talk", requestedTask.fromPerson, 0})
+                return true
+            }
+            if relationship.Relationship == "Best Friend" {
+                if b.owner.Personality == "Talkative" {
+                    b.addTask(action{"Talk", requestedTask.fromPerson, -10})
+                    return true
+                }
+                b.addTask(action{"Talk", requestedTask.fromPerson, -5})
+                return true
+            }
+            if relationship.Relationship == "Family" {
+                if b.owner.Personality == "Talkative" {
+                    b.addTask(action{"Talk", requestedTask.fromPerson, -10})
+                    return true
+                }
+                b.addTask(action{"Talk", requestedTask.fromPerson, -5})
+                return true
+            }
+            if relationship.Relationship == "Soulmate" {
+                if b.owner.Personality == "Talkative" {
+                    b.addTask(action{"Talk", requestedTask.fromPerson, -15})
+                    return true
+                }
+                b.addTask(action{"Talk", requestedTask.fromPerson, -10})
+                return true
+            }
+        }
+    }
+    return false
 }
 
 func (b *Brain) performActions() {
