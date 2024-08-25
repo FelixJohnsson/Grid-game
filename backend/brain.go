@@ -56,7 +56,9 @@ func (b *Brain) mainLoop() {
             return
         default:
             // Brain logic goes here
-			b.processInputs()
+            fmt.Println("Brain is thinking...")
+			obs := b.processInputs()
+            b.makeDecisions(obs)
 
             // Sleep or yield for a bit to prevent CPU hogging
             time.Sleep(15000 * time.Millisecond)
@@ -64,19 +66,49 @@ func (b *Brain) mainLoop() {
     }
 }
 
-func (b *Brain) processInputs() {
+func (b *Brain) processInputs() Vision {
     // This will probably have to be the WorldState struct but a smaller area
 	// For now we could just decide if the person is in a friendly or hostile area
     
     // Get the vision of the person
     world, _ := loadWorldFromFile()
-    vision := world.GetVision(0, 0, 1)
-    fmt.Println("Vision:", vision)
+    vision := world.GetVision(b.owner.Location.X, b.owner.Location.Y, b.owner.VisionRange)
+
+    return vision
 }
 
-func (b *Brain) makeDecisions() {
-    // Example: Decide what to do based on inputs and state
-    fmt.Println("Making decisions...")
+func (b *Brain) makeDecisions(obs Vision) {
+    // Loop through the observations and make decisions based on people
+    for _, person := range obs.Persons {
+        if person.FullName != b.owner.FullName {
+            if b.owner.hasRelationship(person.FullName) {
+                // Get the relationship intensity
+                for _, relationship := range b.owner.Relationships {
+                    if relationship.WithPerson == person.FullName {
+                        relationship.Intensity++
+                        if relationship.Intensity > 15 {
+                            relationship.Relationship = "Aquantance"
+                        } else if relationship.Intensity > 40 {
+                            relationship.Relationship = "Friend"
+                        } else if relationship.Intensity > 60 {
+                            relationship.Relationship = "Close Friend"
+                        } else if relationship.Intensity > 80 {
+                            relationship.Relationship = "Best Friend"
+                        } else if relationship.Intensity > 90 {
+                            relationship.Relationship = "Family"
+                        }
+
+                        b.owner.updateRelationship(person.FullName, relationship.Relationship, relationship.Intensity)
+                    }
+                }
+            } else {
+                b.owner.addRelationship(person, "Stranger", 0)
+            }
+        } else {
+            fmt.Println("Found myself")
+        }
+    }
+    fmt.Println(b.owner.Relationships)
 }
 
 func (b *Brain) performActions() {

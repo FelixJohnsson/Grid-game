@@ -30,7 +30,7 @@ const (
 )
 
 type Relationship struct {
-	WithPerson Person
+	WithPerson string
 	Relationship string
 	Intensity int
 }
@@ -138,6 +138,38 @@ func (p *Person) addEmployer(building *Building) {
 		p.Occupation = Farmer
 	default:
 		p.Occupation = Unemployed
+	}
+}
+
+func (p *Person) addRelationship(person PersonCleaned, relationship string, intensity int) {
+	p.Relationships = append(p.Relationships, Relationship{WithPerson: person.FullName, Relationship: relationship, Intensity: intensity})
+}
+
+func (p *Person) hasRelationship(fullName string) bool {
+	for _, relationship := range p.Relationships {
+		if relationship.WithPerson == fullName {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *Person) removeRelationship(person Person) {
+	for i, relationship := range p.Relationships {
+		if relationship.WithPerson == person.FullName {
+			p.Relationships = append(p.Relationships[:i], p.Relationships[i+1:]...)
+			break
+		}
+	}
+}
+
+func (p *Person) updateRelationship(fullName string, relationship string, intensity int) {
+	for i, rel := range p.Relationships {
+		if rel.WithPerson == fullName {
+			p.Relationships[i].Relationship = relationship
+			p.Relationships[i].Intensity = intensity
+			break
+		}
 	}
 }
 

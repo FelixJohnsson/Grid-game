@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 )
 
@@ -55,7 +54,7 @@ type Vision struct {
 }
 
 type PersonCleaned struct {
-	Name     string   `json:"name"`
+	FullName     string   `json:"name"`
 	Location Location `json:"location"`
 }
 
@@ -66,7 +65,7 @@ type BuildingCleaned struct {
 }
 
 // GetVision returns the tiles in the vision range of the person at the given location.
-func (w *World) GetVision(x, y, visionRange int) string {
+func (w *World) GetVision(x, y, visionRange int) Vision {
 	var buildings []BuildingCleaned
 	var persons []PersonCleaned
 
@@ -93,7 +92,7 @@ func (w *World) GetVision(x, y, visionRange int) string {
 				// Add people if they exist
 				for _, person := range tile.Persons {
 					cleanedPerson := PersonCleaned{
-						Name:     person.FullName,
+						FullName:     person.FullName,
 						Location: person.Location,
 					}
 					persons = append(persons, cleanedPerson)
@@ -108,15 +107,7 @@ func (w *World) GetVision(x, y, visionRange int) string {
 		Persons:   persons,
 	}
 
-	// Convert to JSON
-	jsonData, err := json.Marshal(vision)
-	if err != nil {
-		fmt.Println("Error marshalling to JSON:", err)
-		return ""
-	}
-
-	// Return the JSON vision
-	return string(jsonData)
+	return vision
 }
 
 // AddBuilding adds a building to the tile at the given location.
