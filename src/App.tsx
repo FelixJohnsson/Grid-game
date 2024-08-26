@@ -42,7 +42,7 @@ function App() {
     console.warn(persons[0].FullName + ` Move ${direction}`);
 
     api.movePerson(persons[0].FullName, direction).then((data) => {
-      console.warn(data);
+      setWorld(data);
     });
   };
 

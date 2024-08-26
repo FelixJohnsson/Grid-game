@@ -52,7 +52,7 @@ export const getWorld = async (): Promise<T.World["tiles"]> => {
 
 export const movePerson = async (full_name: string, direction: string) => {
   const data = await api.post("move", { full_name, direction });
-  return data;
+  return data.message;
 };
 
 export default api;

@@ -96,20 +96,11 @@ type WorldResponse struct {
     Status  int             `json:"status"`
 }
 
-// Handler for /world endpoint
-func (w *World) worldHandler(writer http.ResponseWriter, r *http.Request) {
-    // Ignore favicon requests
-    if r.URL.Path == "/favicon.ico" {
-        http.NotFound(writer, r)
-        return
-    }
-
-    logRequest(r)
-
-    tiles := w.GetTiles()
+func (w *World) CleanTiles() [][]CleanedTile {
+	tiles := w.GetTiles()
     cleanedTiles := make([][]CleanedTile, len(tiles))
 
-    for y, row := range tiles {
+	for y, row := range tiles {
         cleanedTiles[y] = make([]CleanedTile, len(row))
         for x, tile := range row {
             var cleanedBuilding *BuildingCleaned
@@ -137,8 +128,21 @@ func (w *World) worldHandler(writer http.ResponseWriter, r *http.Request) {
         }
     }
 
+	return cleanedTiles
+}
+
+// Handler for /world endpoint
+func (w *World) worldHandler(writer http.ResponseWriter, r *http.Request) {
+    // Ignore favicon requests
+    if r.URL.Path == "/favicon.ico" {
+        http.NotFound(writer, r)
+        return
+    }
+
+    logRequest(r)
+
     response := WorldResponse{
-        Message: cleanedTiles,
+        Message: w.CleanTiles(),
         Status:  200,
     }
 
@@ -159,11 +163,25 @@ func (w *World) moveHandler(writer http.ResponseWriter, r *http.Request) {
 	}
 
 	logRequest(r)
-	
-	fmt.Println(moveRequest.FullName, moveRequest.Direction)
 
-	response := DefaultResponse{
-		Message: fmt.Sprintf("%s moved %s", moveRequest.FullName, moveRequest.Direction),
+	// We need to calculate the new coordinates based on the direction
+	startingCoordinates := w.GetPersonByFullName(moveRequest.FullName).Location
+	switch moveRequest.Direction {
+	case "up":
+		startingCoordinates.Y--
+	case "down":
+		startingCoordinates.Y++
+	case "left":
+		startingCoordinates.X--
+	case "right":
+		startingCoordinates.X++
+	}
+
+	// Move the person in the world
+	w.MovePerson(moveRequest.FullName, startingCoordinates.X, startingCoordinates.Y)
+
+	response := WorldResponse{
+		Message: w.CleanTiles(),
 		Status:  200,
 	}
 	writeJSONResponse(writer, response)
