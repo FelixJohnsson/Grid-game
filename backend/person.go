@@ -67,7 +67,7 @@ type Person struct {
 	VisionProvider   WorldAccessor
 }
 
-func NewPerson(worldAccessor WorldAccessor) *Person {
+func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 	age := rand.Intn(63) + 2
 	firstName := gofakeit.FirstName()
 	familyName := gofakeit.LastName()
@@ -88,7 +88,7 @@ func NewPerson(worldAccessor WorldAccessor) *Person {
 		Occupation:       Unemployed,
 		IsWorkingAt:      nil,
 		Color:            "",
-		Location:         Location{X: 0, Y: 0},
+		Location:         Location{X: x, Y: y},
 		IsMoving:         false,
 		IsTalking:        false,
 		IsSitting:        false,
@@ -104,7 +104,7 @@ func NewPerson(worldAccessor WorldAccessor) *Person {
 		Genes:            []string{},
 
 		Brain:            *brain,
-		VisionRange:      10,
+		VisionRange:      5,
 		VisionProvider:   worldAccessor,
 
 	}
@@ -118,6 +118,13 @@ func NewPerson(worldAccessor WorldAccessor) *Person {
 func (p *Person) turnOnBrain() {
 	fmt.Printf("%s is turning on their brain\n", p.FullName)
 	p.Brain.turnOn()
+}
+
+// UpdateLocation updates the location of the person
+func (p *Person) UpdateLocation(x, y int) {
+	fmt.Println("Updating location from ", p.Location, " to ", x, y)
+	p.Location.X = x
+	p.Location.Y = y
 }
 
 func (p *Person) GetVision() Vision {
@@ -225,7 +232,7 @@ func (p *Person) stopTalking() {
 	}
 }
 
-func (w *World) createNewPerson() *Person {
-    person := NewPerson(w)
+func (w *World) createNewPerson(x, y int) *Person {
+    person := NewPerson(w, x, y)
     return person
 }

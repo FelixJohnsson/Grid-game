@@ -216,12 +216,13 @@ func (w *World) MovePerson(FullName string, newX, newY int) {
 	// Remove the person from the old location
 	w.Tiles[oldY][oldX].Persons = w.RemovePerson(FullName, oldX, oldY)
 
+	// Update the person's location
+	person.UpdateLocation(newX, newY)
+
 	// Add the person to the new location
 	w.Tiles[newY][newX].Persons = append(w.Tiles[newY][newX].Persons, person)
 
-	// Update the person's location
-	person.Location.X = newX
-	person.Location.Y = newY
+
 }
 
 // RequestTask requests a task from the brain for the person by name at the given location.

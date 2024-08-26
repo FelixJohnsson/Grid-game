@@ -264,12 +264,12 @@ func main() {
 }
 
 func initializeWorld() *World {
-	world := NewWorld(4, 4) 
+	world := NewWorld(10, 10) 
 
-	newPerson1 := world.createNewPerson()
-	newPerson2 	:= world.createNewPerson()
-	world.AddPerson(0, 0, newPerson1)
-	world.AddPerson(1, 1, newPerson2)
+	newPerson1 := world.createNewPerson(1, 1)
+	newPerson2 := world.createNewPerson(9,9)
+	world.AddPerson(1, 1, newPerson1)
+	world.AddPerson(9, 9, newPerson2)
 	newPerson1.Brain.turnOn()
 
 	return &world

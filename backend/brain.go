@@ -65,8 +65,10 @@ func (b *Brain) mainLoop() {
             return
         default:
             // Brain logic goes here
-            fmt.Println("Brain is thinking...")
+
             obs := b.processInputs()
+            fmt.Println(b.owner.FirstName + "'s observations: ")
+            fmt.Println(obs)
             b.makeDecisions(obs)
 
             // Sleep or yield for a bit to prevent CPU hogging
@@ -123,14 +125,11 @@ func (b *Brain) makeDecisions(obs Vision) {
                     b.owner.addTask(action{"Talk", person.FullName, -2})
                     // Request action from the other person
                     
-
-                    
                 }
             }
-        } else {
-            fmt.Println("Found myself")
         }
     }
+    fmt.Println(b.owner.FullName + " relationships: ")
     fmt.Println(b.owner.Relationships)
 }
 
