@@ -140,31 +140,6 @@ func (b *Building) UpdateState() {
 	}
 }
 
-// ProduceResources produces resources based on the building's type
-func (b *Building) ProduceResources() {
-	switch b.Type {
-	case House:
-		// Houses do not produce resources
-	case WoodCabin:
-		b.Resources.Wood += 10
-	case Mine:
-		b.Resources.Stone += 5
-		b.Resources.Ores += 5
-	case Farm:
-		b.Resources.Food += 10
-	case Barracks:
-		// Barracks do not produce resources
-	}
-}
-
-func getBuildings() []Building {
-	buildings, error := loadBuildingsFromFile()
-	if error != nil {
-		return []Building{}
-	}
-	return buildings
-}
-
 // createNewBuilding creates a new building and adds it to the array
 func createNewBuilding(t BuildingType, n string, l Location) Building {
 	b := NewBuilding(t, n, l)

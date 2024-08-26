@@ -61,14 +61,13 @@ type Person struct {
 	Inventory        []Item
 	Relationships    []Relationship
 	Personality 	 string
-	CurrentWorldState World
 	Genes            []string
 	Brain			 Brain
 	VisionRange 	 int
-	World 			 World
+	VisionProvider   WorldAccessor
 }
 
-func NewPerson() *Person {
+func NewPerson(worldAccessor WorldAccessor) *Person {
 	age := rand.Intn(63) + 2
 	firstName := gofakeit.FirstName()
 	familyName := gofakeit.LastName()
@@ -106,12 +105,12 @@ func NewPerson() *Person {
 
 		Brain:            *brain,
 		VisionRange:      10,
+		VisionProvider:   worldAccessor,
+
 	}
 
 	person.Brain.owner = person
 	fmt.Printf("%s has been created\n", person.FullName)
-
-	person.turnOnBrain()
 
 	return person
 }
@@ -119,6 +118,10 @@ func NewPerson() *Person {
 func (p *Person) turnOnBrain() {
 	fmt.Printf("%s is turning on their brain\n", p.FullName)
 	p.Brain.turnOn()
+}
+
+func (p *Person) GetVision() Vision {
+    return p.VisionProvider.GetVision(p.Location.X, p.Location.Y, p.VisionRange)
 }
 
 func (p *Person) addTask(task action) {
@@ -222,15 +225,7 @@ func (p *Person) stopTalking() {
 	}
 }
 
-func createNewPerson() {
-	person := NewPerson()
-	addPerson(*person)
-}
-
-func getPersons() []Person {
-	persons, error := loadPersonsFromFile()
-	if error != nil {
-		return []Person{}
-	}
-	return persons
+func (w *World) createNewPerson() *Person {
+    person := NewPerson(w)
+    return person
 }

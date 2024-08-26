@@ -10,7 +10,7 @@ import (
 
 // loadPersonsFromFile loads the array of persons from the file
 func loadPersonsFromFile() ([]Person, error) {
-	file, err := os.Open("person.json")
+	file, err := os.Open("data/person.json")
 	if err != nil {
 		if os.IsNotExist(err) {
 			// Return an empty array if the file does not exist
@@ -31,7 +31,7 @@ func loadPersonsFromFile() ([]Person, error) {
 
 // savePersonsToFile saves the array of persons to the file
 func savePersonsToFile(persons []Person) error {
-	file, err := os.Create("person.json")
+	file, err := os.Create("data/person.json")
 	if err != nil {
 		return fmt.Errorf("error creating file: %v", err)
 	}
@@ -56,38 +56,6 @@ func addPerson(p Person) error {
 
 	// Append the new person
 	persons = append(persons, p)
-
-	// Save the updated array back to the file
-	if err := savePersonsToFile(persons); err != nil {
-		return fmt.Errorf("error saving persons to file: %v", err)
-	}
-
-	return nil
-}
-
-// removePerson removes a person from the array and saves it to the file
-func removePerson(p Person) error {
-	// Load existing persons
-	persons, err := loadPersonsFromFile()
-	if err != nil {
-		return fmt.Errorf("error loading persons from file: %v", err)
-	}
-
-	// Find the person in the array
-	index := -1
-	for i, person := range persons {
-		if person.FirstName == p.FirstName {
-			index = i
-			break
-		}
-	}
-
-	if index == -1 {
-		return fmt.Errorf("person with name %s not found", p.FirstName)
-	}
-
-	// Remove the person from the array
-	persons = append(persons[:index], persons[index+1:]...)
 
 	// Save the updated array back to the file
 	if err := savePersonsToFile(persons); err != nil {
@@ -151,7 +119,7 @@ func getPersonByNameFromFile(name string) (*Person, error) {
 
 // loadBuildingsFromFile loads the array of buildings from the file
 func loadBuildingsFromFile() ([]Building, error) {
-	file, err := os.Open("building.json")
+	file, err := os.Open("data/building.json")
 	if err != nil {
 		if os.IsNotExist(err) {
 			// Return an empty array if the file does not exist
@@ -172,7 +140,7 @@ func loadBuildingsFromFile() ([]Building, error) {
 
 // saveBuildingsToFile saves the array of buildings to the file
 func saveBuildingsToFile(buildings []Building) error {
-	file, err := os.Create("building.json")
+	file, err := os.Create("data/building.json")
 	if err != nil {
 		return fmt.Errorf("error creating file: %v", err)
 	}
@@ -274,7 +242,7 @@ func updateBuilding(b Building) error {
 
 // loadWorldFromFile loads the world from the file
 func loadWorldFromFile() (World, error) {
-	file, err := os.Open("world.json")
+	file, err := os.Open("data/world.json")
 	if err != nil {
 		if os.IsNotExist(err) {
 			// Return an empty world if the file does not exist
@@ -295,7 +263,7 @@ func loadWorldFromFile() (World, error) {
 
 // saveWorldToFile saves the world to the file
 func saveWorldToFile(world World) error {
-	file, err := os.Create("world.json")
+	file, err := os.Create("data/world.json")
 	if err != nil {
 		return fmt.Errorf("error creating file: %v", err)
 	}

@@ -15,18 +15,17 @@ type DefaultResponse struct {
 }
 
 type PersonResponse struct {
-	Message []Person `json:"message"`
+	Message []*Person `json:"message"`
 	Status  int      `json:"status"`
-}
-
-type WorldResponse struct {
-	Message World `json:"message"`
-	Status  int    `json:"status"`
 }
 
 type BuildingResponse struct {
 	Message []Building `json:"message"`
 	Status  int        `json:"status"`
+}
+type MoveRequest struct {
+	FullName  string `json:"full_name"`
+	Direction string `json:"direction"`
 }
 
 var (
@@ -51,74 +50,123 @@ func corsMiddleware(next http.Handler) http.Handler {
 }
 
 // Handler for /people endpoint
-func personHandler(w http.ResponseWriter, r *http.Request) {
+func (w *World) personHandler(writer http.ResponseWriter, r *http.Request) {
 	// Ignore favicon requests
 	if r.URL.Path == "/favicon.ico" {
-		http.NotFound(w, r)
+		http.NotFound(writer, r)
 		return
 	}
 
 	logRequest(r)
 
-	persons := getPersons()
-		
-	if len(persons) == 0 {
-		createNewPerson()
-	}
-
 	response := PersonResponse{
-		Message: persons,
+		Message: w.GetAllPersons(),
 		Status:  200,
 	}
 
-	writeJSONResponse(w, response)
+	writeJSONResponse(writer, response)
 }
 
 // Hander for /buildings endpoint
-func buildingHandler(w http.ResponseWriter, r *http.Request) {
+func (w *World) buildingHandler(writer http.ResponseWriter, r *http.Request) {
 	// Ignore favicon requests
 	if r.URL.Path == "/favicon.ico" {
-		http.NotFound(w, r)
+		http.NotFound(writer, r)
 		return
 	}
 
 	logRequest(r)
 
-	buildings := getBuildings()
-
-	if len(buildings) == 0 {
-		createNewBuilding(House, "House 1", Location{0, 0})
-	}
+	buildings := w.GetAllBuildings()
 
 	response := BuildingResponse{
 		Message: buildings,
 		Status:  200,
 	}
 
-	writeJSONResponse(w, response)
+	writeJSONResponse(writer, response)
+}
+type CleanedTile struct {
+    Type     TileType        `json:"type"`
+    Building *BuildingCleaned `json:"building,omitempty"`
+    Persons  []PersonCleaned `json:"persons,omitempty"`
+}
+type WorldResponse struct {
+    Message [][]CleanedTile `json:"message"`
+    Status  int             `json:"status"`
 }
 
 // Handler for /world endpoint
-func worldHandler(w http.ResponseWriter, r *http.Request) {
-	// Ignore favicon requests
-	if r.URL.Path == "/favicon.ico" {
-		http.NotFound(w, r)
+func (w *World) worldHandler(writer http.ResponseWriter, r *http.Request) {
+    // Ignore favicon requests
+    if r.URL.Path == "/favicon.ico" {
+        http.NotFound(writer, r)
+        return
+    }
+
+    logRequest(r)
+
+    tiles := w.GetTiles()
+    cleanedTiles := make([][]CleanedTile, len(tiles))
+
+    for y, row := range tiles {
+        cleanedTiles[y] = make([]CleanedTile, len(row))
+        for x, tile := range row {
+            var cleanedBuilding *BuildingCleaned
+            if tile.Building != nil {
+                cleanedBuilding = &BuildingCleaned{
+                    Name:     tile.Building.Name,
+                    Type:     string(tile.Building.Type),
+                    Location: tile.Building.Location,
+                }
+            }
+
+            var cleanedPersons []PersonCleaned
+            for _, person := range tile.Persons {
+                cleanedPersons = append(cleanedPersons, PersonCleaned{
+                    FullName: person.FullName,
+                    Location: person.Location,
+                })
+            }
+
+            cleanedTiles[y][x] = CleanedTile{
+                Type:     tile.Type,
+                Building: cleanedBuilding,
+                Persons:  cleanedPersons,
+            }
+        }
+    }
+
+    response := WorldResponse{
+        Message: cleanedTiles,
+        Status:  200,
+    }
+
+    writeJSONResponse(writer, response)
+}
+
+// Handler for /move endpoint
+func (w *World) moveHandler(writer http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(writer, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var moveRequest MoveRequest
+	if err := json.NewDecoder(r.Body).Decode(&moveRequest); err != nil {
+		http.Error(writer, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
 	logRequest(r)
+	
+	fmt.Println(moveRequest.FullName, moveRequest.Direction)
 
-	world := getWorld()
-	if world.Tiles == nil {
-		world = createNewWorld(10, 10)
-	}
-
-	response := WorldResponse{
-		Message: world,
+	response := DefaultResponse{
+		Message: fmt.Sprintf("%s moved %s", moveRequest.FullName, moveRequest.Direction),
 		Status:  200,
 	}
-
-	writeJSONResponse(w, response)
+	writeJSONResponse(writer, response)
 }
 
 // Default handler for root and undefined paths
@@ -164,24 +212,47 @@ func isDuplicateRequest(r *http.Request) bool {
 	return false
 }
 
-// Function to write JSON response
+// Function to write JSON response with error handling
 func writeJSONResponse(w http.ResponseWriter, response interface{}) {
+	// Set the content type to application/json
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+
+	// Attempt to encode the response into JSON
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		// Log the error
+		fmt.Printf("Error encoding response to JSON: %v\n", err)
+
+		// If encoding fails, respond with an internal server error status
+		http.Error(w, "Failed to encode response as JSON", http.StatusInternalServerError)
+		return
+	}
 }
 
 func main() {
-	// Define routes with CORS middleware
-	http.Handle("/people", corsMiddleware(http.HandlerFunc(personHandler)))
-	http.Handle("/buildings", corsMiddleware(http.HandlerFunc(buildingHandler)))
-	http.Handle("/world", corsMiddleware(http.HandlerFunc(worldHandler)))
+	// Initialize the world
+	world := initializeWorld()
 
-	createNewPerson()
+	// Define routes with CORS middleware and pass the world instance
+	http.Handle("/people", corsMiddleware(http.HandlerFunc(world.personHandler)))
+	http.Handle("/buildings", corsMiddleware(http.HandlerFunc(world.buildingHandler)))
+	http.Handle("/move", corsMiddleware(http.HandlerFunc(world.moveHandler)))
+	http.Handle("/world", corsMiddleware(http.HandlerFunc(world.worldHandler)))
 
 	// Default handler for the root path or undefined paths
 	http.Handle("/", corsMiddleware(http.HandlerFunc(defaultHandler)))
 
 	fmt.Println("Server started at :8080")
 	http.ListenAndServe(":8080", nil)
+}
+
+func initializeWorld() *World {
+	world := NewWorld(4, 4) 
+
+	newPerson1 := world.createNewPerson()
+	newPerson2 	:= world.createNewPerson()
+	world.AddPerson(0, 0, newPerson1)
+	world.AddPerson(1, 1, newPerson2)
+	newPerson1.Brain.turnOn()
+
+	return &world
 }

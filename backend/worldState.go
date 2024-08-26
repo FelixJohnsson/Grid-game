@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 // TileType represents different types of terrain.
 type TileType int
 
@@ -25,6 +21,22 @@ const (
 type World struct {
 	Tiles [][]Tile `json:"tiles"`
 }
+type Vision struct {
+	Buildings []BuildingCleaned `json:"buildings"`
+	Persons   []PersonCleaned   `json:"persons"`
+}
+type PersonCleaned struct {
+	FullName     string       `json:"FullName"`
+	Location     Location     `json:"Location"`
+}
+type BuildingCleaned struct {
+	Name     string   `json:"name"`
+	Type     string   `json:"type"`
+	Location Location `json:"location"`
+}
+type WorldAccessor interface {
+    GetVision(x, y, visionRange int) Vision
+}
 
 // NewWorld creates a new world with the given dimensions.
 func NewWorld(width, height int) World {
@@ -40,7 +52,7 @@ func NewWorld(width, height int) World {
 }
 
 // SetTile sets the tile at the given location to the given type.
-func (w *World) SetTile(x, y int, t TileType) {
+func (w *World) SetTileType(x, y int, t TileType) {
 	w.Tiles[y][x].Type = t
 }
 
@@ -48,66 +60,49 @@ func (w *World) SetTile(x, y int, t TileType) {
 func (w *World) GetTile(x, y int) Tile {
 	return w.Tiles[y][x]
 }
-type Vision struct {
-	Buildings []BuildingCleaned       `json:"buildings"`
-	Persons   []PersonCleaned  `json:"persons"`
+
+// GetTiles returns all the tiles in the world.
+func (w *World) GetTiles() [][]Tile {
+	return w.Tiles
 }
 
-type PersonCleaned struct {
-	FullName     string   `json:"name"`
-	Location Location `json:"location"`
-}
-
-type BuildingCleaned struct {
-	Name     string   `json:"name"`
-	Type     string   `json:"type"`
-	Location Location `json:"location"`
-}
-
-// GetVision returns the tiles in the vision range of the person at the given location.
 func (w *World) GetVision(x, y, visionRange int) Vision {
-	var buildings []BuildingCleaned
-	var persons []PersonCleaned
+    var buildings []BuildingCleaned
+    var persons []PersonCleaned
 
-	// Loop through the vision range
-	for i := -visionRange; i <= visionRange; i++ {
-		for j := -visionRange; j <= visionRange; j++ {
-			// Calculate the coordinates in the world
-			tx, ty := x+i, y+j
+    for i := -visionRange; i <= visionRange; i++ {
+        for j := -visionRange; j <= visionRange; j++ {
+            tx, ty := x+i, y+j
 
-			// Ensure the coordinates are within the world boundaries
-			if tx >= 0 && tx < len(w.Tiles[0]) && ty >= 0 && ty < len(w.Tiles) {
-				tile := w.Tiles[ty][tx]
+            if tx >= 0 && tx < len(w.Tiles[0]) && ty >= 0 && ty < len(w.Tiles) {
+                tile := w.Tiles[ty][tx]
 
-				// Add building if it exists
-				if tile.Building != nil {
-					cleanedBuilding := BuildingCleaned{
-						Name:     tile.Building.Name,
-						Type:     string(tile.Building.Type),
-						Location: tile.Building.Location,
-					}
-					buildings = append(buildings, cleanedBuilding)
-				}
+                if tile.Building != nil {
+                    cleanedBuilding := BuildingCleaned{
+                        Name:     tile.Building.Name,
+                        Type:     string(tile.Building.Type),
+                        Location: tile.Building.Location,
+                    }
+                    buildings = append(buildings, cleanedBuilding)
+                }
 
-				// Add people if they exist
-				for _, person := range tile.Persons {
-					cleanedPerson := PersonCleaned{
-						FullName:     person.FullName,
-						Location: person.Location,
-					}
-					persons = append(persons, cleanedPerson)
-				}
-			}
-		}
-	}
+                for _, person := range tile.Persons {
+                    cleanedPerson := PersonCleaned{
+                        FullName: person.FullName,
+                        Location: person.Location,
+                    }
+                    persons = append(persons, cleanedPerson)
+                }
+            }
+        }
+    }
 
-	// Prepare the vision result
-	vision := Vision{
-		Buildings: buildings,
-		Persons:   persons,
-	}
+    vision := Vision{
+        Buildings: buildings,
+        Persons:   persons,
+    }
 
-	return vision
+    return vision
 }
 
 // AddBuilding adds a building to the tile at the given location.
@@ -125,27 +120,108 @@ func (w *World) GetBuilding(x, y int) *Building {
 	return w.Tiles[y][x].Building
 }
 
-// UpdateState updates the state of all buildings in the world.
-func (w *World) UpdateState() {
-	for y, row := range w.Tiles {
-		for x := range row {
-			if w.Tiles[y][x].Building != nil {
-				w.Tiles[y][x].Building.UpdateState()
+// GetAllBuildings returns all the buildings in the world.
+func (w *World) GetAllBuildings() []Building {
+	var buildings []Building
+
+	for _, row := range w.Tiles {
+		for _, tile := range row {
+			if tile.Building != nil {
+				buildings = append(buildings, *tile.Building)
 			}
 		}
 	}
+	
+	return buildings
 }
-func (w *World) GetPersonByName(name string) *Person {
+
+// AddPerson adds a person to the tile at the given location.
+func (w *World) AddPerson(x, y int, p *Person) {
+	w.Tiles[y][x].Persons = append(w.Tiles[y][x].Persons, p)
+}
+
+// GetPersonByFullName returns the person with the given full name in the world.
+func (w *World) GetPersonByFullName(FullName string) *Person {
 	for _, row := range w.Tiles {
 		for _, tile := range row {
 			for _, person := range tile.Persons {
-				if person.FullName == name {
+				if person.FullName == FullName {
 					return person
 				}
 			}
 		}
 	}
 	return nil
+}
+
+// GetPersons returns the persons at the given location.
+func (w *World) GetPersons(x, y int) []*Person {
+	tile := w.Tiles[y][x]
+
+	return tile.Persons
+}
+
+// GetAllPersons returns all the persons in the world.
+func (w *World) GetAllPersons() []*Person {
+	var persons []*Person
+
+	for _, row := range w.Tiles {
+		for _, tile := range row {
+			persons = append(persons, tile.Persons...)
+		}
+	}
+
+	return persons
+}
+
+// RemovePerson removes the person with the given full name and coordinates from the world.
+func (w *World) RemovePerson(FullName string, x, y int) []*Person {
+	tile := w.Tiles[y][x]
+
+	// Find the person in the tile and remove it
+	everyone := tile.Persons
+	for i, p := range everyone {
+		if p.FullName == FullName {
+			everyone = append(everyone[:i], everyone[i+1:]...)
+			break
+		}
+	}
+	
+	// Update the tile with the new list of people
+	tile.Persons = everyone
+
+	// Update the world with the updated tile
+	w.Tiles[y][x] = tile
+
+	return everyone
+}
+
+// MovePerson moves the person with the given full name to the new location.
+func (w *World) MovePerson(FullName string, newX, newY int) {
+	// Find the person in the world
+	var person *Person
+	var oldX, oldY int
+	for y, row := range w.Tiles {
+		for x, tile := range row {
+			for _, p := range tile.Persons {
+				if p.FullName == FullName {
+					person = p
+					oldX, oldY = x, y
+					break
+				}
+			}
+		}
+	}
+
+	// Remove the person from the old location
+	w.Tiles[oldY][oldX].Persons = w.RemovePerson(FullName, oldX, oldY)
+
+	// Add the person to the new location
+	w.Tiles[newY][newX].Persons = append(w.Tiles[newY][newX].Persons, person)
+
+	// Update the person's location
+	person.Location.X = newX
+	person.Location.Y = newY
 }
 
 // RequestTask requests a task from the brain for the person by name at the given location.
@@ -158,41 +234,4 @@ func (w *World) RequestTaskFrom(fullName string, x, y int) bool {
 		}
 	}
 	return false
-}
-
-// getWorld returns the current world state, creating a new one if necessary.
-func getWorld() World {
-	world, err := loadWorldFromFile()
-	if err != nil {
-		fmt.Println("Creating a new world due to:", err)
-		return createNewWorld(10, 10)
-	}
-	return world
-}
-
-// createNewWorld creates a new world with the specified dimensions and populates it.
-func createNewWorld(width, height int) World {
-	world := NewWorld(width, height)
-	populateWorld(&world)
-	saveWorldToFile(world)
-	return world
-}
-
-// populateWorld populates the world with buildings and people.
-func populateWorld(world *World) {
-	// Add buildings to the world
-	buildings := getBuildings()
-	for _, b := range buildings {
-		world.AddBuilding(b.Location.X, b.Location.Y, b)
-	}
-
-	// Add people to the world
-	persons := getPersons()
-	for _, p := range persons {
-		tile := &world.Tiles[p.Location.Y][p.Location.X]
-		tile.Persons = append(tile.Persons, &p) // Append the person to the Persons slice
-	}
-
-	// Save the world to a file after populating it
-	saveWorldToFile(*world)
 }

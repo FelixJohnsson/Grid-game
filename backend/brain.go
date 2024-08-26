@@ -66,7 +66,7 @@ func (b *Brain) mainLoop() {
         default:
             // Brain logic goes here
             fmt.Println("Brain is thinking...")
-			obs := b.processInputs()
+            obs := b.processInputs()
             b.makeDecisions(obs)
 
             // Sleep or yield for a bit to prevent CPU hogging
@@ -80,10 +80,9 @@ func (b *Brain) processInputs() Vision {
 	// For now we could just decide if the person is in a friendly or hostile area
     
     // Get the vision of the person
-    world, _ := loadWorldFromFile()
-    vision := world.GetVision(b.owner.Location.X, b.owner.Location.Y, b.owner.VisionRange)
+    obs := b.owner.GetVision()
 
-    return vision
+    return obs
 }
 
 func (b *Brain) makeDecisions(obs Vision) {

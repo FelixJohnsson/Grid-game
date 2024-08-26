@@ -14,7 +14,7 @@ const InformationBar = ({ persons, buildings }: Props) => {
           {persons
             ? persons.map((person, i) => (
                 <div key={i}>
-                  <p className="bg-orange-500 text-sm">{person.Name}</p>
+                  <p className="bg-orange-500 text-sm">{person.FullName}</p>
                 </div>
               ))
             : null}

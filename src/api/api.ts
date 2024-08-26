@@ -8,6 +8,7 @@ const api = {
     return await response.json();
   },
   post: async (path: string, data: any) => {
+    console.log(data);
     const response = await fetch(address + path, {
       method: "POST",
       headers: {
@@ -20,33 +21,38 @@ const api = {
 };
 
 interface PersonResponse {
-    message: T.Person[];
-    status: number;
+  message: T.Person[];
+  status: number;
 }
 
 export const getPersons = async (): Promise<T.Person[]> => {
-    const data: PersonResponse = await api.get("people");
-    return data.message;
+  const data: PersonResponse = await api.get("people");
+  return data.message;
 };
 
 interface WorldStateResponse {
-    message: T.Building[];
-    status: number;
+  message: T.Building[];
+  status: number;
 }
 
 export const getBuildings = async (): Promise<T.Building[]> => {
-    const data: WorldStateResponse = await api.get("buildings");
-    return data.message;
+  const data: WorldStateResponse = await api.get("buildings");
+  return data.message;
 };
 
 interface WorldResponse {
-    message: T.World;
-    status: number;
+  message: T.World["tiles"];
+  status: number;
 }
 
-export const getWorld = async (): Promise<T.World> => {
-    const data: WorldResponse = await api.get("world");
-    return data.message;
+export const getWorld = async (): Promise<T.World["tiles"]> => {
+  const data: WorldResponse = await api.get("world");
+  return data.message;
+};
+
+export const movePerson = async (full_name: string, direction: string) => {
+  const data = await api.post("move", { full_name, direction });
+  return data;
 };
 
 export default api;
