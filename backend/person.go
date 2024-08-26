@@ -28,12 +28,18 @@ const (
 	Soldier    Jobs = "Soldier"
 	Unemployed Jobs = "Unemployed"
 )
-
 type Relationship struct {
 	WithPerson string
 	Relationship string
 	Intensity int
 }
+
+type TargetedAction struct {
+	Action string
+	Target string
+	IsActive bool
+}
+
 type Person struct {
 	Age              int
 	Title 		     string
@@ -49,13 +55,13 @@ type Person struct {
 	IsWorkingAt      *Building
 	Color            string
 	Location         Location
-	IsMoving         bool
-	IsTalking        bool
-	IsSitting        bool
-	IsHolding        bool
-	IsEating         bool
-	IsSleeping       bool
-	IsWorking        bool
+	IsMoving         TargetedAction
+	IsTalking        TargetedAction
+	IsSitting        TargetedAction
+	IsHolding        TargetedAction
+	IsEating         TargetedAction
+	IsSleeping       TargetedAction
+	IsWorking        TargetedAction
 	Thinking         string
 	WantsTo          string
 	Inventory        []Item
@@ -64,7 +70,7 @@ type Person struct {
 	Genes            []string
 	Brain			 Brain
 	VisionRange 	 int
-	VisionProvider   WorldAccessor
+	WorldProvider   WorldAccessor
 }
 
 func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
@@ -89,13 +95,13 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 		IsWorkingAt:      nil,
 		Color:            "",
 		Location:         Location{X: x, Y: y},
-		IsMoving:         false,
-		IsTalking:        false,
-		IsSitting:        false,
-		IsHolding:        false,
-		IsEating:         false,
-		IsSleeping:       false,
-		IsWorking:        false,
+		IsMoving:         TargetedAction{},
+		IsTalking:        TargetedAction{ Action: "Talk", Target: "", IsActive: false },
+		IsSitting:        TargetedAction{},
+		IsHolding:        TargetedAction{},
+		IsEating:         TargetedAction{},
+		IsSleeping:       TargetedAction{},
+		IsWorking:        TargetedAction{},
 		Thinking:         "",
 		WantsTo:          "",
 		Inventory:        []Item{},
@@ -105,7 +111,7 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 
 		Brain:            *brain,
 		VisionRange:      5,
-		VisionProvider:   worldAccessor,
+		WorldProvider:    worldAccessor,
 
 	}
 
@@ -114,21 +120,18 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 
 	return person
 }
-
-func (p *Person) turnOnBrain() {
-	fmt.Printf("%s is turning on their brain\n", p.FullName)
-	p.Brain.turnOn()
-}
-
 // UpdateLocation updates the location of the person
 func (p *Person) UpdateLocation(x, y int) {
-	fmt.Println("Updating location from ", p.Location, " to ", x, y)
 	p.Location.X = x
 	p.Location.Y = y
 }
 
 func (p *Person) GetVision() Vision {
-    return p.VisionProvider.GetVision(p.Location.X, p.Location.Y, p.VisionRange)
+    return p.WorldProvider.GetVision(p.Location.X, p.Location.Y, p.VisionRange)
+}
+
+func (p *Person) GetPersonByFullName(FullName string) *Person {
+	return p.WorldProvider.GetPersonByFullName(FullName)
 }
 
 func (p *Person) addTask(task action) {
@@ -182,53 +185,6 @@ func (p *Person) updateRelationship(fullName string, relationship string, intens
 			p.Relationships[i].Intensity = intensity
 			break
 		}
-	}
-}
-
-func (p *Person) startWorking() {
-	if !p.IsWorking {
-		p.IsWorking = true
-	}
-}
-
-func (p *Person) stopWorking() {
-	if p.IsWorking {
-		p.IsWorking = false
-		fmt.Printf("%s has stopped working\n", p.FullName)
-	}
-}
-
-func (p *Person) eat() {
-	if !p.IsEating {
-		p.IsEating = true
-		fmt.Printf("%s is eating\n", p.FullName)
-	}
-}
-
-func (p *Person) sleep() {
-	if !p.IsSleeping {
-		p.IsSleeping = true
-		fmt.Printf("%s is sleeping\n", p.FullName)
-	}
-}
-
-func (p *Person) wakeUp() {
-	if p.IsSleeping {
-		p.IsSleeping = false
-		fmt.Printf("%s has woken up\n", p.FullName)
-	}
-}
-
-func (p *Person) talk() {
-	if !p.IsTalking {
-		p.IsTalking = true
-		fmt.Printf("%s is talking\n", p.FullName)
-	}
-}
-func (p *Person) stopTalking() {
-	if p.IsTalking {
-		p.IsTalking = false
-		fmt.Printf("%s has stopped talking\n", p.FullName)
 	}
 }
 

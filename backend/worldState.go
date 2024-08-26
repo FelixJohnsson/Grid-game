@@ -35,7 +35,8 @@ type BuildingCleaned struct {
 	Location Location `json:"location"`
 }
 type WorldAccessor interface {
-    GetVision(x, y, visionRange int) Vision
+    GetVision(x, y, visionRange int) Vision;
+	GetPersonByFullName(FullName string) *Person;
 }
 
 // NewWorld creates a new world with the given dimensions.
@@ -222,17 +223,4 @@ func (w *World) MovePerson(FullName string, newX, newY int) {
 	// Add the person to the new location
 	w.Tiles[newY][newX].Persons = append(w.Tiles[newY][newX].Persons, person)
 
-
-}
-
-// RequestTask requests a task from the brain for the person by name at the given location.
-func (w *World) RequestTaskFrom(fullName string, x, y int) bool {
-	tile := w.Tiles[y][x]
-	for _, person := range tile.Persons {
-		if person.FullName == fullName {
-			requestedTask := RequestedAction{action: "Talk", fromPerson: fullName}
-			return person.Brain.RequestTask(requestedTask)
-		}
-	}
-	return false
 }

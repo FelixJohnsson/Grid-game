@@ -162,8 +162,6 @@ func (w *World) moveHandler(writer http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logRequest(r)
-
 	// We need to calculate the new coordinates based on the direction
 	startingCoordinates := w.GetPersonByFullName(moveRequest.FullName).Location
 	switch moveRequest.Direction {
@@ -271,6 +269,7 @@ func initializeWorld() *World {
 	world.AddPerson(1, 1, newPerson1)
 	world.AddPerson(9, 9, newPerson2)
 	newPerson1.Brain.turnOn()
+	newPerson2.Brain.turnOn()
 
 	return &world
 }
