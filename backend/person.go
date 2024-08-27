@@ -6,9 +6,6 @@ import (
 
 	"github.com/brianvoe/gofakeit/v6"
 )
-type Item struct {
-	Name string
-}
 
 type WorldState struct {
 	Map 	 	[][]string;
@@ -38,6 +35,66 @@ type TargetedAction struct {
 	Action string
 	Target string
 	IsActive bool
+	RequiresLimb []string
+}
+
+type Wearable struct {
+	Name string
+	Material string
+	Protection int
+}
+
+// Body status
+type LimbStatus struct {
+	Damage int
+	IsBleeding bool
+	IsBroken bool
+	Residues []string
+	CoveredWith []Wearable
+}
+
+type LimbThatCanHold struct {
+	LimbStatus
+	Items []Item
+}
+
+// Available actions
+var actions = []string {
+	// World actions
+	"Move",
+	"Talk",
+	"Sit",
+	"Hold",
+	"Eat",
+	"Sleep",
+	"Work",
+	"Throw",
+	"Build",
+	"Dig",
+	"Plant",
+	"Harvest",
+	"Chop",
+	"Mine",
+	"Equip",
+	"Unequip",
+	"Grab",
+	"Drop",
+	"Open",
+	"Close",
+	"Enter",
+	"Exit",
+	"Use",
+
+
+	// Hostile actions
+	"Attack",
+	"Steal",
+	"Destroy",
+
+	// Friendly actions
+	"Help",
+	"Gift",
+	"Protect",
 }
 
 type Person struct {
@@ -54,7 +111,9 @@ type Person struct {
 	Occupation       Jobs
 	IsWorkingAt      *Building
 	Color            string
-	Location         Location
+	Personality 	 string
+	Genes            []string
+
 	IsMoving         TargetedAction
 	IsTalking        TargetedAction
 	IsSitting        TargetedAction
@@ -62,15 +121,28 @@ type Person struct {
 	IsEating         TargetedAction
 	IsSleeping       TargetedAction
 	IsWorking        TargetedAction
+
 	Thinking         string
 	WantsTo          string
-	Inventory        []Item
+	FeelingSafe 	 int
+	FeelingScared	 int
+
+	RightHand        LimbThatCanHold
+	LeftHand 	     LimbThatCanHold
+	Back 		     LimbStatus
+	LeftFoot 	     LimbStatus
+	RightFoot 	     LimbStatus
+	Head 		     LimbStatus
+	Torso 		     LimbStatus
+	Legs 		     LimbStatus
+
 	Relationships    []Relationship
-	Personality 	 string
-	Genes            []string
+
 	Brain			 Brain
 	VisionRange 	 int
 	WorldProvider    WorldAccessor
+	Location         Location
+	OnTileType 	     TileType
 }
 
 func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
@@ -94,7 +166,6 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 		Occupation:       Unemployed,
 		IsWorkingAt:      nil,
 		Color:            "",
-		Location:         Location{X: x, Y: y},
 		IsMoving:         TargetedAction{},
 		IsTalking:        TargetedAction{ Action: "Talk", Target: "", IsActive: false },
 		IsSitting:        TargetedAction{},
@@ -104,14 +175,17 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 		IsWorking:        TargetedAction{},
 		Thinking:         "",
 		WantsTo:          "",
-		Inventory:        []Item{},
+		FeelingSafe: 	  0,
+		FeelingScared:    0,
 		Relationships:    []Relationship{},
 		Personality:      "Talkative",
 		Genes:            []string{},
 
 		Brain:            *brain,
 		VisionRange:      5,
+		Location:         Location{X: x, Y: y},
 		WorldProvider:    worldAccessor,
+		OnTileType:       0,
 
 	}
 
@@ -124,6 +198,76 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 func (p *Person) UpdateLocation(x, y int) {
 	p.Location.X = x
 	p.Location.Y = y
+}
+
+// Equip in the right hand
+func (p *Person) EquipRight(item Item) {
+	if p.RightHand.Items == nil {
+		p.RightHand.Items = []Item{item}
+		// If the item has residues, add them to the limb
+		if item.Residues != nil {
+			for _, residue := range item.Residues {
+				p.AddResidue("RightHand", residue)
+			}
+		}
+	} else {
+		fmt.Println("Right hand is already holding something")
+	}
+}
+
+// Drop from the right hand
+func (p *Person) DropRight() {
+	if p.RightHand.Items != nil {
+		p.RightHand.Items = nil
+	} else {
+		fmt.Println("Right hand is empty")
+	}
+}
+
+// Equip in the left hand
+func (p *Person) EquipLeft(item Item) {
+	if p.LeftHand.Items == nil {
+		p.LeftHand.Items = []Item{item}
+		// If the item has residues, add them to the limb
+		if item.Residues != nil {
+			for _, residue := range item.Residues {
+				p.AddResidue("RightHand", residue)
+			}
+		}
+	} else {
+		fmt.Println("Left hand is already holding something")
+	}
+}
+
+// Drop from the left hand
+func (p *Person) DropLeft() {
+	if p.LeftHand.Items != nil {
+		p.LeftHand.Items = nil
+	} else {
+		fmt.Println("Left hand is empty")
+	}
+}
+
+// AddResidue adds a residue to the limb
+func (p *Person) AddResidue(limb string, residue string) {
+	switch limb {
+	case "Back":
+		p.Back.Residues = append(p.Back.Residues, residue)
+	case "LeftFoot":
+		p.LeftFoot.Residues = append(p.LeftFoot.Residues, residue)
+	case "RightFoot":
+		p.RightFoot.Residues = append(p.RightFoot.Residues, residue)
+	case "Head":
+		p.Head.Residues = append(p.Head.Residues, residue)
+	case "Torso":
+		p.Torso.Residues = append(p.Torso.Residues, residue)
+	case "Legs":
+		p.Legs.Residues = append(p.Legs.Residues, residue)
+	case "RightHand":
+		p.RightHand.Residues = append(p.RightHand.Residues, residue)
+	case "LeftHand":
+		p.LeftHand.Residues = append(p.LeftHand.Residues, residue)
+	}
 }
 
 func (p *Person) GetVision() Vision {
@@ -187,6 +331,10 @@ func (p *Person) updateRelationship(fullName string, relationship string, intens
 		}
 	}
 }
+
+
+
+// ---------------- Create a new person ----------------
 
 func (w *World) createNewPerson(x, y int) *Person {
     person := NewPerson(w, x, y)

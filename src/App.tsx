@@ -39,8 +39,6 @@ function App() {
   }, []);
 
   const move = (direction: string) => {
-    console.warn(persons[0].FullName + ` Move ${direction}`);
-
     api.movePerson(persons[0].FullName, direction).then((data) => {
       setWorld(data);
     });

@@ -81,6 +81,12 @@ func (b *Brain) processInputs() Vision {
     // Get the vision of the person
     obs := b.owner.GetVision()
 
+    // Check the tile type of the person
+    b.checkTileType()
+
+    // Check if the area is safe
+    b.isAreaSafe(obs)
+
     return obs
 }
 
@@ -94,13 +100,39 @@ func (v Vision) HasPerson(fullName string) bool {
     return false
 }
 
+// Check what tile type the person is on
+func (b *Brain) checkTileType() {
+    // Check the tile type of the person
+    b.owner.OnTileType = b.owner.WorldProvider.GetTileType(b.owner.Location.X, b.owner.Location.Y)
+}
+
+// Decide if the area is safe or not
+func (b *Brain) isAreaSafe(obs Vision) {
+    // Loop through the observations and make decisions based on relationships with the people
+
+    collectiveIntensity := 0
+    numberOfPeople := len(obs.Persons)
+
+    for _, person := range obs.Persons {
+        if b.owner.hasRelationship(person.FullName) {
+            for _, relationship := range b.owner.Relationships {
+                if relationship.WithPerson == person.FullName {
+                    collectiveIntensity += relationship.Intensity
+                }
+            }
+        }
+    }
+
+    // This is a pretty dumb way to determine if the area is safe or not, but it's a start
+    b.owner.FeelingSafe = collectiveIntensity/numberOfPeople
+}
 
 func (b *Brain) makeDecisions(obs Vision) {
     // Check if we're engaging in conversation with someone and if we are and we dont have that person in the observation, we should cancel the conversation
     if b.owner.IsTalking.IsActive {
         if !obs.HasPerson(b.owner.IsTalking.Target) {
             fmt.Println(b.owner.FullName + " is no longer talking to " + b.owner.IsTalking.Target)
-            b.owner.IsTalking = TargetedAction{"", "", false}
+            b.owner.IsTalking = TargetedAction{"", "", false, make([]string, 0)}
         }
     }
     // Loop through the observations and make decisions based on people
@@ -139,7 +171,7 @@ func (b *Brain) ReceiveTaskRequest(requestedTask RequestedAction, from *Person) 
             fmt.Println(b.owner.FullName + " is already talking to someone.")
             return false
         } else if requestedTask.ActionType == "Talk" && !b.owner.IsTalking.IsActive {
-            b.owner.IsTalking = TargetedAction{"Bla bla bla ...", from.FullName, true}
+            b.owner.IsTalking = TargetedAction{"Bla bla bla ...", from.FullName, true, make([]string, 0)}
             fmt.Println(b.owner.FullName + " accepted the task request from " + from.FullName)
             fmt.Println(b.owner.FullName + " is talking to " + from.FullName)
             return true
@@ -161,7 +193,7 @@ func (b *Brain) SendTaskRequest(to *Person, taskType string) {
     success := to.Brain.ReceiveTaskRequest(RequestedAction{taskType, "Hello!", b.owner.FullName}, b.owner)
     if success {
         fmt.Println(to.FullName + " accepted the task request.")
-        b.owner.IsTalking = TargetedAction{"Hello " + to.FullName + ", how are you doing?", to.FullName, true}
+        b.owner.IsTalking = TargetedAction{"Hello " + to.FullName + ", how are you doing?", to.FullName, true, make([]string, 0)}
         fmt.Println(b.owner.FullName + " is talking to " + to.FullName)
     } else {
         fmt.Println(to.FullName + " declined the task request.")

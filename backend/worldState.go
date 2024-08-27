@@ -8,6 +8,7 @@ type Tile struct {
 	Type     TileType  `json:"type"`
 	Building *Building `json:"building,omitempty"`
 	Persons  []*Person   `json:"persons,omitempty"`
+	Items    []*Item    `json:"items,omitempty"`
 }
 
 // Constants representing different types of terrain.
@@ -37,6 +38,7 @@ type BuildingCleaned struct {
 type WorldAccessor interface {
     GetVision(x, y, visionRange int) Vision;
 	GetPersonByFullName(FullName string) *Person;
+	GetTileType(x, y int) TileType;
 }
 
 // NewWorld creates a new world with the given dimensions.
@@ -153,6 +155,11 @@ func (w *World) GetPersonByFullName(FullName string) *Person {
 		}
 	}
 	return nil
+}
+
+// Get tile type at a given location
+func (w *World) GetTileType(x, y int) TileType {
+	return w.Tiles[y][x].Type
 }
 
 // GetPersons returns the persons at the given location.
