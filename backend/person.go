@@ -64,6 +64,10 @@ var actions = []string {
 	// World actions
 	"Move",
 	"Talk",
+
+	"Grab",
+	"Drop",
+
 	"Sit",
 	"Hold",
 	"Eat",
@@ -76,16 +80,12 @@ var actions = []string {
 	"Harvest",
 	"Chop",
 	"Mine",
-	"Equip",
-	"Unequip",
-	"Grab",
-	"Drop",
+
 	"Open",
 	"Close",
 	"Enter",
 	"Exit",
 	"Use",
-
 
 	// Hostile actions
 	"Attack",
@@ -168,7 +168,7 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 		IsWorkingAt:      nil,
 		Color:            "",
 		IsMoving:         TargetedAction{},
-		IsTalking:        TargetedAction{ Action: "Talk", Target: "", IsActive: false },
+		IsTalking:        TargetedAction{},
 		IsSitting:        TargetedAction{},
 		IsHolding:        TargetedAction{},
 		IsEating:         TargetedAction{},
@@ -179,7 +179,7 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 		FeelingSafe: 	  0,
 		FeelingScared:    0,
 		Relationships:    []Relationship{},
-		Personality:      "Talkative",
+		Personality:      "",
 		Genes:            []string{},
 
 		Brain:            *brain,
@@ -201,8 +201,8 @@ func (p *Person) UpdateLocation(x, y int) {
 	p.Location.Y = y
 }
 
-// Equip in the right hand
-func (p *Person) EquipRight(item Item) {
+// Grab in the right hand
+func (p *Person) GrabRight(item Item) {
 	if p.RightHand.Items == nil {
 		p.RightHand.Items = []Item{item}
 		// If the item has residues, add them to the limb
@@ -225,8 +225,8 @@ func (p *Person) DropRight() {
 	}
 }
 
-// Equip in the left hand
-func (p *Person) EquipLeft(item Item) {
+// Grab in the left hand
+func (p *Person) GrabLeft(item Item) {
 	if p.LeftHand.Items == nil {
 		p.LeftHand.Items = []Item{item}
 		// If the item has residues, add them to the limb
