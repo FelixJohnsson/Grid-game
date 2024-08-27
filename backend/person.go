@@ -56,6 +56,7 @@ type LimbStatus struct {
 type LimbThatCanHold struct {
 	LimbStatus
 	Items []Item
+	WeightOfItems int
 }
 
 // Available actions
