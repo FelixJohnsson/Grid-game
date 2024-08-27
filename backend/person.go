@@ -70,7 +70,7 @@ type Person struct {
 	Genes            []string
 	Brain			 Brain
 	VisionRange 	 int
-	WorldProvider   WorldAccessor
+	WorldProvider    WorldAccessor
 }
 
 func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {

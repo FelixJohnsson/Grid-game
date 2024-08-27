@@ -34,7 +34,6 @@ func NewBrain() *Brain {
         cancel:  cancel,
         actions: []action{
             {"Idle", "", 1},
-            
         },
     }
 }
@@ -85,7 +84,25 @@ func (b *Brain) processInputs() Vision {
     return obs
 }
 
+// Helper function that goes through the observation list and returns a boolean if the person is there
+func (v Vision) HasPerson(fullName string) bool {
+    for _, person := range v.Persons {
+        if person.FullName == fullName {
+            return true
+        }
+    }
+    return false
+}
+
+
 func (b *Brain) makeDecisions(obs Vision) {
+    // Check if we're engaging in conversation with someone and if we are and we dont have that person in the observation, we should cancel the conversation
+    if b.owner.IsTalking.IsActive {
+        if !obs.HasPerson(b.owner.IsTalking.Target) {
+            fmt.Println(b.owner.FullName + " is no longer talking to " + b.owner.IsTalking.Target)
+            b.owner.IsTalking = TargetedAction{"", "", false}
+        }
+    }
     // Loop through the observations and make decisions based on people
     for _, person := range obs.Persons {
         if person.FullName != b.owner.FullName {
