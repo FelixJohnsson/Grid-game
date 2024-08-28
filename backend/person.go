@@ -49,7 +49,7 @@ type LimbStatus struct {
 	Damage int
 	IsBleeding bool
 	IsBroken bool
-	Residues []string
+	Residues []Residue
 	CoveredWith []Wearable
 }
 
@@ -250,7 +250,7 @@ func (p *Person) DropLeft() {
 }
 
 // AddResidue adds a residue to the limb
-func (p *Person) AddResidue(limb string, residue string) {
+func (p *Person) AddResidue(limb string, residue Residue) {
 	switch limb {
 	case "Back":
 		p.Back.Residues = append(p.Back.Residues, residue)

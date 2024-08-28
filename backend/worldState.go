@@ -231,3 +231,38 @@ func (w *World) MovePerson(FullName string, newX, newY int) {
 	w.Tiles[newY][newX].Persons = append(w.Tiles[newY][newX].Persons, person)
 
 }
+
+// AddItem adds an item to the tile at the given location.
+func (w *World) AddItem(x, y int, item *Item) {
+	w.Tiles[y][x].Items = append(w.Tiles[y][x].Items, item)
+}
+
+// GetItems returns the items at the given location.
+func (w *World) GetItems(x, y int) []*Item {
+	tile := w.Tiles[y][x]
+
+	return tile.Items
+}
+
+// RemoveItem removes the item from the tile at the given location.
+func (w *World) RemoveItem(Item *Item, x, y int) []*Item {
+	tile := w.Tiles[y][x]
+
+	// Find the item in the tile and remove it
+	everything := tile.Items
+	for i, item := range everything {
+		if item == Item {
+			everything = append(everything[:i], everything[i+1:]...)
+			break
+		}
+	}
+	
+	// Update the tile with the new list of items
+	tile.Items = everything
+
+	// Update the world with the updated tile
+	w.Tiles[y][x] = tile
+
+	return everything
+}
+	

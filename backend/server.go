@@ -271,5 +271,12 @@ func initializeWorld() *World {
 	newPerson1.Brain.turnOn()
 	newPerson2.Brain.turnOn()
 
+	// Create a Wooden spear item from items
+	woodenSpear := items[0]
+	woodenSpear.Residues = append(woodenSpear.Residues, Residue{"Dirt", 1})
+
+	// Add the wooden spear to the world
+	world.AddItem(1, 1, &woodenSpear)
+
 	return &world
 }

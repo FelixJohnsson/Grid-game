@@ -9,13 +9,18 @@ type Material struct {
 	Malleability int
 }
 
+type Residue struct {
+	Name string
+	Amount int
+}
+
 type Item struct {
 	Name string
 	Sharpness int
 	Bluntness int
 	Weight int
 	Material []Material
-	Residues []string
+	Residues []Residue
 }
 
 type Inventory struct {
@@ -40,6 +45,6 @@ var materials = []Material{
 
 // All available items
 var items = []Item{
-	{"Wooden Spear", 8, 4, 5, []Material{materials[0]}, make([]string, 0)},
+	{"Wooden Spear", 8, 4, 5, []Material{materials[0]}, make([]Residue, 0)},
 }
 
