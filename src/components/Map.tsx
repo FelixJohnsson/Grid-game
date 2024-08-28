@@ -1,6 +1,7 @@
 import * as T from "../api/types";
 import Building from "./Building";
 import Person from "./Person";
+import { useState } from "react";
 
 type Props = {
   world: T.World["tiles"] | undefined;
@@ -8,8 +9,23 @@ type Props = {
 };
 
 const Map = ({ world, grab }: Props) => {
+  const [tooltip, setTooltip] = useState<{
+    text: string;
+    x: number;
+    y: number;
+  } | null>(null);
+
+  const handleMouseEnter = (event: React.MouseEvent, text: string) => {
+    const { clientX, clientY } = event;
+    setTooltip({ text, x: clientX, y: clientY });
+  };
+
+  const handleMouseLeave = () => {
+    setTooltip(null);
+  };
+
   return (
-    <div className="w-full flex justify-center pt-6">
+    <div className="w-full flex justify-center pt-6 relative">
       {world ? (
         <div>
           {world.map((row, y) => (
@@ -41,12 +57,15 @@ const Map = ({ world, grab }: Props) => {
                               ? "hidden"
                               : ""
                           }
+                          onMouseEnter={(e) => handleMouseEnter(e, item.Name)}
+                          onMouseLeave={handleMouseLeave}
                         >
                           {item.Name[0]}
                         </div>
                       ))}
                     </div>
                   ) : null}
+
                   {tile.plants ? (
                     <div>
                       {tile.plants.map((plant, index) => (
@@ -57,8 +76,10 @@ const Map = ({ world, grab }: Props) => {
                               ? "hidden"
                               : ""
                           }
+                          onMouseEnter={(e) => handleMouseEnter(e, plant.Name)}
+                          onMouseLeave={handleMouseLeave}
                         >
-                          |
+                          <p className="text-red-700">|/</p>
                         </div>
                       ))}
                     </div>
@@ -72,6 +93,8 @@ const Map = ({ world, grab }: Props) => {
                           person={person}
                           currentTile={tile}
                           grab={grab}
+                          onMouseEnter={handleMouseEnter}
+                          onMouseLeave={handleMouseLeave}
                         />
                       ))}
                     </div>
@@ -82,6 +105,15 @@ const Map = ({ world, grab }: Props) => {
           ))}
         </div>
       ) : null}
+
+      {tooltip && (
+        <div
+          className="absolute bg-gray-700 text-white text-xs rounded p-1"
+          style={{ top: tooltip.y - 200, left: tooltip.x - 50 }}
+        >
+          {tooltip.text}
+        </div>
+      )}
     </div>
   );
 };

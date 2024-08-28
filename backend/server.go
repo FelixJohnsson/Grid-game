@@ -349,7 +349,7 @@ func initializeWorld() *World {
 	world := NewWorld(10, 10) 
 
 	// Create people
-	newPerson1 := world.createNewPerson(1, 1)
+	newPerson1 := world.createNewPerson(2, 2)
 	newPerson2 := world.createNewPerson(9, 9)
 	world.AddPerson(2, 2, newPerson1)
 	world.AddPerson(9, 9, newPerson2)

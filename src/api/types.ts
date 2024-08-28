@@ -188,20 +188,20 @@ export interface Item {
 }
 
 // --------------------- Plants --------------------------
-interface PlantAction {
+export interface PlantAction {
   Name: string;
   Target?: Tile; // Optional, as it can be null or undefined
   Priority: number;
 }
 
-interface PlantLife {
+export interface PlantLife {
   active: boolean;
   ctx: any; // Replace `any` with the specific type for context, if known
   cancel: () => void;
   actions: PlantAction[];
 }
 
-interface Nutrients {
+export interface Nutrients {
   Calories: number;
   Carbs: number;
   Protein: number;
@@ -210,7 +210,7 @@ interface Nutrients {
   Minerals: number;
 }
 
-interface Fruit {
+export interface Fruit {
   Name: string;
   Taste: string;
   Age: number;
@@ -219,7 +219,7 @@ interface Fruit {
   Nutrients: Nutrients[];
 }
 
-enum PlantStage {
+export enum PlantStage {
   Seed = "Seed",
   Sprout = "Sprout",
   Vegetative = "Vegetative",
@@ -227,7 +227,7 @@ enum PlantStage {
   Fruiting = "Fruiting",
 }
 
-interface Plant {
+export interface Plant {
   Name: string;
   Age: number;
   Health: number;
