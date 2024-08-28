@@ -187,6 +187,57 @@ export interface Item {
   Residues: Residue[];
 }
 
+// --------------------- Plants --------------------------
+interface PlantAction {
+  Name: string;
+  Target?: Tile; // Optional, as it can be null or undefined
+  Priority: number;
+}
+
+interface PlantLife {
+  active: boolean;
+  ctx: any; // Replace `any` with the specific type for context, if known
+  cancel: () => void;
+  actions: PlantAction[];
+}
+
+interface Nutrients {
+  Calories: number;
+  Carbs: number;
+  Protein: number;
+  Fat: number;
+  Vitamins: number;
+  Minerals: number;
+}
+
+interface Fruit {
+  Name: string;
+  Taste: string;
+  Age: number;
+  RipeAge: number;
+  IsRipe: boolean;
+  Nutrients: Nutrients[];
+}
+
+enum PlantStage {
+  Seed = "Seed",
+  Sprout = "Sprout",
+  Vegetative = "Vegetative",
+  Flowering = "Flowering",
+  Fruiting = "Fruiting",
+}
+
+interface Plant {
+  Name: string;
+  Age: number;
+  Health: number;
+  IsAlive: boolean;
+  ProducesFruit: boolean;
+  Fruit: Fruit[];
+  PlantStage: PlantStage;
+  PlantLife?: PlantLife;
+}
+
 // --------------------- World State ---------------------
 
 // Enum representing different types of terrain.
@@ -202,6 +253,7 @@ export interface Tile {
   building?: Building;
   persons?: Person[];
   items?: Item[];
+  plants?: Plant[];
 }
 
 // World represents a 2D array of tiles.

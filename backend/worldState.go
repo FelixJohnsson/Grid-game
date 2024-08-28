@@ -3,20 +3,23 @@ package main
 // TileType represents different types of terrain.
 type TileType int
 
-// Tile represents a single tile in the world.
-type Tile struct {
-	Type     TileType  `json:"type"`
-	Building *Building `json:"building,omitempty"`
-	Persons  []*Person   `json:"persons,omitempty"`
-	Items    []*Item    `json:"items,omitempty"`
-}
-
 // Constants representing different types of terrain.
 const (
 	Grass TileType = iota
 	Water
 	Mountain
 )
+
+// Tile represents a single tile in the world.
+type Tile struct {
+	Type     TileType  `json:"type"`
+	Building *Building `json:"building,omitempty"`
+	Persons  []*Person   `json:"persons,omitempty"`
+	Items    []*Item    `json:"items,omitempty"`
+	Plants    []*Plant    `json:"plant,omitempty"`
+}
+
+
 
 // World represents a 2D array of tiles.
 type World struct {
@@ -31,6 +34,16 @@ type PersonCleaned struct {
 	Location     Location     `json:"Location"`
 	RightHand    []*Item      `json:"RightHand,omitempty"`
 	LeftHand     []*Item      `json:"LeftHand,omitempty"`
+}
+
+type PlantCleaned struct {
+	Name      string `json:"Name"`
+	Age       int    `json:"Age"`
+	Health    int    `json:"Health"`
+	IsAlive   bool   `json:"IsAlive"`
+	ProducesFruit bool   `json:"ProducesFruit"`
+	Fruit    []Fruit `json:"Fruit"`
+	PlantStage PlantStage    `json:"PlantStage"`
 }
 type BuildingCleaned struct {
 	Name     string   `json:"name"`
@@ -268,3 +281,36 @@ func (w *World) RemoveItem(Item *Item, x, y int) []*Item {
 	return everything
 }
 	
+// AddPlant adds a plant to the tile at the given location.
+func (w *World) AddPlant(x, y int, plant *Plant) {
+	w.Tiles[y][x].Plants = append(w.Tiles[y][x].Plants, plant)
+}
+
+// GetPlants returns the plants at the given location.
+func (w *World) GetPlants(x, y int) []*Plant {
+	tile := w.Tiles[y][x]
+
+	return tile.Plants
+}
+
+// RemovePlant removes the plant from the tile at the given location.
+func (w *World) RemovePlant(Plant *Plant, x, y int) []*Plant {
+	tile := w.Tiles[y][x]
+
+	// Find the plant in the tile and remove it
+	everything := tile.Plants
+	for i, plant := range everything {
+		if plant == Plant {
+			everything = append(everything[:i], everything[i+1:]...)
+			break
+		}
+	}
+	
+	// Update the tile with the new list of plants
+	tile.Plants = everything
+
+	// Update the world with the updated tile
+	w.Tiles[y][x] = tile
+
+	return everything
+}

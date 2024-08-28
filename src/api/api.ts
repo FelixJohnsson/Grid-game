@@ -46,6 +46,7 @@ interface WorldResponse {
 
 export const getWorld = async (): Promise<T.World["tiles"]> => {
   const data: WorldResponse = await api.get("world");
+  console.warn(data.message);
   return data.message;
 };
 
@@ -59,9 +60,7 @@ export const grabItem = async (item: T.Item, person: T.Person) => {
     ItemName: item.Name,
     FullName: person.FullName,
   };
-  console.warn(requestData);
   const data = await api.post("entityGrab", requestData);
-  console.warn(data);
   return data.message;
 };
 

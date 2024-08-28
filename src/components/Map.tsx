@@ -47,6 +47,22 @@ const Map = ({ world, grab }: Props) => {
                       ))}
                     </div>
                   ) : null}
+                  {tile.plants ? (
+                    <div>
+                      {tile.plants.map((plant, index) => (
+                        <div
+                          key={index}
+                          className={
+                            tile.persons && tile.persons.length > 0
+                              ? "hidden"
+                              : ""
+                          }
+                        >
+                          |
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
 
                   {tile.persons ? (
                     <div>

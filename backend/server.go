@@ -32,7 +32,6 @@ type GrabRequest struct {
 	ItemName string `json:"ItemName"`
 	FullName string `json:"FullName"`
 }
-	
 
 var (
 	requestMap sync.Map // sync.Map is safer for concurrent use
@@ -97,6 +96,7 @@ type CleanedTile struct {
     Building *BuildingCleaned `json:"building,omitempty"`
     Persons  []PersonCleaned `json:"persons,omitempty"`
 	Items    []*Item          `json:"items,omitempty"`
+	Plants   []*PlantCleaned         `json:"plants,omitempty"`
 }
 type WorldResponse struct {
     Message [][]CleanedTile `json:"message"`
@@ -128,12 +128,26 @@ func (w *World) CleanTiles() [][]CleanedTile {
 					LeftHand:     person.LeftHand.Items,
                 })
             }
+			var cleanedPlants []*PlantCleaned
+			for _, plant := range tile.Plants {
+				// Remove the PlantLife from the Plant before sending it to the client
+				cleanedPlants = append(cleanedPlants, &PlantCleaned{
+					Name:          plant.Name,
+					Age:           plant.Age,
+					Health:        plant.Health,
+					IsAlive:       plant.IsAlive,
+					ProducesFruit: plant.ProducesFruit,
+					Fruit:         plant.Fruit,
+					PlantStage:    plant.PlantStage,
+				})
+			}
 
             cleanedTiles[y][x] = CleanedTile{
                 Type:     tile.Type,
                 Building: cleanedBuilding,
                 Persons:  cleanedPersons,
 				Items:    tile.Items,
+				Plants:   cleanedPlants,
             }
         }
     }
@@ -317,10 +331,11 @@ func main() {
 	world := initializeWorld()
 
 	// Define routes with CORS middleware and pass the world instance
+	http.Handle("/world", corsMiddleware(http.HandlerFunc(world.worldHandler)))
+
 	http.Handle("/people", corsMiddleware(http.HandlerFunc(world.personHandler)))
 	http.Handle("/buildings", corsMiddleware(http.HandlerFunc(world.buildingHandler)))
 	http.Handle("/move", corsMiddleware(http.HandlerFunc(world.moveHandler)))
-	http.Handle("/world", corsMiddleware(http.HandlerFunc(world.worldHandler)))
 	http.Handle("/entityGrab", corsMiddleware(http.HandlerFunc(world.grabHandler)))
 
 	// Default handler for the root path or undefined paths
@@ -333,8 +348,9 @@ func main() {
 func initializeWorld() *World {
 	world := NewWorld(10, 10) 
 
+	// Create people
 	newPerson1 := world.createNewPerson(1, 1)
-	newPerson2 := world.createNewPerson(9,9)
+	newPerson2 := world.createNewPerson(9, 9)
 	world.AddPerson(2, 2, newPerson1)
 	world.AddPerson(9, 9, newPerson2)
 	newPerson1.Brain.turnOn()
@@ -346,6 +362,11 @@ func initializeWorld() *World {
 
 	// Add the wooden spear to the world
 	world.AddItem(1, 1, &woodenSpear)
+
+	// Add a plant
+	appleTree := NewPlant("Apple Tree", &world.Tiles[5][5])
+	world.AddPlant(5, 5, appleTree)
+	appleTree.PlantLife.turnOn()
 
 	return &world
 }
