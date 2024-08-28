@@ -164,23 +164,27 @@ export interface Person {
 
 // --------------------- Items ---------------------
 
-export enum ItemEffect {
-  Strength = "Strength",
-  Intelligence = "Intelligence",
-  Charisma = "Charisma",
-  Speed = "Speed",
-  Health = "Health",
-  Happiness = "Happiness",
-  Hunger = "Hunger",
-  Thirst = "Thirst",
-  Energy = "Energy",
+export interface Material {
+  name: string;
+  type: string;
+  hardness: number;
+  weight: number;
+  density: number;
+  malleability: number;
+}
+
+export interface Residue {
+  name: string;
+  amount: number;
 }
 
 export interface Item {
-  name: string;
-  icon: string;
-  cost: { wood: number; food: number; stone: number; money: number };
-  effect: [ItemEffect, number];
+  Name: string;
+  Sharpness: number;
+  Bluntness: number;
+  Weight: number;
+  Material: Material[];
+  Residues: Residue[];
 }
 
 // --------------------- World State ---------------------
@@ -195,8 +199,9 @@ export enum TileType {
 // Tile represents a single tile in the world.
 export interface Tile {
   type: TileType;
-  building?: Building; // Optional Building
-  persons?: Person[]; // Optional array of Persons
+  building?: Building;
+  persons?: Person[];
+  items?: Item[];
 }
 
 // World represents a 2D array of tiles.

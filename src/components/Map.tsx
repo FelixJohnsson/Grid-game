@@ -4,9 +4,10 @@ import Person from "./Person";
 
 type Props = {
   world: T.World["tiles"] | undefined;
+  grab: (item: T.Item, person: T.Person) => void;
 };
 
-const Map = ({ world }: Props) => {
+const Map = ({ world, grab }: Props) => {
   return (
     <div className="w-full flex justify-center pt-6">
       {world ? (
@@ -19,6 +20,7 @@ const Map = ({ world }: Props) => {
                   style={{
                     width: "30px",
                     height: "30px",
+                    position: "relative",
                     backgroundColor:
                       tile.type === T.TileType.Grass
                         ? "green"
@@ -28,10 +30,33 @@ const Map = ({ world }: Props) => {
                   }}
                 >
                   {tile.building ? <Building building={tile.building} /> : null}
+
+                  {tile.items ? (
+                    <div>
+                      {tile.items.map((item, index) => (
+                        <div
+                          key={index}
+                          className={
+                            tile.persons && tile.persons.length > 0
+                              ? "hidden"
+                              : ""
+                          }
+                        >
+                          {item.Name[0]}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+
                   {tile.persons ? (
                     <div>
-                      {tile.persons.map((person) => (
-                        <Person person={person} />
+                      {tile.persons.map((person, index) => (
+                        <Person
+                          key={index}
+                          person={person}
+                          currentTile={tile}
+                          grab={grab}
+                        />
                       ))}
                     </div>
                   ) : null}

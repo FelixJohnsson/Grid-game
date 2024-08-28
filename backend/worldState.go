@@ -29,6 +29,8 @@ type Vision struct {
 type PersonCleaned struct {
 	FullName     string       `json:"FullName"`
 	Location     Location     `json:"Location"`
+	RightHand    []*Item      `json:"RightHand,omitempty"`
+	LeftHand     []*Item      `json:"LeftHand,omitempty"`
 }
 type BuildingCleaned struct {
 	Name     string   `json:"name"`

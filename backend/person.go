@@ -55,7 +55,7 @@ type LimbStatus struct {
 
 type LimbThatCanHold struct {
 	LimbStatus
-	Items []Item
+	Items []*Item
 	WeightOfItems int
 }
 
@@ -187,6 +187,14 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 		Location:         Location{X: x, Y: y},
 		WorldProvider:    worldAccessor,
 		OnTileType:       0,
+		RightHand:        LimbThatCanHold{},
+		LeftHand:         LimbThatCanHold{},
+		Back:             LimbStatus{},
+		LeftFoot:         LimbStatus{},
+		RightFoot:        LimbStatus{},
+		Head:             LimbStatus{},
+		Torso:            LimbStatus{},
+		Legs:             LimbStatus{},
 
 	}
 
@@ -202,9 +210,9 @@ func (p *Person) UpdateLocation(x, y int) {
 }
 
 // Grab in the right hand
-func (p *Person) GrabRight(item Item) {
+func (p *Person) GrabRight(item *Item) {
 	if p.RightHand.Items == nil {
-		p.RightHand.Items = []Item{item}
+		p.RightHand.Items = []*Item{item}
 		// If the item has residues, add them to the limb
 		if item.Residues != nil {
 			for _, residue := range item.Residues {
@@ -226,9 +234,9 @@ func (p *Person) DropRight() {
 }
 
 // Grab in the left hand
-func (p *Person) GrabLeft(item Item) {
+func (p *Person) GrabLeft(item *Item) {
 	if p.LeftHand.Items == nil {
-		p.LeftHand.Items = []Item{item}
+		p.LeftHand.Items = []*Item{item}
 		// If the item has residues, add them to the limb
 		if item.Residues != nil {
 			for _, residue := range item.Residues {

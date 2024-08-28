@@ -44,6 +44,13 @@ function App() {
     });
   };
 
+  const grab = (item: T.Item, person: T.Person) => {
+    console.log(person.FullName + " wants to grab " + item.Name);
+    api.grabItem(item, person).then((data) => {
+      setWorld(data);
+    });
+  };
+
   return (
     <div className="App">
       <div>
@@ -74,7 +81,7 @@ function App() {
         </button>
       </div>
       <InformationBar persons={persons} buildings={buildings} />
-      <Map world={world} />
+      <Map world={world} grab={grab} />
     </div>
   );
 }

@@ -28,6 +28,12 @@ type MoveRequest struct {
 	Direction string `json:"direction"`
 }
 
+type GrabRequest struct {
+	ItemName string `json:"ItemName"`
+	FullName string `json:"FullName"`
+}
+	
+
 var (
 	requestMap sync.Map // sync.Map is safer for concurrent use
 )
@@ -90,6 +96,7 @@ type CleanedTile struct {
     Type     TileType        `json:"type"`
     Building *BuildingCleaned `json:"building,omitempty"`
     Persons  []PersonCleaned `json:"persons,omitempty"`
+	Items    []*Item          `json:"items,omitempty"`
 }
 type WorldResponse struct {
     Message [][]CleanedTile `json:"message"`
@@ -117,6 +124,8 @@ func (w *World) CleanTiles() [][]CleanedTile {
                 cleanedPersons = append(cleanedPersons, PersonCleaned{
                     FullName: person.FullName,
                     Location: person.Location,
+					RightHand:    person.RightHand.Items,
+					LeftHand:     person.LeftHand.Items,
                 })
             }
 
@@ -124,6 +133,7 @@ func (w *World) CleanTiles() [][]CleanedTile {
                 Type:     tile.Type,
                 Building: cleanedBuilding,
                 Persons:  cleanedPersons,
+				Items:    tile.Items,
             }
         }
     }
@@ -178,6 +188,64 @@ func (w *World) moveHandler(writer http.ResponseWriter, r *http.Request) {
 	// Move the person in the world
 	w.MovePerson(moveRequest.FullName, startingCoordinates.X, startingCoordinates.Y)
 
+	response := WorldResponse{
+		Message: w.CleanTiles(),
+		Status:  200,
+	}
+	writeJSONResponse(writer, response)
+}
+
+func (w *World) grabHandler(writer http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(writer, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var grabRequest GrabRequest
+	if err := json.NewDecoder(r.Body).Decode(&grabRequest); err != nil {
+		http.Error(writer, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Println(grabRequest)
+
+	// Find the person by full name
+	person := w.GetPersonByFullName(grabRequest.FullName)
+	if person == nil {
+		http.Error(writer, "Person not found", http.StatusBadRequest)
+		return
+	}
+
+	// Get the person's current location
+	coordinates := person.Location
+	tile := w.Tiles[coordinates.Y][coordinates.X]
+
+	if tile.Items == nil {
+		http.Error(writer, "No items to grab", http.StatusBadRequest)
+		return
+	} else {
+		for _, item := range tile.Items {
+			if item.Name == grabRequest.ItemName {
+				// The item is found
+				person.GrabRight(item)
+
+				// Remove the item from the tile
+				for i, tileItem := range tile.Items {
+					if tileItem.Name == grabRequest.ItemName {
+						tile.Items = append(tile.Items[:i], tile.Items[i+1:]...)
+
+						// Update the tile with the new list of items
+						w.Tiles[coordinates.Y][coordinates.X].Items = tile.Items
+
+						break // Exit the loop after finding the item
+					}
+				}
+
+				break // Exit the loop after processing the item
+			}
+		}
+	}
+	
 	response := WorldResponse{
 		Message: w.CleanTiles(),
 		Status:  200,
@@ -253,6 +321,7 @@ func main() {
 	http.Handle("/buildings", corsMiddleware(http.HandlerFunc(world.buildingHandler)))
 	http.Handle("/move", corsMiddleware(http.HandlerFunc(world.moveHandler)))
 	http.Handle("/world", corsMiddleware(http.HandlerFunc(world.worldHandler)))
+	http.Handle("/entityGrab", corsMiddleware(http.HandlerFunc(world.grabHandler)))
 
 	// Default handler for the root path or undefined paths
 	http.Handle("/", corsMiddleware(http.HandlerFunc(defaultHandler)))
@@ -266,7 +335,7 @@ func initializeWorld() *World {
 
 	newPerson1 := world.createNewPerson(1, 1)
 	newPerson2 := world.createNewPerson(9,9)
-	world.AddPerson(1, 1, newPerson1)
+	world.AddPerson(2, 2, newPerson1)
 	world.AddPerson(9, 9, newPerson2)
 	newPerson1.Brain.turnOn()
 	newPerson2.Brain.turnOn()

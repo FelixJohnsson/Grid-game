@@ -8,7 +8,6 @@ const api = {
     return await response.json();
   },
   post: async (path: string, data: any) => {
-    console.log(data);
     const response = await fetch(address + path, {
       method: "POST",
       headers: {
@@ -52,6 +51,17 @@ export const getWorld = async (): Promise<T.World["tiles"]> => {
 
 export const movePerson = async (full_name: string, direction: string) => {
   const data = await api.post("move", { full_name, direction });
+  return data.message;
+};
+
+export const grabItem = async (item: T.Item, person: T.Person) => {
+  const requestData = {
+    ItemName: item.Name,
+    FullName: person.FullName,
+  };
+  console.warn(requestData);
+  const data = await api.post("entityGrab", requestData);
+  console.warn(data);
   return data.message;
 };
 
