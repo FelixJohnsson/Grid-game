@@ -133,8 +133,8 @@ func (w *World) CleanTiles() [][]CleanedTile {
                         Location: person.Location,
 						IsTalking: person.IsTalking.IsActive,
 						Thinking: person.Thinking,
-						RightHand: person.RightHand.Items,
-						LeftHand: person.LeftHand.Items,
+						RightHand: person.Body.RightArm.Hand.Items,
+						LeftHand: person.Body.LeftArm.Hand.Items,
 						Relationships: person.Relationships,
                 })
             }
@@ -415,8 +415,8 @@ func initializeWorld() *World {
 
 
 	// Turn on the brain for the people
-	newPerson1.Brain.turnOn()
-	newPerson2.Brain.turnOn()
+	newPerson1.Body.Head.Brain.turnOn()
+	newPerson2.Body.Head.Brain.turnOn()
 
 	// Create a Wooden spear item from items
 	woodenSpear := items[0]
@@ -425,7 +425,9 @@ func initializeWorld() *World {
 	// Create a Wooden staff item from items
 	woodenStaff := items[1]
 	woodenStaff.Residues = append(woodenStaff.Residues, Residue{"Blood", 1})
-	newPerson1.GrabRight(&woodenStaff)
+	stoneAxe := items[2]
+
+	newPerson1.GrabRight(&stoneAxe)
 
 	// Add the wooden spear to the world
 	world.AddItem(1, 1, &woodenSpear)

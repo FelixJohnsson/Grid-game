@@ -45,6 +45,7 @@ var materials = []Material{
 
 // All available items
 var items = []Item{
-	{"Wooden Spear", 8, 4, 3, []Material{materials[0]}, make([]Residue, 0)},
+	{"Wooden Spear", 5, 4, 3, []Material{materials[0]}, make([]Residue, 0)},
 	{"Wooden Staff", 1, 8, 2, []Material{materials[0]}, make([]Residue, 0)},
+	{"Stone Axe", 6, 2, 5, []Material{materials[1], materials[0], materials[2]}, make([]Residue, 0)},
 }

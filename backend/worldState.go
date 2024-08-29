@@ -117,8 +117,8 @@ func (w *World) GetVision(x, y, visionRange int) Vision {
                         Location: person.Location,
 						IsTalking: person.IsTalking.IsActive,
 						Thinking: person.Thinking,
-						RightHand: person.RightHand.Items,
-						LeftHand: person.LeftHand.Items,
+						RightHand: person.Body.RightArm.Hand.Items,
+						LeftHand: person.Body.LeftArm.Hand.Items,
 						Relationships: person.Relationships,
                     }
                     persons = append(persons, cleanedPerson)

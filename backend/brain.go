@@ -23,6 +23,9 @@ type Brain struct {
     ctx    context.Context
     cancel context.CancelFunc
 	actions []action
+    IsConscious bool
+    IsAlive bool
+    BrainDamage int
 }
 
 // NewBrain creates a new Brain and assigns an owner to it.
@@ -45,7 +48,7 @@ func (b *Brain) turnOn() {
     }
 
     fmt.Println("Brain for: " + b.owner.FullName + " is now active.")
-    b.owner.IsConscious = true
+    b.IsConscious = true
     b.active = true
 
     go b.mainLoop()
@@ -72,7 +75,7 @@ func (b *Brain) mainLoop() {
             return
         default:
         
-        if !b.owner.IsConscious{
+        if !b.IsConscious{
             fmt.Println(b.owner.FullName + "' brain is not conscious but still alive.")
             return
         } else {
@@ -208,7 +211,7 @@ func (b *Brain) SendTaskRequest(to *Person, taskType string) {
         return 
     }
     fmt.Println(b.owner.FullName + " is sending a task request to " + to.FullName)
-    success := to.Brain.ReceiveTaskRequest(RequestedAction{taskType, "Hello!", b.owner.FullName}, b.owner)
+    success := to.Body.Head.Brain.ReceiveTaskRequest(RequestedAction{taskType, "Hello!", b.owner.FullName}, b.owner)
     if success {
         fmt.Println(to.FullName + " accepted the task request.")
         b.owner.IsTalking = TargetedAction{"Hello " + to.FullName + ", how are you doing?", to.FullName, true, make([]string, 0)}
