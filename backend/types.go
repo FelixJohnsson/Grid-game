@@ -309,6 +309,10 @@ type BuildingCleaned struct {
 	Location Location `json:"location"`
 }
 
+type HeadCleaned struct {
+	LimbStatus
+}
+
 type PersonCleaned struct {
 	FirstName    string       `json:"FirstName"`
 	FamilyName   string       `json:"FamilyName"`
@@ -321,7 +325,12 @@ type PersonCleaned struct {
 
 	Thinking 	 string       `json:"Thinking"`
 
-	Body 		 *HumanBody    `json:"Body"`
+	Head 		 HeadCleaned `json:"Head"`
+	Torso 		 *LimbStatus  `json:"Torso"`
+	RightArm 	 *Arm         `json:"RightArm"`
+	LeftArm 	 *Arm         `json:"LeftArm"`
+	RightLeg 	 *Leg         `json:"RightLeg"`
+	LeftLeg 	 *Leg         `json:"LeftLeg"`
 
 	Strength 	 int          `json:"Strength"`
 	Agility 	int           `json:"Agility"`

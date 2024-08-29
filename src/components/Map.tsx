@@ -1,10 +1,9 @@
 import * as T from "../api/types";
-import Building from "./Building";
 import Person from "./Person";
 import { useState } from "react";
 
 type Props = {
-  world: T.World["tiles"] | undefined;
+  world: T.CleanedTile[][] | undefined;
   grab: (item: T.Item, person: T.Person) => void;
 };
 
@@ -45,8 +44,6 @@ const Map = ({ world, grab }: Props) => {
                         : "gray",
                   }}
                 >
-                  {tile.Building ? <Building building={tile.Building} /> : null}
-
                   {tile.Items ? (
                     <div>
                       {tile.Items.map((item, index) => (

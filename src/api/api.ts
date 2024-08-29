@@ -19,33 +19,13 @@ const api = {
   },
 };
 
-interface PersonResponse {
-  message: T.Person[];
-  status: number;
-}
-
 export const getPersons = async (): Promise<T.Person[]> => {
-  const data: PersonResponse = await api.get("people");
+  const data: T.PersonResponse = await api.get("people");
   return data.message;
 };
 
-interface WorldStateResponse {
-  message: T.Building[];
-  status: number;
-}
-
-export const getBuildings = async (): Promise<T.Building[]> => {
-  const data: WorldStateResponse = await api.get("buildings");
-  return data.message;
-};
-
-interface WorldResponse {
-  message: T.World["tiles"];
-  status: number;
-}
-
-export const getWorld = async (): Promise<T.World["tiles"]> => {
-  const data: WorldResponse = await api.get("world");
+export const getWorld = async (): Promise<T.CleanedTile[][]> => {
+  const data: T.WorldResponse = await api.get("world");
   console.warn(data.message);
   return data.message;
 };

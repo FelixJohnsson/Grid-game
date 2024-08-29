@@ -9,8 +9,8 @@ const Person = ({
   onMouseEnter,
   onMouseLeave,
 }: {
-  person: T.Person;
-  currentTile: T.Tile;
+  person: T.PersonCleaned;
+  currentTile: T.CleanedTile;
   grab: (item: T.Item, person: T.Person) => void;
   onMouseEnter: (event: React.MouseEvent, text: string) => void;
   onMouseLeave: () => void;

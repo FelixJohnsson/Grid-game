@@ -1,9 +1,9 @@
 import * as T from "../api/types";
 
 type Props = {
-  person: T.Person;
+  person: T.PersonCleaned;
   togglePersonWidget: () => void;
-  currentTile: T.Tile;
+  currentTile: T.CleanedTile;
   grab: (item: T.Item, person: T.Person) => void;
 };
 

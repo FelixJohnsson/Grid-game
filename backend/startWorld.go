@@ -44,8 +44,13 @@ func initializeWorld() *World {
 	world.AddPlant(5, 5, appleTree)
 	appleTree.PlantLife.turnOn()
 
-	// Test the attack function
-	TestAttack(world, newPerson1, newPerson2, 2*time.Second)
+	damage := newPerson1.AttackWithWeapon(newPerson2, "Head", newPerson1.Body.RightArm.Hand)
+			// This should probably return a result of the attack
+			if damage.AmountBluntDamage > 0 || damage.AmountSharpDamage > 0 {
+				bloodResidue := Residue{"Blood", 1}
+				newPerson1.CombatExperience += 1
+				newPerson1.AddResidue("RightHand", bloodResidue)
+			}
 
 	return world
 }
@@ -56,10 +61,17 @@ func TestAttack(w *World, person1 *Person, person2 *Person, d time.Duration) {
 		for {
 			time.Sleep(d)
 			if person2.Body.Head == nil {
-				fmt.Println(person2.FullName, " doesnt have a head anymore.")
+				fmt.Println(person2.FullName, "doesnt have a head anymore.")
 				break
 			}
-			person1.Attack(person2, "Head")
+			fmt.Println("Arm: ", person1.Body.RightArm.Hand.Items[0].Name)
+			damage := person1.AttackWithWeapon(person2, "Head", person1.Body.RightArm.Hand)
+			// This should probably return a result of the attack
+			if damage.AmountBluntDamage > 0 || damage.AmountSharpDamage > 0 {
+				bloodResidue := Residue{"Blood", 1}
+				person1.CombatExperience += 1
+				person1.AddResidue("RightHand", bloodResidue)
+			}
 		}
 	}()
 }

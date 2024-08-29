@@ -6,12 +6,10 @@ import InformationBar from "./components/InformationBar";
 import MoveControls from "./components/MoveControls";
 
 function App() {
-  const [persons, setPersons] = useState<T.Person[]>([]);
-  const [buildings, setBuildings] = useState<T.Building[]>();
-  const [world, setWorld] = useState<T.World["tiles"]>();
+  const [persons, setPersons] = useState<T.PersonCleaned[]>([]);
+  const [world, setWorld] = useState<T.CleanedTile[][]>();
 
   useEffect(() => {
-    setBuildings([]);
     setPersons([]);
     api.getWorld().then((data) => {
       setWorld(data);
@@ -30,9 +28,6 @@ function App() {
                 }
               });
             }
-          }
-          if (tile.Building) {
-            setBuildings([tile.Building]);
           }
         });
       });
@@ -68,8 +63,9 @@ function App() {
                   Thought: {person.Thinking.length > 0 ? person.Thinking : ""}
                 </p>
                 <p className="text-xs">
-                  {person.RightHand && person.RightHand.length > 0
-                    ? "Right Hand: " + person.RightHand[0].Name
+                  {person.RightArm.Hand?.Items &&
+                  person.RightArm.Hand.Items.length > 0
+                    ? "Right Hand: " + person.RightArm.Hand.Items[0].Name
                     : ""}
                 </p>
               </div>
@@ -77,7 +73,7 @@ function App() {
           }
         </div>
       </div>
-      <InformationBar persons={persons} buildings={buildings} />
+      <InformationBar persons={persons} />
       <Map world={world} grab={grab} />
     </div>
   );

@@ -147,7 +147,6 @@ func (p *Person) RemoveLimb(limb LimbType) {
 		p.Body.LeftLeg = nil
 		p.IsIncapacitated = true
 		return
-
 	}
 }
 
@@ -155,21 +154,78 @@ func (p *Person) RemoveLimb(limb LimbType) {
 func (p *Person) AddResidue(limb LimbType, residue Residue) {
 	switch limb {
 	case "LeftFoot":
-		p.Body.LeftLeg.Foot.Residues = append(p.Body.LeftLeg.Foot.Residues, residue)
+		// Should loop over the residues and add the new residue if it doesn't exist
+		for _, r := range p.Body.LeftLeg.Foot.Residues {
+			if r.Name == residue.Name {
+				r.Amount += residue.Amount
+				return
+			} else {
+				p.Body.LeftLeg.Foot.Residues = append(p.Body.LeftLeg.Foot.Residues, residue)
+			}
+		}
 	case "RightFoot":
-		p.Body.RightLeg.Foot.Residues = append(p.Body.RightLeg.Foot.Residues, residue)
+		for _, r := range p.Body.RightLeg.Foot.Residues {
+			if r.Name == residue.Name {
+				r.Amount += residue.Amount
+				return
+			} else {
+				p.Body.RightLeg.Foot.Residues = append(p.Body.RightLeg.Foot.Residues, residue)
+			}
+		}
 	case "Head":
-		p.Body.Head.Residues = append(p.Body.Head.Residues, residue)
+		for _, r := range p.Body.Head.Residues {
+			if r.Name == residue.Name {
+				r.Amount += residue.Amount
+				return
+			} else {
+				p.Body.Head.Residues = append(p.Body.Head.Residues, residue)
+			}
+		}
 	case "Torso":
-		p.Body.Torso.Residues = append(p.Body.Torso.Residues, residue)
+		for _, r := range p.Body.Torso.Residues {
+			if r.Name == residue.Name {
+				r.Amount += residue.Amount
+				return
+			} else {
+				p.Body.Torso.Residues = append(p.Body.Torso.Residues, residue)
+			}
+		}
 	case "RightLeg":
-		p.Body.RightLeg.Residues = append(p.Body.RightLeg.Residues, residue)
+		for _, r := range p.Body.RightLeg.Residues {
+			if r.Name == residue.Name {
+				r.Amount += residue.Amount
+				return
+			} else {
+				p.Body.RightLeg.Residues = append(p.Body.RightLeg.Residues, residue)
+			}
+		}
 	case "LeftLeg":
-		p.Body.LeftLeg.Residues = append(p.Body.LeftLeg.Residues, residue)
+		for _, r := range p.Body.LeftLeg.Residues {
+			if r.Name == residue.Name {
+				r.Amount += residue.Amount
+				return
+			} else {
+				p.Body.LeftLeg.Residues = append(p.Body.LeftLeg.Residues, residue)
+			}
+		}
 	case "RightHand":
-		p.Body.RightArm.Hand.Residues = append(p.Body.RightArm.Hand.Residues, residue)
+		for _, r := range p.Body.RightArm.Hand.Residues {
+			if r.Name == residue.Name {
+				r.Amount += residue.Amount
+				return
+			} else {
+				p.Body.RightArm.Hand.Residues = append(p.Body.RightArm.Hand.Residues, residue)
+			}
+		}
 	case "LeftHand":
-		p.Body.LeftArm.Hand.Residues = append(p.Body.LeftArm.Hand.Residues, residue)
+		for _, r := range p.Body.LeftArm.Hand.Residues {
+			if r.Name == residue.Name {
+				r.Amount += residue.Amount
+				return
+			} else {
+				p.Body.LeftArm.Hand.Residues = append(p.Body.LeftArm.Hand.Residues, residue)
+			}
+		}
 	}
 }
 
@@ -215,15 +271,15 @@ func (p *Person) updateRelationship(fullName string, relationship string, intens
 
 // ---------------- Hostile actions ----------------
 
-func (p *Person) CalculateDamageGiven (target *Person, targetLimb string) Damage {
+func (p *Person) CalculateDamageGiven(target *Person, targetLimb LimbType, withLimb *LimbThatCanGrab) Damage {
 		// Calculate the damage based on limb status, item in hand, physical attributes and experience.
 		damage := Damage{}
 
-		if p.Body.RightArm.Hand.IsBroken {
+		if withLimb.IsBroken {
 			return damage
 		} else {
-			damage.AmountBluntDamage = p.Body.RightArm.Hand.Items[0].Bluntness
-			damage.AmountSharpDamage = p.Body.RightArm.Hand.Items[0].Sharpness
+			damage.AmountBluntDamage = withLimb.Items[0].Bluntness
+			damage.AmountSharpDamage = withLimb.Items[0].Sharpness
 
 			damage.AmountBluntDamage += p.Strength
 			damage.AmountSharpDamage += p.Strength
@@ -245,7 +301,7 @@ func (p *Person) CalculateDamageGiven (target *Person, targetLimb string) Damage
 	return damage
 }
 
-func (p *Person) CalculateDefense (targetLimb string) int {
+func (p *Person) CalculateDefense (targetLimb LimbType) int {
 	// Calculate the defense based on limb status, item in hand, physical attributes and experience.
 	defense := 0
 
@@ -256,25 +312,21 @@ func (p *Person) CalculateDefense (targetLimb string) int {
 }
 		
 
-func (p *Person) Attack(target *Person, targetLimb string) {
+func (p *Person) AttackWithWeapon(target *Person, targetLimb LimbType, withLimb *LimbThatCanGrab) Damage {
 	if target == nil {
 		fmt.Println("No target to attack")
-		return
+		return Damage{}
 	}
 
-	// 1. Calculate the damage
-	damage := p.CalculateDamageGiven(target, targetLimb)
+	damage := p.CalculateDamageGiven(target, targetLimb, withLimb)
+	target.ReceivingApplyDamageTo(targetLimb, damage)
 
-	// 2. Apply the damage
-	target.ApplyDamageTo(targetLimb, damage)
-
+	return damage
 	// TODO: This should also be sent to the brain's Being Attacked function
 }
 
 // Logic for being attacked, if the hands are broken, drop the items in the hands
-func (p *Person) ApplyDamageTo(limb string, damage Damage) {
-	// Apply the damage to the limb
-
+func (p *Person) ReceivingApplyDamageTo(limb LimbType, damage Damage) {
 	// TODO: Check if the limb is covered with a wearable that can protect the limb from the damage
 
 	var bluntDamageUntilBroken = 50
@@ -284,6 +336,10 @@ func (p *Person) ApplyDamageTo(limb string, damage Damage) {
 
 	var sharpDamageUntilBleeding = 10
 	var sharpDamageUntilSevered = 50
+
+	// Add blood residue to the limb and item
+	bloodResidue := Residue{"Blood", 1}
+	p.AddResidue(limb, bloodResidue)
 
 	switch limb {
 		case "Head":
@@ -298,6 +354,8 @@ func (p *Person) ApplyDamageTo(limb string, damage Damage) {
 
 		if p.Body.Head.SharpDamage > sharpDamageUntilSevered {
 			p.RemoveLimb("Head")
+			bloodResidue := Residue{"Blood", 10}
+			p.AddResidue("Torso", bloodResidue)
 			return
 		}
 		if p.Body.Head.BluntDamage > bluntDamageUntilBroken {
