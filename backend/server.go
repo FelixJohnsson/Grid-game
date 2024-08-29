@@ -38,6 +38,18 @@ type AttackRequest struct {
 	TargetFullName string `json:"TargetFullName"`
 }
 
+type CleanedTile struct {
+    Type     TileType         `json:"Type"`
+    Building *BuildingCleaned `json:"Building,omitempty"`
+    Persons  []PersonCleaned  `json:"Persons,omitempty"`
+	Items    []*Item          `json:"Items,omitempty"`
+	Plants   []*PlantCleaned  `json:"Plants,omitempty"`
+}
+type WorldResponse struct {
+    Message [][]CleanedTile `json:"message"`
+    Status  int             `json:"status"`
+}
+
 var (
 	requestMap sync.Map // sync.Map is safer for concurrent use
 )
@@ -95,17 +107,6 @@ func (w *World) buildingHandler(writer http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSONResponse(writer, response)
-}
-type CleanedTile struct {
-    Type     TileType         `json:"Type"`
-    Building *BuildingCleaned `json:"Building,omitempty"`
-    Persons  []PersonCleaned  `json:"Persons,omitempty"`
-	Items    []*Item          `json:"Items,omitempty"`
-	Plants   []*PlantCleaned  `json:"Plants,omitempty"`
-}
-type WorldResponse struct {
-    Message [][]CleanedTile `json:"message"`
-    Status  int             `json:"status"`
 }
 
 func (w *World) CleanTiles() [][]CleanedTile {
@@ -437,6 +438,11 @@ func initializeWorld() *World {
 		for {
 			time.Sleep(2 * time.Second)
 			newPerson1.Attack(newPerson2, "Head")
+
+			if !newPerson2.Body.Head.Brain.IsAlive{
+				fmt.Println(newPerson2.FullName, " is dead.")
+				break
+			}
 		}
 	}()
 

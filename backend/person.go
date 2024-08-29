@@ -7,154 +7,6 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 )
 
-type WorldState struct {
-	Map 	 	[][]string;
-  	Buildings	[]Building;
-  	Persons	 	[]Person;
-  	Resources 	Resources;
-}
-
-// Enum for Jobs
-type Jobs string
-
-const (
-	Farmer     Jobs = "Farmer"
-	Miner      Jobs = "Miner"
-	Lumberjack Jobs = "Lumberjack"
-	Builder    Jobs = "Builder"
-	Soldier    Jobs = "Soldier"
-	Unemployed Jobs = "Unemployed"
-)
-type Relationship struct {
-	WithPerson string
-	Relationship string
-	Intensity int
-}
-
-type TargetedAction struct {
-	Action string
-	Target string
-	IsActive bool
-	RequiresLimb []string
-}
-
-type Wearable struct {
-	Name string
-	Material string
-	Protection int
-}
-
-// Body status
-type LimbStatus struct {
-	BluntDamage int
-	SharpDamage int
-	IsBleeding bool
-	IsBroken bool
-	Residues []Residue
-	CoveredWith []Wearable
-	IsAttached bool
-}
-
-type LimbThatCanHold struct {
-	LimbStatus
-	Items []*Item
-	WeightOfItems int
-}
-
-type Damage struct {
-	AmountBluntDamage int
-	AmountSharpDamage int
-}
-
-type Head struct {
-	LimbStatus
-	Brain *Brain
-}
-
-type LimbThatCanGrab struct {
-	LimbStatus
-	Items []*Item
-	WeightOfItems int
-}
-
-type LimbThatCantGrab struct {
-	LimbStatus
-}
-
-type LimbThatCanMove struct {
-	LimbStatus
-}
-
-type Leg struct {
-	LimbThatCanMove
-	Foot *LimbThatCanMove
-}
-
-type Arm struct {
-	LimbThatCantGrab
-	Hand *LimbThatCanGrab
-}
-
-type HumanBody struct {
-	Head *Head
-	Torso *LimbStatus
-	RightArm *Arm
-	LeftArm *Arm
-	RightLeg *Leg
-	LeftLeg *Leg
-}
-
-type Person struct {
-	Age              int
-	Title 		     string
-	FirstName        string
-	FamilyName       string
-	FullName 	     string
-	Initials         string
-	IsChild          bool
-	Gender           string
-	Description      string
-	Icon             string
-	Occupation       Jobs
-	IsWorkingAt      *Building
-	Color            string
-	Personality 	 string
-	Genes            []string
-
-	IsMoving         TargetedAction
-	IsTalking        TargetedAction
-	IsSitting        TargetedAction
-	IsHolding        TargetedAction
-	IsEating         TargetedAction
-	IsSleeping       TargetedAction
-	IsWorking        TargetedAction
-
-	Thinking         string
-	WantsTo          string
-	FeelingSafe 	 int
-	FeelingScared	 int
-
-	Body 		     *HumanBody
-
-	Strength         int
-	Agility          int
-	Intelligence     int
-	Charisma         int
-	Stamina          int
-
-	CombatExperience int
-	CombatSkill      int
-	CombatStyle      string
-
-	Relationships    []Relationship
-
-	IsIncapacitated  bool
-	VisionRange 	 int
-	WorldProvider    WorldAccessor
-	Location         Location
-	OnTileType 	     TileType
-}
-
 func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 	age := rand.Intn(63) + 2
 	firstName := gofakeit.FirstName()
@@ -299,20 +151,6 @@ func (p *Person) RemoveLimb(limb LimbType) {
 	}
 }
 
-// A type for all the limbs instead of "string"
-type LimbType string
-
-const (
-	RightHand LimbType = "RightHand"
-	LeftHand  LimbType = "LeftHand"
-	RightFoot LimbType = "RightFoot"
-	LeftFoot  LimbType = "LeftFoot"
-	RightLeg  LimbType = "RightLeg"
-	LeftLeg   LimbType = "LeftLeg"
-	TheHead   LimbType = "Head"
-	Torso     LimbType = "Torso"
-)
-
 // AddResidue adds a residue to the limb
 func (p *Person) AddResidue(limb LimbType, residue Residue) {
 	switch limb {
@@ -446,7 +284,6 @@ func (p *Person) ApplyDamageTo(limb string, damage Damage) {
 	// Apply the damage to the limb
 
 	// TODO: Check if the limb is covered with a wearable that can protect the limb from the damage
-	// TODO: Sharp damage can sever the limb if the sharp damage is high enough, then the limb should be removed from the person
 
 	var bluntDamageUntilBroken = 50
 	var bluntDamageUntilUnconscious = 75
@@ -618,8 +455,6 @@ func (p *Person) ApplyDamageTo(limb string, damage Damage) {
 	}
 		
 }
-
-
 
 // ---------------- Create a new person ----------------
 

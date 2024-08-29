@@ -6,59 +6,6 @@ import (
 	"time"
 )
 
-type PlantAction struct {
-	Name string
-	Target *Tile
-	Priority int
-}
-
-type PlantLife struct {
-	active bool
-	ctx    context.Context
-	cancel context.CancelFunc
-	actions []PlantAction
-}
-
-type Nutrients struct {
-	Calories int
-	Carbs    int
-	Protein  int
-	Fat      int
-
-	Vitamins int
-	Minerals int
-}
-
-type Fruit struct {
-	Name      string
-	Taste     string
-	Age       int
-	RipeAge   int
-	IsRipe    bool
-	Nutrients []Nutrients
-}
-
-type PlantStage int
-
-const (
-	Seed PlantStage = iota
-	Sprout
-	Vegetative
-	Flowering
-	Fruiting
-)
-
-type Plant struct {
-	Name          string
-	Age           int
-	Health        int
-	IsAlive       bool
-	ProducesFruit bool
-	Fruit         []Fruit
-	PlantStage    PlantStage
-	PlantLife     *PlantLife
-}
-
 // NewPlant creates a new plant with the given name.
 func NewPlant(name string, tile *Tile) *Plant {
 	plantLife := NewPlantLife(tile)

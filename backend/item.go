@@ -1,32 +1,5 @@
 package main
 
-type Material struct {
-	Name         string
-	Type         string
-	Hardness     int
-	Weight       int
-	Density      int
-	Malleability int
-}
-
-type Residue struct {
-	Name   string
-	Amount int
-}
-
-type Item struct {
-	Name      string
-	Sharpness int
-	Bluntness int
-	Weight    int
-	Material  []Material
-	Residues  []Residue
-}
-
-type Inventory struct {
-	Items []Item
-}
-
 // All available stone age materials
 var materials = []Material{
 	{"Wood", "Organic", 2, 1, 1, 1},

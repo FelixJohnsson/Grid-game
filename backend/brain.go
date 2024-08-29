@@ -6,28 +6,6 @@ import (
 	"time"
 )
 
-type action struct {
-	name string
-    target string
-	priority int
-}
-type RequestedAction struct {
-    ActionType string
-    Action     string
-    FromPerson string
-
-}
-type Brain struct {
-	owner  *Person
-    active bool
-    ctx    context.Context
-    cancel context.CancelFunc
-	actions []action
-    IsConscious bool
-    IsAlive bool
-    BrainDamage int
-}
-
 // NewBrain creates a new Brain and assigns an owner to it.
 func NewBrain() *Brain {
     ctx, cancel := context.WithCancel(context.Background())
@@ -35,8 +13,8 @@ func NewBrain() *Brain {
         active:  false,
         ctx:     ctx,
         cancel:  cancel,
-        actions: []action{
-            {"Idle", "", 1},
+        actions: []TargetedAction{
+            {"Idle", "", false, make([]string, 0)},
         },
     }
 }
@@ -181,24 +159,24 @@ func (b *Brain) makeDecisions(obs Vision) {
 }
 
 // Receive a requested task from another person
-func (b *Brain) ReceiveTaskRequest(requestedTask RequestedAction, from *Person) bool {
-    fmt.Println(b.owner.FullName + " received a task request from " + from.FullName)
+func (b *Brain) ReceiveTaskRequest(requestedTask RequestedAction) bool {
+    fmt.Println(b.owner.FullName + " received a task request from " + requestedTask.From.FullName)
     // Check the relationship between the two people
-    hasRelationship := b.owner.hasRelationship(from.FullName)
+    hasRelationship := b.owner.hasRelationship(requestedTask.From.FullName)
 
     // For now we will just accept the task
     if hasRelationship {
-        if requestedTask.ActionType == "Talk" && b.owner.IsTalking.IsActive {
+        if requestedTask.Action == "Talk" && b.owner.IsTalking.IsActive {
             fmt.Println(b.owner.FullName + " is already talking to someone.")
             return false
-        } else if requestedTask.ActionType == "Talk" && !b.owner.IsTalking.IsActive {
-            b.owner.IsTalking = TargetedAction{"Bla bla bla ...", from.FullName, true, make([]string, 0)}
-            fmt.Println(b.owner.FullName + " accepted the task request from " + from.FullName)
-            fmt.Println(b.owner.FullName + " is talking to " + from.FullName)
+        } else if requestedTask.Action == "Talk" && !b.owner.IsTalking.IsActive {
+            b.owner.IsTalking = TargetedAction{"Bla bla bla ...", requestedTask.From.FullName, true, make([]string, 0)}
+            fmt.Println(b.owner.FullName + " accepted the task request from " + requestedTask.From.FullName)
+            fmt.Println(b.owner.FullName + " is talking to " + requestedTask.From.FullName)
             return true
         }
     } else {
-        fmt.Println(b.owner.FullName + " denied the task request from " + from.FullName + " because they are strangers.")
+        fmt.Println(b.owner.FullName + " denied the task request from " + requestedTask.From.FullName + " because they are strangers.")
         return false
     }
     return false
@@ -211,7 +189,8 @@ func (b *Brain) SendTaskRequest(to *Person, taskType string) {
         return 
     }
     fmt.Println(b.owner.FullName + " is sending a task request to " + to.FullName)
-    success := to.Body.Head.Brain.ReceiveTaskRequest(RequestedAction{taskType, "Hello!", b.owner.FullName}, b.owner)
+    task := RequestedAction{TargetedAction{taskType, to.FullName, true, make([]string, 0)}, b.owner}
+    success := to.Body.Head.Brain.ReceiveTaskRequest(task)
     if success {
         fmt.Println(to.FullName + " accepted the task request.")
         b.owner.IsTalking = TargetedAction{"Hello " + to.FullName + ", how are you doing?", to.FullName, true, make([]string, 0)}
