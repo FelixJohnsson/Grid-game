@@ -83,7 +83,7 @@ func NewPlantLife(tile *Tile) *PlantLife {
         ctx:     ctx,
         cancel:  cancel,
         actions: []PlantAction{
-            {"Gathering resources from tile", tile, 1},
+            {"Gathering resources from tile", tile, 10},
         },
     }
 }

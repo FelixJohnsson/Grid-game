@@ -38,22 +38,22 @@ const Map = ({ world, grab }: Props) => {
                     height: "30px",
                     position: "relative",
                     backgroundColor:
-                      tile.type === T.TileType.Grass
+                      tile.Type === T.TileType.Grass
                         ? "green"
-                        : tile.type === T.TileType.Water
+                        : tile.Type === T.TileType.Water
                         ? "blue"
                         : "gray",
                   }}
                 >
-                  {tile.building ? <Building building={tile.building} /> : null}
+                  {tile.Building ? <Building building={tile.Building} /> : null}
 
-                  {tile.items ? (
+                  {tile.Items ? (
                     <div>
-                      {tile.items.map((item, index) => (
+                      {tile.Items.map((item, index) => (
                         <div
                           key={index}
                           className={
-                            tile.persons && tile.persons.length > 0
+                            tile.Persons && tile.Persons.length > 0
                               ? "hidden"
                               : ""
                           }
@@ -66,13 +66,13 @@ const Map = ({ world, grab }: Props) => {
                     </div>
                   ) : null}
 
-                  {tile.plants ? (
+                  {tile.Plants ? (
                     <div>
-                      {tile.plants.map((plant, index) => (
+                      {tile.Plants.map((plant, index) => (
                         <div
                           key={index}
                           className={
-                            tile.persons && tile.persons.length > 0
+                            tile.Persons && tile.Persons.length > 0
                               ? "hidden"
                               : ""
                           }
@@ -85,9 +85,9 @@ const Map = ({ world, grab }: Props) => {
                     </div>
                   ) : null}
 
-                  {tile.persons ? (
+                  {tile.Persons ? (
                     <div>
-                      {tile.persons.map((person, index) => (
+                      {tile.Persons.map((person, index) => (
                         <Person
                           key={index}
                           person={person}
@@ -109,7 +109,7 @@ const Map = ({ world, grab }: Props) => {
       {tooltip && (
         <div
           className="absolute bg-gray-700 text-white text-xs rounded p-1"
-          style={{ top: tooltip.y - 200, left: tooltip.x - 50 }}
+          style={{ top: tooltip.y - 300, left: tooltip.x - 50 }}
         >
           {tooltip.text}
         </div>

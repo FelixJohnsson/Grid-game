@@ -12,14 +12,13 @@ const (
 
 // Tile represents a single tile in the world.
 type Tile struct {
-	Type     TileType  `json:"type"`
-	Building *Building `json:"building,omitempty"`
-	Persons  []*Person   `json:"persons,omitempty"`
-	Items    []*Item    `json:"items,omitempty"`
-	Plants    []*Plant    `json:"plant,omitempty"`
+	Type     TileType  `json:"Type"`
+	Building *Building `json:"Building,omitempty"`
+	Persons  []*Person   `json:"Persons,omitempty"`
+	Items    []*Item    `json:"Items,omitempty"`
+	Plants   []*Plant    `json:"Plant,omitempty"`
+	NutritionalValue int `json:"NutritionalValue,omitempty"`
 }
-
-
 
 // World represents a 2D array of tiles.
 type World struct {
@@ -30,10 +29,15 @@ type Vision struct {
 	Persons   []PersonCleaned   `json:"persons"`
 }
 type PersonCleaned struct {
-	FullName     string       `json:"FullName"`
-	Location     Location     `json:"Location"`
-	RightHand    []*Item      `json:"RightHand,omitempty"`
-	LeftHand     []*Item      `json:"LeftHand,omitempty"`
+	FullName      string       `json:"FullName"`
+	Age 		  int          `json:"Age"`
+	Title 		  string       `json:"Title"`
+	Location      Location     `json:"Location"`
+	IsTalking     bool         `json:"IsTalking"`
+	Thinking      string       `json:"Thinking"`
+	RightHand     []*Item      `json:"RightHand,omitempty"`
+	LeftHand      []*Item      `json:"LeftHand,omitempty"`
+	Relationships []Relationship `json:"Relationships"`
 }
 
 type PlantCleaned struct {
@@ -107,7 +111,14 @@ func (w *World) GetVision(x, y, visionRange int) Vision {
                 for _, person := range tile.Persons {
                     cleanedPerson := PersonCleaned{
                         FullName: person.FullName,
+						Age: person.Age,
+						Title: person.Title,
                         Location: person.Location,
+						IsTalking: person.IsTalking.IsActive,
+						Thinking: person.Thinking,
+						RightHand: person.RightHand.Items,
+						LeftHand: person.LeftHand.Items,
+						Relationships: person.Relationships,
                     }
                     persons = append(persons, cleanedPerson)
                 }

@@ -153,6 +153,8 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 	gender := gofakeit.Gender()
 	brain := NewBrain()
 
+	fmt.Println("Creating a new person", age, firstName)
+
 	person := &Person{
 		Age:              age,
 		Title:            "",
@@ -217,6 +219,7 @@ func (p *Person) GrabRight(item *Item) {
 		if item.Residues != nil {
 			for _, residue := range item.Residues {
 				p.AddResidue("RightHand", residue)
+				p.IsHolding.IsActive = true
 			}
 		}
 	} else {

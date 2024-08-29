@@ -92,11 +92,11 @@ func (w *World) buildingHandler(writer http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(writer, response)
 }
 type CleanedTile struct {
-    Type     TileType        `json:"type"`
-    Building *BuildingCleaned `json:"building,omitempty"`
-    Persons  []PersonCleaned `json:"persons,omitempty"`
-	Items    []*Item          `json:"items,omitempty"`
-	Plants   []*PlantCleaned         `json:"plants,omitempty"`
+    Type     TileType         `json:"Type"`
+    Building *BuildingCleaned `json:"Building,omitempty"`
+    Persons  []PersonCleaned  `json:"Persons,omitempty"`
+	Items    []*Item          `json:"Items,omitempty"`
+	Plants   []*PlantCleaned  `json:"Plants,omitempty"`
 }
 type WorldResponse struct {
     Message [][]CleanedTile `json:"message"`
@@ -122,10 +122,15 @@ func (w *World) CleanTiles() [][]CleanedTile {
             var cleanedPersons []PersonCleaned
             for _, person := range tile.Persons {
                 cleanedPersons = append(cleanedPersons, PersonCleaned{
-                    FullName: person.FullName,
-                    Location: person.Location,
-					RightHand:    person.RightHand.Items,
-					LeftHand:     person.LeftHand.Items,
+                        FullName: person.FullName,
+						Age: person.Age,
+						Title: person.Title,
+                        Location: person.Location,
+						IsTalking: person.IsTalking.IsActive,
+						Thinking: person.Thinking,
+						RightHand: person.RightHand.Items,
+						LeftHand: person.LeftHand.Items,
+						Relationships: person.Relationships,
                 })
             }
 			var cleanedPlants []*PlantCleaned
@@ -350,15 +355,27 @@ func initializeWorld() *World {
 
 	// Create people
 	newPerson1 := world.createNewPerson(2, 2)
+	newPerson1.Title = "Leader"
+	newPerson1.Thinking = "I am the leader of this group."
+
 	newPerson2 := world.createNewPerson(9, 9)
+	newPerson2.Title = "Follower"
+	newPerson2.Thinking = "I follow the leader."
+
 	world.AddPerson(2, 2, newPerson1)
 	world.AddPerson(9, 9, newPerson2)
+
 	newPerson1.Brain.turnOn()
 	newPerson2.Brain.turnOn()
 
 	// Create a Wooden spear item from items
 	woodenSpear := items[0]
 	woodenSpear.Residues = append(woodenSpear.Residues, Residue{"Dirt", 1})
+
+	// Create a Wooden staff item from items
+	woodenStaff := items[1]
+	woodenStaff.Residues = append(woodenStaff.Residues, Residue{"Blood", 1})
+	newPerson1.GrabRight(&woodenStaff)
 
 	// Add the wooden spear to the world
 	world.AddItem(1, 1, &woodenSpear)

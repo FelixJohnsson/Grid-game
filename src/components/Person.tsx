@@ -1,6 +1,6 @@
-import { set } from "lodash";
 import * as T from "../api/types";
 import { useState } from "react";
+import PersonWidget from "./PersonWidget";
 
 const Person = ({
   person,
@@ -17,36 +17,6 @@ const Person = ({
 }) => {
   const [showPersonWidget, setShowPersonWidget] = useState(false);
 
-  const PersonWidget = (person: T.Person) => {
-    return (
-      <div
-        className="h-36 w-36 absolute bg-slate-400 z-50 cursor-default"
-        onClick={togglePersonWidget}
-      >
-        {person.FullName}
-        <div>{person.IsTalking ? "Is talking" : "Is not talking"}</div>
-        {currentTile.items?.length && currentTile.items.length > 0 && (
-          <div>
-            <p>Items:</p>
-            {currentTile.items.map((item) => (
-              <div className="flex" key={item.Name}>
-                <p>{item.Name}</p>
-                <button
-                  className="border p-2"
-                  onClick={() => {
-                    grab(item, person);
-                  }}
-                >
-                  Grab
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
   const togglePersonWidget = () => {
     setShowPersonWidget(!showPersonWidget);
   };
@@ -60,7 +30,14 @@ const Person = ({
       onMouseLeave={onMouseLeave}
     >
       {person.FullName[0]}
-      {showPersonWidget && <PersonWidget {...person} />}
+      {showPersonWidget && (
+        <PersonWidget
+          person={person}
+          currentTile={currentTile}
+          grab={grab}
+          togglePersonWidget={togglePersonWidget}
+        />
+      )}
     </div>
   );
 };

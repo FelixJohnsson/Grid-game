@@ -1,26 +1,26 @@
 package main
 
 type Material struct {
-	Name string
-	Type string
-	Hardness int
-	Weight int
-	Density int
+	Name         string
+	Type         string
+	Hardness     int
+	Weight       int
+	Density      int
 	Malleability int
 }
 
 type Residue struct {
-	Name string
+	Name   string
 	Amount int
 }
 
 type Item struct {
-	Name string
+	Name      string
 	Sharpness int
 	Bluntness int
-	Weight int
-	Material []Material
-	Residues []Residue
+	Weight    int
+	Material  []Material
+	Residues  []Residue
 }
 
 type Inventory struct {
@@ -45,6 +45,6 @@ var materials = []Material{
 
 // All available items
 var items = []Item{
-	{"Wooden Spear", 8, 4, 5, []Material{materials[0]}, make([]Residue, 0)},
+	{"Wooden Spear", 8, 4, 3, []Material{materials[0]}, make([]Residue, 0)},
+	{"Wooden Staff", 1, 8, 2, []Material{materials[0]}, make([]Residue, 0)},
 }
-

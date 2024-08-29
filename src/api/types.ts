@@ -134,32 +134,22 @@ export const Tasks = {
 export type TaskType = keyof typeof Tasks;
 export type Task = (typeof Tasks)[TaskType];
 
+export type Relationship = {
+  WithPerson: string;
+  Relationship: string;
+  Intensity: number;
+};
+
 export interface Person {
-  Age: number;
-  FirstName: string;
-  FamilyName: string;
   FullName: string;
-  Initials: string;
-  IsChild: boolean;
-  Gender: string;
-  Description: string;
-  Icon: string;
-  Occupation: Jobs;
-  IsWorkingAt: Building | null;
-  Color: string;
+  Age: number;
+  Title: string;
   Location: Location;
-  IsMoving: boolean;
   IsTalking: boolean;
-  IsSitting: boolean;
-  IsHolding: boolean;
-  IsEating: boolean;
-  IsSleeping: boolean;
-  IsWorking: boolean;
   Thinking: string;
-  WantsTo: string;
-  Inventory: Item[];
-  Genes: string[];
-  Brain: Brain;
+  RightHand?: Item[];
+  LeftHand?: Item[];
+  Relationhips: Relationship[];
 }
 
 // --------------------- Items ---------------------
@@ -249,11 +239,11 @@ export enum TileType {
 
 // Tile represents a single tile in the world.
 export interface Tile {
-  type: TileType;
-  building?: Building;
-  persons?: Person[];
-  items?: Item[];
-  plants?: Plant[];
+  Type: TileType;
+  Building?: Building;
+  Persons?: Person[];
+  Items?: Item[];
+  Plants?: Plant[];
 }
 
 // World represents a 2D array of tiles.
