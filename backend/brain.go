@@ -44,34 +44,52 @@ func (b *Brain) turnOn() {
         return
     }
 
-    fmt.Println("Brain is now active.")
+    fmt.Println("Brain for: " + b.owner.FullName + " is now active.")
+    b.owner.IsConscious = true
     b.active = true
 
     go b.mainLoop()
 }
 
-func (b *Brain) addTask(task action) {
-	b.actions = append(b.actions, task)
+func (b *Brain) turnOff() {
+    if !b.active {
+        fmt.Println("Brain is already inactive.")
+        return
+    }
+
+    fmt.Println(b.owner.FullName, "'s brain is shutting down")
+    b.cancel()
+    b.active = false
 }
 
 func (b *Brain) mainLoop() {
+    fmt.Println(b.owner.FullName + "'s brain is now ", b.active)
+
     for {
         select {
         case <-b.ctx.Done():
-            fmt.Println("Brain is shutting down.")
             b.active = false
             return
         default:
+        
+        if !b.owner.IsConscious{
+            fmt.Println(b.owner.FullName + "' brain is not conscious but still alive.")
+            return
+        } else {
             // Brain logic goes here
+
+            fmt.Println(b.owner.FullName + "'s brain is thinking...")
 
             obs := b.processInputs()
             b.makeDecisions(obs)
             b.performActions()
+        }
 
             // Sleep or yield for a bit to prevent CPU hogging
-            time.Sleep(5000 * time.Millisecond)
+            time.Sleep(2000 * time.Millisecond)
         }
     }
+    
 }
 
 func (b *Brain) processInputs() Vision {
@@ -204,15 +222,4 @@ func (b *Brain) performActions() {
     if b.owner.IsTalking.IsActive {
         fmt.Println(b.owner.FullName + " says " + b.owner.IsTalking.Action + " to " + b.owner.IsTalking.Target)
     }
-}
-
-func (b *Brain) turnOff() {
-    if !b.active {
-        fmt.Println("Brain is already inactive.")
-        return
-    }
-
-    fmt.Println("Shutting down brain.")
-    b.cancel()
-    b.active = false
 }

@@ -58,6 +58,7 @@ type WorldAccessor interface {
     GetVision(x, y, visionRange int) Vision;
 	GetPersonByFullName(FullName string) *Person;
 	GetTileType(x, y int) TileType;
+	IsAdjacent(x1, y1, x2, y2 int) bool;
 }
 
 // NewWorld creates a new world with the given dimensions.
@@ -137,6 +138,11 @@ func (w *World) GetVision(x, y, visionRange int) Vision {
 // AddBuilding adds a building to the tile at the given location.
 func (w *World) AddBuilding(x, y int, b Building) {
 	w.Tiles[y][x].Building = &b
+}
+
+// IsAdjacent returns true if the two locations are adjacent to each other.
+func (w *World) IsAdjacent(x1, y1, x2, y2 int) bool {
+	return (x1 == x2 && (y1 == y2+1 || y1 == y2-1)) || (y1 == y2 && (x1 == x2+1 || x1 == x2-1))
 }
 
 // RemoveBuilding removes the building from the tile at the given location.

@@ -33,6 +33,11 @@ type GrabRequest struct {
 	FullName string `json:"FullName"`
 }
 
+type AttackRequest struct {
+	FullName       string `json:"FullName"`
+	TargetFullName string `json:"TargetFullName"`
+}
+
 var (
 	requestMap sync.Map // sync.Map is safer for concurrent use
 )
@@ -272,6 +277,46 @@ func (w *World) grabHandler(writer http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(writer, response)
 }
 
+// Handler for /entityAttack endpoint
+func (w *World) attackHandler(writer http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(writer, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var attackRequest AttackRequest
+	if err := json.NewDecoder(r.Body).Decode(&attackRequest); err != nil {
+		http.Error(writer, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	// Find the person by full name
+	person := w.GetPersonByFullName(attackRequest.FullName)
+	if person == nil {
+		http.Error(writer, "Person not found", http.StatusBadRequest)
+		return
+	}
+
+	// Check if the target person is one tile away
+	targetPerson := w.GetPersonByFullName(attackRequest.TargetFullName)
+	if targetPerson == nil {
+		http.Error(writer, "Target person not found", http.StatusBadRequest)
+		return
+	} else if !person.WorldProvider.IsAdjacent(targetPerson.Location.X, targetPerson.Location.Y, person.Location.X, person.Location.Y) {
+		http.Error(writer, "Target person is not adjacent", http.StatusBadRequest)
+		return
+	} else {
+		// Attack the target person
+		person.Attack(targetPerson, "Head")
+	}
+
+	response := WorldResponse{
+		Message: w.CleanTiles(),
+		Status:  200,
+	}
+	writeJSONResponse(writer, response)
+}
+
 // Default handler for root and undefined paths
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	// Ignore favicon requests
@@ -342,6 +387,9 @@ func main() {
 	http.Handle("/buildings", corsMiddleware(http.HandlerFunc(world.buildingHandler)))
 	http.Handle("/move", corsMiddleware(http.HandlerFunc(world.moveHandler)))
 	http.Handle("/entityGrab", corsMiddleware(http.HandlerFunc(world.grabHandler)))
+	http.Handle("/entityAttack", corsMiddleware(http.HandlerFunc(world.attackHandler)))
+
+	
 
 	// Default handler for the root path or undefined paths
 	http.Handle("/", corsMiddleware(http.HandlerFunc(defaultHandler)))
@@ -365,6 +413,8 @@ func initializeWorld() *World {
 	world.AddPerson(2, 2, newPerson1)
 	world.AddPerson(9, 9, newPerson2)
 
+
+	// Turn on the brain for the people
 	newPerson1.Brain.turnOn()
 	newPerson2.Brain.turnOn()
 
@@ -379,6 +429,14 @@ func initializeWorld() *World {
 
 	// Add the wooden spear to the world
 	world.AddItem(1, 1, &woodenSpear)
+
+	// Test the attack function every 2 seconds
+	go func() {
+		for {
+			time.Sleep(2 * time.Second)
+			newPerson1.Attack(newPerson2, "Head")
+		}
+	}()
 
 	// Add a plant
 	appleTree := NewPlant("Apple Tree", &world.Tiles[5][5])

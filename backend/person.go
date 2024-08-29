@@ -46,7 +46,8 @@ type Wearable struct {
 
 // Body status
 type LimbStatus struct {
-	Damage int
+	BluntDamage int
+	SharpDamage int
 	IsBleeding bool
 	IsBroken bool
 	Residues []Residue
@@ -57,6 +58,11 @@ type LimbThatCanHold struct {
 	LimbStatus
 	Items []*Item
 	WeightOfItems int
+}
+
+type Damage struct {
+	AmountBluntDamage int
+	AmountSharpDamage int
 }
 
 // Available actions
@@ -137,9 +143,22 @@ type Person struct {
 	Torso 		     LimbStatus
 	Legs 		     LimbStatus
 
+	Strength         int
+	Agility          int
+	Intelligence     int
+	Charisma         int
+	Stamina          int
+
+	CombatExperience int
+	CombatSkill      int
+	CombatStyle      string
+
 	Relationships    []Relationship
 
 	Brain			 Brain
+	IsConscious	     bool
+	IsIncapacitated  bool 
+	BrainDamage 	 int
 	VisionRange 	 int
 	WorldProvider    WorldAccessor
 	Location         Location
@@ -185,6 +204,8 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 		Genes:            []string{},
 
 		Brain:            *brain,
+		IsConscious:      false,
+		BrainDamage:      0,
 		VisionRange:      5,
 		Location:         Location{X: x, Y: y},
 		WorldProvider:    worldAccessor,
@@ -198,6 +219,15 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 		Torso:            LimbStatus{},
 		Legs:             LimbStatus{},
 
+		Strength:         1,
+		Agility:          1,
+		Intelligence:     1,
+		Charisma:         1,
+		Stamina:          1,
+
+		CombatExperience: 1,
+		CombatSkill:      1,
+		CombatStyle:      "One handed",
 	}
 
 	person.Brain.owner = person
@@ -290,10 +320,6 @@ func (p *Person) GetPersonByFullName(FullName string) *Person {
 	return p.WorldProvider.GetPersonByFullName(FullName)
 }
 
-func (p *Person) addTask(task action) {
-	p.Brain.addTask(task)
-}
-
 func (p *Person) addEmployer(building *Building) {
 	if p.IsChild {
 		return
@@ -342,6 +368,184 @@ func (p *Person) updateRelationship(fullName string, relationship string, intens
 			break
 		}
 	}
+}
+
+
+// ---------------- Hostile actions ----------------
+
+func (p *Person) CalculateDamageGiven (target *Person, targetLimb string) Damage {
+		// Calculate the damage based on limb status, item in hand, physical attributes and experience.
+		damage := Damage{}
+
+		if p.RightHand.IsBroken {
+			return damage
+		} else {
+			damage.AmountBluntDamage = p.RightHand.Items[0].Bluntness
+			damage.AmountSharpDamage = p.RightHand.Items[0].Sharpness
+
+			damage.AmountBluntDamage += p.Strength
+			damage.AmountSharpDamage += p.Strength
+
+			damage.AmountBluntDamage += p.CombatSkill + p.CombatExperience
+			damage.AmountSharpDamage += p.CombatSkill + p.CombatExperience
+		}
+	// Add a random factor to the damage
+	damage.AmountBluntDamage += rand.Intn(3)
+	damage.AmountSharpDamage += rand.Intn(3)
+
+	// Calculate the defense of the target
+	defense := target.CalculateDefense(targetLimb)
+
+	// Apply the defense to the damage
+	damage.AmountBluntDamage -= defense
+	damage.AmountSharpDamage -= defense
+
+	return damage
+}
+
+func (p *Person) CalculateDefense (targetLimb string) int {
+	// Calculate the defense based on limb status, item in hand, physical attributes and experience.
+	defense := 0
+
+	defense += p.Strength + p.Agility
+	defense += p.CombatSkill + p.CombatExperience
+
+	return defense
+}
+		
+
+func (p *Person) Attack(target *Person, targetLimb string) {
+	if target == nil {
+		fmt.Println("No target to attack")
+		return
+	}
+	// Logic for attacking
+	// 1. Calculate the damage based on limb status, item in hand, physical attributes and experience.
+	// 2. Apply the damage to the target's limb depending on the attack style and target's combat experience, skill and physical attributes.
+	// 3. If the target limb breaks, the target drops the item that was in the limb, if the limb was holding an item.
+	// 4. If the target limb starts bleeding, apply the bleeding effect to the target.
+	// 5. The attack can either be blunt or sharp, depending on the item in the attacker's hand.
+	// 6. The attack can be blocked by the target if the attack isnt a surprise attack.
+
+	// 1. Calculate the damage
+	damage := p.CalculateDamageGiven(target, targetLimb)
+
+	// 2. Apply the damage
+	target.ApplyDamageTo(targetLimb, damage)
+
+	// TODO: This should also be sent to the brain's Being Attacked function
+}
+
+// Logic for being attacked, if the hands are broken, drop the items in the hands
+func (p *Person) ApplyDamageTo(limb string, damage Damage) {
+	// Apply the damage to the limb
+
+	// TODO: Check if the limb is covered with a wearable that can protect the limb from the damage
+	// TODO: Sharp damage can sever the limb if the sharp damage is high enough, then the limb should be removed from the person
+
+	switch limb {
+		case "Head":
+		p.Head.BluntDamage += damage.AmountBluntDamage
+		p.Head.SharpDamage += damage.AmountSharpDamage
+
+		if damage.AmountBluntDamage > 0 {
+			p.Brain.owner.BrainDamage += damage.AmountBluntDamage
+		}
+
+		if p.Head.BluntDamage > 50 {
+			p.Head.IsBroken = true
+			if p.Head.BluntDamage > 75 {
+				p.IsConscious = false
+				p.IsIncapacitated = true
+			}
+			if p.Head.BluntDamage > 100 && p.Brain.active {
+				p.Brain.turnOff()
+			}
+		}
+		if p.Head.SharpDamage > 20 {
+			p.Head.IsBleeding = true
+		}
+	case "Back":
+		p.Back.BluntDamage += damage.AmountBluntDamage
+		p.Back.SharpDamage += damage.AmountSharpDamage
+		// Check if the limb is broken
+		if p.Back.BluntDamage > 50 {
+			p.Back.IsBroken = true
+			p.IsIncapacitated = true
+		} else if p.Back.SharpDamage > 20 {
+			p.Back.IsBleeding = true
+		}
+	case "LeftFoot":
+		p.LeftFoot.BluntDamage += damage.AmountBluntDamage
+		p.LeftFoot.SharpDamage += damage.AmountSharpDamage
+
+		if p.LeftFoot.BluntDamage > 50 {
+			p.LeftFoot.IsBroken = true
+			p.IsIncapacitated = true
+		} else if p.LeftFoot.SharpDamage > 20 {
+			p.LeftFoot.IsBleeding = true
+		}
+	case "RightFoot":
+		p.RightFoot.BluntDamage += damage.AmountBluntDamage
+		p.RightFoot.SharpDamage += damage.AmountSharpDamage
+
+		if p.RightFoot.BluntDamage > 50 {
+			p.RightFoot.IsBroken = true
+			p.IsIncapacitated = true
+		}
+		if p.RightFoot.SharpDamage > 20 {
+			p.RightFoot.IsBleeding = true
+		}
+	case "Torso":
+		p.Torso.BluntDamage += damage.AmountBluntDamage
+		p.Torso.SharpDamage += damage.AmountSharpDamage
+
+		if p.Torso.BluntDamage > 50 {
+			p.Torso.IsBroken = true
+			if p.Torso.BluntDamage > 75 {
+				p.IsIncapacitated = true
+			}
+		}
+		if p.Torso.SharpDamage > 20 {
+			p.Torso.IsBleeding = true
+		}
+	case "Legs":
+		p.Legs.BluntDamage += damage.AmountBluntDamage
+		p.Legs.SharpDamage += damage.AmountSharpDamage
+
+		if p.Legs.BluntDamage > 50 {
+			p.Legs.IsBroken = true
+			p.IsIncapacitated = true
+		}
+		if p.Legs.SharpDamage > 20 {
+			p.Legs.IsBleeding = true
+		}
+	case "RightHand":
+		p.RightHand.BluntDamage += damage.AmountBluntDamage
+		p.RightHand.SharpDamage += damage.AmountSharpDamage
+
+		if p.RightHand.BluntDamage > 50 {
+			p.RightHand.IsBroken = true
+			p.IsIncapacitated = true
+			p.RightHand.Items = nil
+		}
+		if p.RightHand.SharpDamage > 20 {
+			p.RightHand.IsBleeding = true
+		}
+	case "LeftHand":
+		p.LeftHand.BluntDamage += damage.AmountBluntDamage
+		p.LeftHand.SharpDamage += damage.AmountSharpDamage
+
+		if p.LeftHand.BluntDamage > 50 {
+			p.LeftHand.IsBroken = true
+			p.IsIncapacitated = true
+			p.LeftHand.Items = nil
+		}
+		if p.LeftHand.SharpDamage > 20 {
+			p.LeftHand.IsBleeding = true
+		}
+	}
+		
 }
 
 
