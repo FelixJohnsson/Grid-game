@@ -1,68 +1,14 @@
 package main
 
-// TileType represents different types of terrain.
-type TileType int
-
-// Constants representing different types of terrain.
-const (
-	Grass TileType = iota
-	Water
-	Mountain
-)
-
-// Tile represents a single tile in the world.
-type Tile struct {
-	Type     TileType  `json:"Type"`
-	Building *Building `json:"Building,omitempty"`
-	Persons  []*Person   `json:"Persons,omitempty"`
-	Items    []*Item    `json:"Items,omitempty"`
-	Plants   []*Plant    `json:"Plant,omitempty"`
-	NutritionalValue int `json:"NutritionalValue,omitempty"`
-}
-
-// World represents a 2D array of tiles.
-type World struct {
-	Tiles [][]Tile `json:"tiles"`
-}
-type Vision struct {
-	Buildings []BuildingCleaned `json:"buildings"`
-	Persons   []PersonCleaned   `json:"persons"`
-}
-type PersonCleaned struct {
-	FullName      string       `json:"FullName"`
-	Age 		  int          `json:"Age"`
-	Title 		  string       `json:"Title"`
-	Location      Location     `json:"Location"`
-	IsTalking     bool         `json:"IsTalking"`
-	Thinking      string       `json:"Thinking"`
-	RightHand     []*Item      `json:"RightHand,omitempty"`
-	LeftHand      []*Item      `json:"LeftHand,omitempty"`
-	Relationships []Relationship `json:"Relationships"`
-}
-
-type PlantCleaned struct {
-	Name      string `json:"Name"`
-	Age       int    `json:"Age"`
-	Health    int    `json:"Health"`
-	IsAlive   bool   `json:"IsAlive"`
-	ProducesFruit bool   `json:"ProducesFruit"`
-	Fruit    []Fruit `json:"Fruit"`
-	PlantStage PlantStage    `json:"PlantStage"`
-}
-type BuildingCleaned struct {
-	Name     string   `json:"name"`
-	Type     string   `json:"type"`
-	Location Location `json:"location"`
-}
 type WorldAccessor interface {
-    GetVision(x, y, visionRange int) Vision;
-	GetPersonByFullName(FullName string) *Person;
-	GetTileType(x, y int) TileType;
-	IsAdjacent(x1, y1, x2, y2 int) bool;
+	GetVision(x, y, visionRange int) Vision
+	GetPersonByFullName(FullName string) *Person
+	GetTileType(x, y int) TileType
+	IsAdjacent(x1, y1, x2, y2 int) bool
 }
 
 // NewWorld creates a new world with the given dimensions.
-func NewWorld(width, height int) World {
+func NewWorld(width, height int) *World {
 	world := World{
 		Tiles: make([][]Tile, height),
 	}
@@ -71,7 +17,7 @@ func NewWorld(width, height int) World {
 		world.Tiles[i] = make([]Tile, width)
 	}
 
-	return world
+	return &world
 }
 
 // SetTile sets the tile at the given location to the given type.
@@ -90,49 +36,47 @@ func (w *World) GetTiles() [][]Tile {
 }
 
 func (w *World) GetVision(x, y, visionRange int) Vision {
-    var buildings []BuildingCleaned
-    var persons []PersonCleaned
+	var buildings []BuildingCleaned
+	var persons []PersonInVision
 
-    for i := -visionRange; i <= visionRange; i++ {
-        for j := -visionRange; j <= visionRange; j++ {
-            tx, ty := x+i, y+j
+	for i := -visionRange; i <= visionRange; i++ {
+		for j := -visionRange; j <= visionRange; j++ {
+			tx, ty := x+i, y+j
 
-            if tx >= 0 && tx < len(w.Tiles[0]) && ty >= 0 && ty < len(w.Tiles) {
-                tile := w.Tiles[ty][tx]
+			if tx >= 0 && tx < len(w.Tiles[0]) && ty >= 0 && ty < len(w.Tiles) {
+				tile := w.Tiles[ty][tx]
 
-                if tile.Building != nil {
-                    cleanedBuilding := BuildingCleaned{
-                        Name:     tile.Building.Name,
-                        Type:     string(tile.Building.Type),
-                        Location: tile.Building.Location,
-                    }
-                    buildings = append(buildings, cleanedBuilding)
-                }
+				if tile.Building != nil {
+					cleanedBuilding := BuildingCleaned{
+						Name:     tile.Building.Name,
+						Type:     string(tile.Building.Type),
+						Location: tile.Building.Location,
+					}
+					buildings = append(buildings, cleanedBuilding)
+				}
 
-                for _, person := range tile.Persons {
-                    cleanedPerson := PersonCleaned{
-                        FullName: person.FullName,
-						Age: person.Age,
-						Title: person.Title,
-                        Location: person.Location,
-						IsTalking: person.IsTalking.IsActive,
-						Thinking: person.Thinking,
-						RightHand: person.Body.RightArm.Hand.Items,
-						LeftHand: person.Body.LeftArm.Hand.Items,
-						Relationships: person.Relationships,
-                    }
-                    persons = append(persons, cleanedPerson)
-                }
-            }
-        }
-    }
+				for _, person := range tile.Persons {
+					cleanedPerson := PersonInVision{
+						FirstName:  person.FirstName,
+						FamilyName: person.FamilyName,
+						Gender:     person.Gender,
+						Age:        person.Age,
+						Title:      person.Title,
+						Location:   person.Location,
+						Body:       person.Body,
+					}
+					persons = append(persons, cleanedPerson)
+				}
+			}
+		}
+	}
 
-    vision := Vision{
-        Buildings: buildings,
-        Persons:   persons,
-    }
+	vision := Vision{
+		Buildings: buildings,
+		Persons:   persons,
+	}
 
-    return vision
+	return vision
 }
 
 // AddBuilding adds a building to the tile at the given location.
@@ -166,7 +110,7 @@ func (w *World) GetAllBuildings() []Building {
 			}
 		}
 	}
-	
+
 	return buildings
 }
 
@@ -226,7 +170,7 @@ func (w *World) RemovePerson(FullName string, x, y int) []*Person {
 			break
 		}
 	}
-	
+
 	// Update the tile with the new list of people
 	tile.Persons = everyone
 
@@ -288,7 +232,7 @@ func (w *World) RemoveItem(Item *Item, x, y int) []*Item {
 			break
 		}
 	}
-	
+
 	// Update the tile with the new list of items
 	tile.Items = everything
 
@@ -297,7 +241,7 @@ func (w *World) RemoveItem(Item *Item, x, y int) []*Item {
 
 	return everything
 }
-	
+
 // AddPlant adds a plant to the tile at the given location.
 func (w *World) AddPlant(x, y int, plant *Plant) {
 	w.Tiles[y][x].Plants = append(w.Tiles[y][x].Plants, plant)
@@ -322,7 +266,7 @@ func (w *World) RemovePlant(Plant *Plant, x, y int) []*Plant {
 			break
 		}
 	}
-	
+
 	// Update the tile with the new list of plants
 	tile.Plants = everything
 

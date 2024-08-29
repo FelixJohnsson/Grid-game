@@ -10,56 +10,58 @@ import (
 func NewBrain() *Brain {
     ctx, cancel := context.WithCancel(context.Background())
     return &Brain{
-        active:  false,
-        ctx:     ctx,
-        cancel:  cancel,
-        actions: []TargetedAction{
+        Active:  false,
+        Ctx:     ctx,
+        Cancel:  cancel,
+        Actions: []TargetedAction{
             {"Idle", "", false, make([]string, 0)},
         },
+        IsConscious: true,
+        IsAlive:    true,
+        BrainDamage: 0,
     }
 }
 
 func (b *Brain) turnOn() {
-    if b.active {
+    if b.Active {
         fmt.Println("Brain is already active.")
         return
     }
 
-    fmt.Println("Brain for: " + b.owner.FullName + " is now active.")
+    fmt.Println("Brain for: " + b.Owner.FullName + " is now active.")
     b.IsConscious = true
-    b.active = true
+    b.Active = true
 
     go b.mainLoop()
 }
 
 func (b *Brain) turnOff() {
-    if !b.active {
+    if !b.Active {
         fmt.Println("Brain is already inactive.")
         return
     }
 
-    fmt.Println(b.owner.FullName, "'s brain is shutting down")
-    b.cancel()
-    b.active = false
+    fmt.Println(b.Owner.FullName, "'s brain is shutting down")
+    b.Cancel()
 }
 
 func (b *Brain) mainLoop() {
-    fmt.Println(b.owner.FullName + "'s brain is now ", b.active)
+    fmt.Println(b.Owner.FullName + "'s brain is now ", b.Active)
 
     for {
         select {
-        case <-b.ctx.Done():
-            b.active = false
+        case <-b.Ctx.Done():
+            b.Active = false
             return
         default:
         
         if !b.IsConscious{
-            fmt.Println(b.owner.FullName + "' brain is not conscious but still alive.")
+            fmt.Println(b.Owner.FullName + "' brain is not conscious but still alive.")
             return
         } else {
             // Brain logic goes here
 
-            fmt.Println(b.owner.FullName + "'s brain is thinking...")
+            fmt.Println(b.Owner.FullName + "'s brain is thinking...")
 
             obs := b.processInputs()
             b.makeDecisions(obs)
@@ -78,7 +80,7 @@ func (b *Brain) processInputs() Vision {
 	// For now we could just decide if the person is in a friendly or hostile area
     
     // Get the vision of the person
-    obs := b.owner.GetVision()
+    obs := b.Owner.GetVision()
 
     // Check the tile type of the person
     b.checkTileType()
@@ -102,7 +104,7 @@ func (v Vision) HasPerson(fullName string) bool {
 // Check what tile type the person is on
 func (b *Brain) checkTileType() {
     // Check the tile type of the person
-    b.owner.OnTileType = b.owner.WorldProvider.GetTileType(b.owner.Location.X, b.owner.Location.Y)
+    b.Owner.OnTileType = b.Owner.WorldProvider.GetTileType(b.Owner.Location.X, b.Owner.Location.Y)
 }
 
 // Decide if the area is safe or not
@@ -113,8 +115,8 @@ func (b *Brain) isAreaSafe(obs Vision) {
     numberOfPeople := len(obs.Persons)
 
     for _, person := range obs.Persons {
-        if b.owner.hasRelationship(person.FullName) {
-            for _, relationship := range b.owner.Relationships {
+        if b.Owner.hasRelationship(person.FullName) {
+            for _, relationship := range b.Owner.Relationships {
                 if relationship.WithPerson == person.FullName {
                     collectiveIntensity += relationship.Intensity
                 }
@@ -123,36 +125,38 @@ func (b *Brain) isAreaSafe(obs Vision) {
     }
 
     // This is a pretty dumb way to determine if the area is safe or not, but it's a start
-    b.owner.FeelingSafe = collectiveIntensity/numberOfPeople
+    b.Owner.FeelingSafe = collectiveIntensity/numberOfPeople
 }
 
 func (b *Brain) makeDecisions(obs Vision) {
     // Check if we're engaging in conversation with someone and if we are and we dont have that person in the observation, we should cancel the conversation
-    if b.owner.IsTalking.IsActive {
-        if !obs.HasPerson(b.owner.IsTalking.Target) {
-            fmt.Println(b.owner.FullName + " is no longer talking to " + b.owner.IsTalking.Target)
-            b.owner.IsTalking = TargetedAction{"", "", false, make([]string, 0)}
+    if b.Owner.IsTalking.IsActive {
+        if !obs.HasPerson(b.Owner.IsTalking.Target) {
+            fmt.Println(b.Owner.FullName + " is no longer talking to " + b.Owner.IsTalking.Target)
+            b.Owner.IsTalking = TargetedAction{"", "", false, make([]string, 0)}
         }
     }
     // Loop through the observations and make decisions based on people
     for _, person := range obs.Persons {
-        if person.FullName != b.owner.FullName {
-            if b.owner.hasRelationship(person.FullName) {
-                for _, relationship := range b.owner.Relationships {
+        if person.FullName != b.Owner.FullName {
+            if b.Owner.hasRelationship(person.FullName) {
+                for _, relationship := range b.Owner.Relationships {
                     if relationship.WithPerson == person.FullName {
                         relationship.Intensity++
                         if relationship.Intensity > 3 { // This should be a constant and above 15 and below 40
                             relationship.Relationship = "Aquantance"
-                            if !b.owner.IsTalking.IsActive {
-                                targetPerson := b.owner.GetPersonByFullName(relationship.WithPerson)
-                                b.SendTaskRequest(targetPerson, "Talk")
+                            if !b.Owner.IsTalking.IsActive {
+                                targetPerson := b.Owner.GetPersonByFullName(relationship.WithPerson)
+                                if targetPerson != nil {
+                                    b.SendTaskRequest(targetPerson, "Talk")
+                                }
                             }
                         }
-                        b.owner.updateRelationship(person.FullName, relationship.Relationship, relationship.Intensity)
+                        b.Owner.updateRelationship(person.FullName, relationship.Relationship, relationship.Intensity)
                     }
                 }
             } else { // If the person does not have a relationship with the other person
-                b.owner.addRelationship(person, "Stranger", 0)
+                b.Owner.addRelationship(person, "Stranger", 0)
             }
         }
     }
@@ -160,23 +164,23 @@ func (b *Brain) makeDecisions(obs Vision) {
 
 // Receive a requested task from another person
 func (b *Brain) ReceiveTaskRequest(requestedTask RequestedAction) bool {
-    fmt.Println(b.owner.FullName + " received a task request from " + requestedTask.From.FullName)
+    fmt.Println(b.Owner.FullName + " received a task request from " + requestedTask.From.FullName)
     // Check the relationship between the two people
-    hasRelationship := b.owner.hasRelationship(requestedTask.From.FullName)
+    hasRelationship := b.Owner.hasRelationship(requestedTask.From.FullName)
 
     // For now we will just accept the task
     if hasRelationship {
-        if requestedTask.Action == "Talk" && b.owner.IsTalking.IsActive {
-            fmt.Println(b.owner.FullName + " is already talking to someone.")
+        if requestedTask.Action == "Talk" && b.Owner.IsTalking.IsActive {
+            fmt.Println(b.Owner.FullName + " is already talking to someone.")
             return false
-        } else if requestedTask.Action == "Talk" && !b.owner.IsTalking.IsActive {
-            b.owner.IsTalking = TargetedAction{"Bla bla bla ...", requestedTask.From.FullName, true, make([]string, 0)}
-            fmt.Println(b.owner.FullName + " accepted the task request from " + requestedTask.From.FullName)
-            fmt.Println(b.owner.FullName + " is talking to " + requestedTask.From.FullName)
+        } else if requestedTask.Action == "Talk" && !b.Owner.IsTalking.IsActive {
+            b.Owner.IsTalking = TargetedAction{"Bla bla bla ...", requestedTask.From.FullName, true, make([]string, 0)}
+            fmt.Println(b.Owner.FullName + " accepted the task request from " + requestedTask.From.FullName)
+            fmt.Println(b.Owner.FullName + " is talking to " + requestedTask.From.FullName)
             return true
         }
     } else {
-        fmt.Println(b.owner.FullName + " denied the task request from " + requestedTask.From.FullName + " because they are strangers.")
+        fmt.Println(b.Owner.FullName + " denied the task request from " + requestedTask.From.FullName + " because they are strangers.")
         return false
     }
     return false
@@ -184,24 +188,24 @@ func (b *Brain) ReceiveTaskRequest(requestedTask RequestedAction) bool {
 
 // Send a task request to another person
 func (b *Brain) SendTaskRequest(to *Person, taskType string) {
-    if b.owner.IsTalking.IsActive {
-        fmt.Println(b.owner.FullName + " is already talking to someone.")
+    if b.Owner.IsTalking.IsActive {
+        fmt.Println(b.Owner.FullName + " is already talking to someone.")
         return 
     }
-    fmt.Println(b.owner.FullName + " is sending a task request to " + to.FullName)
-    task := RequestedAction{TargetedAction{taskType, to.FullName, true, make([]string, 0)}, b.owner}
+    fmt.Println(b.Owner.FullName + " is sending a task request to " + to.FullName)
+    task := RequestedAction{TargetedAction{taskType, to.FullName, true, make([]string, 0)}, b.Owner}
     success := to.Body.Head.Brain.ReceiveTaskRequest(task)
     if success {
         fmt.Println(to.FullName + " accepted the task request.")
-        b.owner.IsTalking = TargetedAction{"Hello " + to.FullName + ", how are you doing?", to.FullName, true, make([]string, 0)}
-        fmt.Println(b.owner.FullName + " is talking to " + to.FullName)
+        b.Owner.IsTalking = TargetedAction{"Hello " + to.FullName + ", how are you doing?", to.FullName, true, make([]string, 0)}
+        fmt.Println(b.Owner.FullName + " is talking to " + to.FullName)
     } else {
         fmt.Println(to.FullName + " declined the task request.")
     }
 }
 
 func (b *Brain) performActions() {
-    if b.owner.IsTalking.IsActive {
-        fmt.Println(b.owner.FullName + " says " + b.owner.IsTalking.Action + " to " + b.owner.IsTalking.Target)
+    if b.Owner.IsTalking.IsActive {
+        fmt.Println(b.Owner.FullName + " says " + b.Owner.IsTalking.Action + " to " + b.Owner.IsTalking.Target)
     }
 }

@@ -26,17 +26,12 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 		IsChild:          age < 18,
 		Gender:           gender,
 		Description:      "",
-		Icon:             "P",
 		Occupation:       Unemployed,
-		IsWorkingAt:      nil,
-		Color:            "",
 		IsMoving:         TargetedAction{},
 		IsTalking:        TargetedAction{},
 		IsSitting:        TargetedAction{},
-		IsHolding:        TargetedAction{},
 		IsEating:         TargetedAction{},
 		IsSleeping:       TargetedAction{},
-		IsWorking:        TargetedAction{},
 		Thinking:         "",
 		WantsTo:          "",
 		FeelingSafe: 	  0,
@@ -62,7 +57,7 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 		CombatStyle:      "One handed",
 	}
 
-	person.Body.Head.Brain.owner = person
+	person.Body.Head.Brain.Owner = person
 	fmt.Printf("%s has been created\n", person.FullName)
 
 	return person
@@ -81,7 +76,6 @@ func (p *Person) GrabRight(item *Item) {
 		if item.Residues != nil {
 			for _, residue := range item.Residues {
 				p.AddResidue("RightHand", residue)
-				p.IsHolding.IsActive = true
 			}
 		}
 	} else {
@@ -127,6 +121,10 @@ func (p *Person) RemoveLimb(limb LimbType) {
 	fmt.Println(limb, "has been SEVERED!!!")
 
 	switch limb {
+	case "Head":
+		p.Body.Head.Brain.turnOff()
+		p.Body.Head = nil
+		return
 	case "RightHand":
 		p.Body.RightArm.Hand = nil 
 		return
@@ -135,19 +133,21 @@ func (p *Person) RemoveLimb(limb LimbType) {
 		return
 	case "RightFoot":
 		p.Body.RightLeg.Foot = nil
+		p.IsIncapacitated = true
 		return
 	case "LeftFoot":
 		p.Body.LeftLeg.Foot = nil
+		p.IsIncapacitated = true
 		return
 	case "RightLeg":
 		p.Body.RightLeg = nil
+		p.IsIncapacitated = true
 		return
 	case "LeftLeg":
 		p.Body.LeftLeg = nil
+		p.IsIncapacitated = true
 		return
-	case "Head":
-		p.Body.Head = nil
-		return
+
 	}
 }
 
@@ -181,7 +181,7 @@ func (p *Person) GetPersonByFullName(FullName string) *Person {
 	return p.WorldProvider.GetPersonByFullName(FullName)
 }
 
-func (p *Person) addRelationship(person PersonCleaned, relationship string, intensity int) {
+func (p *Person) addRelationship(person PersonInVision, relationship string, intensity int) {
 	p.Relationships = append(p.Relationships, Relationship{WithPerson: person.FullName, Relationship: relationship, Intensity: intensity})
 }
 
@@ -212,7 +212,6 @@ func (p *Person) updateRelationship(fullName string, relationship string, intens
 		}
 	}
 }
-
 
 // ---------------- Hostile actions ----------------
 
@@ -262,13 +261,6 @@ func (p *Person) Attack(target *Person, targetLimb string) {
 		fmt.Println("No target to attack")
 		return
 	}
-	// Logic for attacking
-	// 1. Calculate the damage based on limb status, item in hand, physical attributes and experience.
-	// 2. Apply the damage to the target's limb depending on the attack style and target's combat experience, skill and physical attributes.
-	// 3. If the target limb breaks, the target drops the item that was in the limb, if the limb was holding an item.
-	// 4. If the target limb starts bleeding, apply the bleeding effect to the target.
-	// 5. The attack can either be blunt or sharp, depending on the item in the attacker's hand.
-	// 6. The attack can be blocked by the target if the attack isnt a surprise attack.
 
 	// 1. Calculate the damage
 	damage := p.CalculateDamageGiven(target, targetLimb)
@@ -305,9 +297,6 @@ func (p *Person) ApplyDamageTo(limb string, damage Damage) {
 		p.Body.Head.Brain.BrainDamage += damage.AmountBluntDamage
 
 		if p.Body.Head.SharpDamage > sharpDamageUntilSevered {
-			p.Body.Head.Brain.IsConscious = false
-			p.IsIncapacitated = true
-			p.Body.Head.Brain.turnOff()
 			p.RemoveLimb("Head")
 			return
 		}
@@ -317,7 +306,7 @@ func (p *Person) ApplyDamageTo(limb string, damage Damage) {
 				p.Body.Head.Brain.IsConscious = false
 				p.IsIncapacitated = true
 			}
-			if p.Body.Head.BluntDamage >= brainDamageUntilDead && p.Body.Head.Brain.active {
+			if p.Body.Head.BluntDamage >= brainDamageUntilDead && p.Body.Head.Brain.Active {
 				p.Body.Head.Brain.turnOff()
 			}
 		}

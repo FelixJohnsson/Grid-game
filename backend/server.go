@@ -13,12 +13,10 @@ type DefaultResponse struct {
 	Message string `json:"message"`
 	Status  int    `json:"status"`
 }
-
 type PersonResponse struct {
 	Message []*Person `json:"message"`
 	Status  int      `json:"status"`
 }
-
 type BuildingResponse struct {
 	Message []Building `json:"message"`
 	Status  int        `json:"status"`
@@ -27,24 +25,15 @@ type MoveRequest struct {
 	FullName  string `json:"full_name"`
 	Direction string `json:"direction"`
 }
-
 type GrabRequest struct {
 	ItemName string `json:"ItemName"`
 	FullName string `json:"FullName"`
 }
-
 type AttackRequest struct {
 	FullName       string `json:"FullName"`
 	TargetFullName string `json:"TargetFullName"`
 }
 
-type CleanedTile struct {
-    Type     TileType         `json:"Type"`
-    Building *BuildingCleaned `json:"Building,omitempty"`
-    Persons  []PersonCleaned  `json:"Persons,omitempty"`
-	Items    []*Item          `json:"Items,omitempty"`
-	Plants   []*PlantCleaned  `json:"Plants,omitempty"`
-}
 type WorldResponse struct {
     Message [][]CleanedTile `json:"message"`
     Status  int             `json:"status"`
@@ -107,63 +96,6 @@ func (w *World) buildingHandler(writer http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSONResponse(writer, response)
-}
-
-func (w *World) CleanTiles() [][]CleanedTile {
-	tiles := w.GetTiles()
-    cleanedTiles := make([][]CleanedTile, len(tiles))
-
-	for y, row := range tiles {
-        cleanedTiles[y] = make([]CleanedTile, len(row))
-        for x, tile := range row {
-            var cleanedBuilding *BuildingCleaned
-            if tile.Building != nil {
-                cleanedBuilding = &BuildingCleaned{
-                    Name:     tile.Building.Name,
-                    Type:     string(tile.Building.Type),
-                    Location: tile.Building.Location,
-                }
-            }
-
-            var cleanedPersons []PersonCleaned
-            for _, person := range tile.Persons {
-                cleanedPersons = append(cleanedPersons, PersonCleaned{
-                        FullName: person.FullName,
-						Age: person.Age,
-						Title: person.Title,
-                        Location: person.Location,
-						IsTalking: person.IsTalking.IsActive,
-						Thinking: person.Thinking,
-						RightHand: person.Body.RightArm.Hand.Items,
-						LeftHand: person.Body.LeftArm.Hand.Items,
-						Relationships: person.Relationships,
-                })
-            }
-			var cleanedPlants []*PlantCleaned
-			for _, plant := range tile.Plants {
-				// Remove the PlantLife from the Plant before sending it to the client
-				cleanedPlants = append(cleanedPlants, &PlantCleaned{
-					Name:          plant.Name,
-					Age:           plant.Age,
-					Health:        plant.Health,
-					IsAlive:       plant.IsAlive,
-					ProducesFruit: plant.ProducesFruit,
-					Fruit:         plant.Fruit,
-					PlantStage:    plant.PlantStage,
-				})
-			}
-
-            cleanedTiles[y][x] = CleanedTile{
-                Type:     tile.Type,
-                Building: cleanedBuilding,
-                Persons:  cleanedPersons,
-				Items:    tile.Items,
-				Plants:   cleanedPlants,
-            }
-        }
-    }
-
-	return cleanedTiles
 }
 
 // Handler for /world endpoint
@@ -390,66 +322,9 @@ func main() {
 	http.Handle("/entityGrab", corsMiddleware(http.HandlerFunc(world.grabHandler)))
 	http.Handle("/entityAttack", corsMiddleware(http.HandlerFunc(world.attackHandler)))
 
-	
-
 	// Default handler for the root path or undefined paths
 	http.Handle("/", corsMiddleware(http.HandlerFunc(defaultHandler)))
 
 	fmt.Println("Server started at :8080")
 	http.ListenAndServe(":8080", nil)
-}
-
-func initializeWorld() *World {
-	world := NewWorld(10, 10) 
-
-	// Create people
-	newPerson1 := world.createNewPerson(2, 2)
-	newPerson1.Title = "Leader"
-	newPerson1.Thinking = "I am the leader of this group."
-
-	newPerson2 := world.createNewPerson(9, 9)
-	newPerson2.Title = "Follower"
-	newPerson2.Thinking = "I follow the leader."
-
-	world.AddPerson(2, 2, newPerson1)
-	world.AddPerson(9, 9, newPerson2)
-
-
-	// Turn on the brain for the people
-	newPerson1.Body.Head.Brain.turnOn()
-	newPerson2.Body.Head.Brain.turnOn()
-
-	// Create a Wooden spear item from items
-	woodenSpear := items[0]
-	woodenSpear.Residues = append(woodenSpear.Residues, Residue{"Dirt", 1})
-
-	// Create a Wooden staff item from items
-	woodenStaff := items[1]
-	woodenStaff.Residues = append(woodenStaff.Residues, Residue{"Blood", 1})
-	stoneAxe := items[2]
-
-	newPerson1.GrabRight(&stoneAxe)
-
-	// Add the wooden spear to the world
-	world.AddItem(1, 1, &woodenSpear)
-
-	// Test the attack function every 2 seconds
-	go func() {
-		for {
-			time.Sleep(2 * time.Second)
-			newPerson1.Attack(newPerson2, "Head")
-
-			if !newPerson2.Body.Head.Brain.IsAlive{
-				fmt.Println(newPerson2.FullName, " is dead.")
-				break
-			}
-		}
-	}()
-
-	// Add a plant
-	appleTree := NewPlant("Apple Tree", &world.Tiles[5][5])
-	world.AddPlant(5, 5, appleTree)
-	appleTree.PlantLife.turnOn()
-
-	return &world
 }

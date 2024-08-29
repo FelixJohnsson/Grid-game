@@ -13,6 +13,25 @@ type WorldState struct {
   	Resources 	Resources;
 }
 
+type TileType int
+
+const (
+	Grass TileType = iota
+	Water
+	Mountain
+)
+type Tile struct {
+	Type     TileType  `json:"Type"`
+	Building *Building `json:"Building,omitempty"`
+	Persons  []*Person   `json:"Persons,omitempty"`
+	Items    []*Item    `json:"Items,omitempty"`
+	Plants   []*Plant    `json:"Plant,omitempty"`
+	NutritionalValue int `json:"NutritionalValue,omitempty"`
+}
+type World struct {
+	Tiles [][]Tile `json:"tiles"`
+}
+
 // ----------------- People -----------------
 
 // Enum for Jobs
@@ -42,20 +61,16 @@ type Person struct {
 	IsChild          bool
 	Gender           string
 	Description      string
-	Icon             string
 	Occupation       Jobs
-	IsWorkingAt      *Building
-	Color            string
+	SkinColor        string
 	Personality 	 string
 	Genes            []string
 
 	IsMoving         TargetedAction
 	IsTalking        TargetedAction
 	IsSitting        TargetedAction
-	IsHolding        TargetedAction
 	IsEating         TargetedAction
 	IsSleeping       TargetedAction
-	IsWorking        TargetedAction
 
 	Thinking         string
 	WantsTo          string
@@ -98,14 +113,18 @@ type RequestedAction struct {
 }
 
 type Brain struct {
-	owner  *Person
-    active bool
-    ctx    context.Context
-    cancel context.CancelFunc
-	actions []TargetedAction
+	Owner  *Person
+    Active bool
+    Ctx    context.Context
+    Cancel context.CancelFunc
+	Actions []TargetedAction
     IsConscious bool
     IsAlive bool
     BrainDamage int
+}
+type Vision struct {
+	Buildings []BuildingCleaned `json:"buildings"`
+	Persons   []PersonInVision   `json:"persons"`
 }
 
 // ----------------- Body -------------------
@@ -264,4 +283,68 @@ type Item struct {
 	Weight    int
 	Material  []Material
 	Residues  []Residue
+}
+
+// ----------------- Cleaned ------------------
+
+type CleanedTile struct {
+    Type     TileType         `json:"Type"`
+    Building *BuildingCleaned `json:"Building,omitempty"`
+    Persons  []PersonCleaned  `json:"Persons,omitempty"`
+	Items    []*Item          `json:"Items,omitempty"`
+	Plants   []*PlantCleaned  `json:"Plants,omitempty"`
+}
+type PlantCleaned struct {
+	Name      string `json:"Name"`
+	Age       int    `json:"Age"`
+	Health    int    `json:"Health"`
+	IsAlive   bool   `json:"IsAlive"`
+	ProducesFruit bool   `json:"ProducesFruit"`
+	Fruit    []Fruit `json:"Fruit"`
+	PlantStage PlantStage    `json:"PlantStage"`
+}
+type BuildingCleaned struct {
+	Name     string   `json:"name"`
+	Type     string   `json:"type"`
+	Location Location `json:"location"`
+}
+
+type PersonCleaned struct {
+	FirstName    string       `json:"FirstName"`
+	FamilyName   string       `json:"FamilyName"`
+	FullName     string       `json:"FullName"`
+	Gender 	     string	      `json:"Gender"`
+	Age 		 int          `json:"Age"`
+	Title 		 string       `json:"Title"`
+
+	Location     Location     `json:"Location"`
+
+	Thinking 	 string       `json:"Thinking"`
+
+	Body 		 *HumanBody    `json:"Body"`
+
+	Strength 	 int          `json:"Strength"`
+	Agility 	int           `json:"Agility"`
+	Intelligence int          `json:"Intelligence"`
+	Charisma 	int           `json:"Charisma"`
+	Stamina 	int           `json:"Stamina"`
+
+	CombatExperience int      `json:"CombatExperience"`
+	CombatSkill int           `json:"CombatSkill"`
+	CombatStyle string        `json:"CombatStyle"`
+
+	IsIncapacitated bool       `json:"IsIncapacitated"`
+
+	Relationships []Relationship `json:"Relationships"`
+}
+
+type PersonInVision struct {
+	FullName     string
+	FirstName    string 
+	FamilyName   string
+	Gender 		 string
+	Age 		 int
+	Title 		 string
+	Location     Location
+	Body 		 *HumanBody
 }
