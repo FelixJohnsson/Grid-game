@@ -14,7 +14,7 @@ func NewBrain() *Brain {
         Ctx:     ctx,
         Cancel:  cancel,
         Actions: []TargetedAction{
-            {"Idle", "", false, make([]string, 0)},
+            {"Idle", "", false, make([]LimbType, 0)},
         },
         IsConscious: true,
         IsAlive:    true,
@@ -62,8 +62,6 @@ func (b *Brain) mainLoop() {
             return
         } else {
             // Brain logic goes here
-
-            fmt.Println(b.Owner.FullName + "'s brain is thinking...")
 
             if  b.IsUnderAttack.Active && b.IsUnderAttack.From.Body.Head == nil {
                 // The attacker is dead
@@ -180,7 +178,7 @@ func (b *Brain) makeDecisions(obs Vision) {
     if b.Owner.IsTalking.IsActive {
         if !obs.HasPerson(b.Owner.IsTalking.Target) {
             fmt.Println(b.Owner.FullName + " is no longer talking to " + b.Owner.IsTalking.Target)
-            b.Owner.IsTalking = TargetedAction{"", "", false, make([]string, 0)}
+            b.Owner.IsTalking = TargetedAction{"", "", false, make([]LimbType, 0)}
         }
     }
     // Loop through the observations and make decisions based on people
@@ -221,7 +219,7 @@ func (b *Brain) ReceiveTaskRequest(requestedTask RequestedAction) bool {
             fmt.Println(b.Owner.FullName + " is already talking to someone.")
             return false
         } else if requestedTask.Action == "Talk" && !b.Owner.IsTalking.IsActive {
-            b.Owner.IsTalking = TargetedAction{"Bla bla bla ...", requestedTask.From.FullName, true, make([]string, 0)}
+            b.Owner.IsTalking = TargetedAction{"Bla bla bla ...", requestedTask.From.FullName, true, make([]LimbType, 0)}
             fmt.Println(b.Owner.FullName + " accepted the task request from " + requestedTask.From.FullName)
             fmt.Println(b.Owner.FullName + " is talking to " + requestedTask.From.FullName)
             return true
@@ -240,11 +238,11 @@ func (b *Brain) SendTaskRequest(to *Person, taskType string) {
         return 
     }
     fmt.Println(b.Owner.FullName + " is sending a task request to " + to.FullName)
-    task := RequestedAction{TargetedAction{taskType, to.FullName, true, make([]string, 0)}, b.Owner}
+    task := RequestedAction{TargetedAction{taskType, to.FullName, true, make([]LimbType, 0)}, b.Owner}
     success := to.Body.Head.Brain.ReceiveTaskRequest(task)
     if success {
         fmt.Println(to.FullName + " accepted the task request.")
-        b.Owner.IsTalking = TargetedAction{"Hello " + to.FullName + ", how are you doing?", to.FullName, true, make([]string, 0)}
+        b.Owner.IsTalking = TargetedAction{"Hello " + to.FullName + ", how are you doing?", to.FullName, true, make([]LimbType, 0)}
         fmt.Println(b.Owner.FullName + " is talking to " + to.FullName)
     } else {
         fmt.Println(to.FullName + " declined the task request.")
@@ -254,5 +252,24 @@ func (b *Brain) SendTaskRequest(to *Person, taskType string) {
 func (b *Brain) performActions() {
     if b.Owner.IsTalking.IsActive {
         fmt.Println(b.Owner.FullName + " says " + b.Owner.IsTalking.Action + " to " + b.Owner.IsTalking.Target)
+    }
+}
+
+// Decide a path to the target location - Check first if it's physically possible to walk.
+func (b *Brain) DecidePathTo(x, y int) []*Node {
+    path := b.AStar(b.Owner.Location.X, b.Owner.Location.Y, x, y)
+    return path
+}
+
+// WalkOverPath - Walk over the path that was decided
+func (b *Brain) WalkOverPath(x, y int) {
+    path := b.DecidePathTo(x, y)
+    if path == nil {
+        fmt.Println(b.Owner.FullName + " could not find a path to the location.")
+        return
+    }
+    for _, node := range path {
+        fmt.Printf("Step to: (%d, %d)\n", node.X, node.Y)
+        b.Owner.WalkTo(node.X, node.Y)
     }
 }

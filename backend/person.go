@@ -266,6 +266,12 @@ func (p *Person) UpdateRelationship(fullName string, relationship string, intens
 	}
 }
 
+// WalkTo - Walk to a location - This assumes that the person can physically walk and that it's possible to walk to the location. This should be one tile away, so one step.
+func (p *Person) WalkTo(x, y int) {
+	requiredLimbs := []LimbType{"RightLeg", "LeftLeg"}
+	p.IsMoving = TargetedAction{"Walk", string(x) + ", " + string(y), true, requiredLimbs}
+}
+
 // ---------------- Finding ----------------------------
 
 // Find Wood - Find wood in the vision

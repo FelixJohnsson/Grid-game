@@ -104,7 +104,7 @@ type TargetedAction struct {
 	Action string
 	Target string
 	IsActive bool
-	RequiresLimb []string
+	RequiresLimb []LimbType
 }
 
 type IsUnderAttack struct {

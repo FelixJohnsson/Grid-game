@@ -5,11 +5,18 @@ import (
 	"time"
 )
 
+// AddPlantToTheWorld adds a plant to the world at the given location.
+func (w *World) AddPlantToTheWorld(x, y int, plant string) {
+	newPlant := NewPlant(plant, &w.Tiles[x][y], x, y)
+	w.AddPlant(x, y, newPlant)
+	newPlant.PlantLife.turnOn()
+}
+
 func initializeWorld() *World {
 	world := NewWorld(10, 10) 
 
 	// Create people
-	newPerson1 := world.createNewPerson(2, 2)
+	newPerson1 := world.createNewPerson(1, 1)
 	newPerson1.Title = "Leader"
 	newPerson1.Thinking = "I am the leader of this group."
 
@@ -40,32 +47,28 @@ func initializeWorld() *World {
 	world.AddItem(1, 1, &woodenSpear)
 
 	// Add a plant
-	appleTree := NewPlant("Apple Tree", &world.Tiles[5][5], 5, 5)
-	world.AddPlant(5, 5, appleTree)
-	appleTree.PlantLife.turnOn()
+	world.AddPlantToTheWorld(5, 5, "Apple Tree")
 
-	// Add 4 Oak trees
-	oakTree1 := NewPlant("Oak Tree", &world.Tiles[2][3], 2, 3)
-	world.AddPlant(2, 3, oakTree1)
-	oakTree1.PlantLife.turnOn()
+	// Add some lumber trees
+	world.AddPlantToTheWorld(3, 6, "Oak Tree")
+	world.AddPlantToTheWorld(4, 4, "Oak Tree")
+	world.AddPlantToTheWorld(8, 6, "Oak Tree")
+	world.AddPlantToTheWorld(9, 7, "Oak Tree")
+	world.AddPlantToTheWorld(8, 8, "Oak Tree")
 
-	oakTree2 := NewPlant("Oak Tree", &world.Tiles[8][6], 8, 6)
-	world.AddPlant(8, 6, oakTree2)
-	oakTree2.PlantLife.turnOn()
-
-	oakTree3 := NewPlant("Oak Tree", &world.Tiles[9][7], 9, 7)
-	world.AddPlant(9, 7, oakTree3)
-	oakTree3.PlantLife.turnOn()
-
-	oakTree4 := NewPlant("Oak Tree", &world.Tiles[8][8], 8, 8)
-	world.AddPlant(8, 8, oakTree4)
-	oakTree4.PlantLife.turnOn()
+	// Add water to the map to test the A* algorithm
+	world.SetTileType(0, 1, 1)
+	world.SetTileType(0, 2, 1)
+	world.SetTileType(0, 3, 1)
+	world.SetTileType(1, 2, 1)
+	world.SetTileType(1, 3, 1)
 
 	// Test the FindLumberTrees function
 	lumberTreesFound := newPerson1.FindLumberTrees()
 	if lumberTreesFound != nil {
 		closestLumberTree := newPerson1.FindTheClosestPlant(lumberTreesFound)
 		fmt.Println("And the closest lumber tree is at", closestLumberTree.Location.X, closestLumberTree.Location.Y)
+		newPerson1.Body.Head.Brain.WalkOverPath(closestLumberTree.Location.X, closestLumberTree.Location.Y)
 	} else {
 		fmt.Println("No lumber trees found in vision")
 	}

@@ -8,6 +8,7 @@ type WorldAccessor interface {
 	GetTileType(x, y int) TileType
 	IsAdjacent(x1, y1, x2, y2 int) bool
 	CalculateDistance(x1, y1, x2, y2 int) int
+	CanWalk(x, y int) bool
 }
 
 // NewWorld creates a new world with the given dimensions.
@@ -38,6 +39,12 @@ func (w *World) GetTiles() [][]Tile {
 	return w.Tiles
 }
 
+// CanWalk returns true if the person can walk on the tile at the given location.
+func (w *World) CanWalk(x, y int) bool {
+	return w.Tiles[y][x].Type != Water && w.Tiles[y][x].Type != Mountain && w.Tiles[y][x].Building == nil
+}
+
+// GetVision returns the vision of the person at the given location, up to the given range.
 func (w *World) GetVision(x, y, visionRange int) Vision {
 	var persons []PersonInVision
 	var plants []*Plant
