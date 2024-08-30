@@ -240,7 +240,7 @@ func (w *World) attackHandler(writer http.ResponseWriter, r *http.Request) {
 		return
 	} else {
 		// Attack the target person
-		person.AttackWithWeapon(targetPerson, "Head", person.Body.RightArm.Hand)
+		person.AttackWith(targetPerson, "Head", person.Body.RightArm.Hand)
 	}
 
 	response := WorldResponse{

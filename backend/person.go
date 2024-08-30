@@ -275,8 +275,11 @@ func (p *Person) CalculateDamageGiven(target *Person, targetLimb LimbType, withL
 		// Calculate the damage based on limb status, item in hand, physical attributes and experience.
 		damage := Damage{}
 
-		if withLimb.IsBroken {
+		if withLimb.IsBroken || withLimb == nil {
 			return damage
+		} else if withLimb.Items == nil {
+				damage.AmountBluntDamage = 1 + p.Strength
+				damage.AmountSharpDamage = 1 + p.Strength
 		} else {
 			damage.AmountBluntDamage = withLimb.Items[0].Bluntness
 			damage.AmountSharpDamage = withLimb.Items[0].Sharpness
@@ -310,9 +313,41 @@ func (p *Person) CalculateDefense (targetLimb LimbType) int {
 
 	return defense
 }
-		
 
-func (p *Person) AttackWithWeapon(target *Person, targetLimb LimbType, withLimb *LimbThatCanGrab) Damage {
+// UnderAttack is called when the person is being attacked
+func (p *Person) UnderAttack(attacker *Person, targettedLimb LimbType, attackersLimb *LimbThatCanGrab) {
+	// Decide between fight or flight
+	if p.FeelingSafe < p.FeelingScared { // This is a SUPER simple way to decide between fight or flight
+		p.Flee(attacker)
+	} else {
+		// Check if the person has a weapon in the right hand or left hand
+		if p.Body.RightArm.Hand.Items != nil {
+			p.AttackWith(attacker, targettedLimb, p.Body.RightArm.Hand)
+		} else if p.Body.LeftArm.Hand.Items != nil {
+			p.AttackWith(attacker, targettedLimb, p.Body.LeftArm.Hand)
+		} else {
+			// Check if any of the limbs are injured and if they can still fight
+			if !p.Body.RightArm.Hand.IsBroken {
+				fmt.Println("Right hand is broken and cannot hold a weapon")
+			} else if p.Body.LeftArm.Hand.IsBroken {
+				fmt.Println("Left hand is broken and cannot hold a weapon")
+			} else {
+				fmt.Println("No weapon in hand")
+				
+			}
+		}
+
+	}
+}
+	
+// Flee is called when the person is feeling scared
+func (p *Person) Flee(attacker *Person) {
+	// Move away from the attacker
+	
+}
+		
+// AttackWithWeapon - target is the person being attacked, targetLimb is the limb being attacked, withLimb (probably hand) is the limb that is attacking
+func (p *Person) AttackWith(target *Person, targetLimb LimbType, withLimb *LimbThatCanGrab) Damage {
 	if target == nil {
 		fmt.Println("No target to attack")
 		return Damage{}
