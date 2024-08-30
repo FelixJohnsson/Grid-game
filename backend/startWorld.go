@@ -44,7 +44,7 @@ func initializeWorld() *World {
 	world.AddPlant(5, 5, appleTree)
 	appleTree.PlantLife.turnOn()
 
-	damage := newPerson1.AttackWith(newPerson2, "Head", newPerson1.Body.RightArm.Hand)
+	damage := newPerson1.AttackWithArm(newPerson2, "Head", newPerson1.Body.RightArm.Hand)
 			// This should probably return a result of the attack
 			if damage.AmountBluntDamage > 0 || damage.AmountSharpDamage > 0 {
 				bloodResidue := Residue{"Blood", 1}
@@ -65,7 +65,7 @@ func TestAttack(w *World, person1 *Person, person2 *Person, d time.Duration) {
 				break
 			}
 			fmt.Println("Arm: ", person1.Body.RightArm.Hand.Items[0].Name)
-			damage := person1.AttackWith(person2, "Head", person1.Body.RightArm.Hand)
+			damage := person1.AttackWithArm(person2, "Head", person1.Body.RightArm.Hand)
 			// This should probably return a result of the attack
 			if damage.AmountBluntDamage > 0 || damage.AmountSharpDamage > 0 {
 				bloodResidue := Residue{"Blood", 1}

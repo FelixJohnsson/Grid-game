@@ -107,6 +107,21 @@ type TargetedAction struct {
 	RequiresLimb []string
 }
 
+type IsUnderAttack struct {
+	Active bool
+	From *Person
+	Target LimbType
+	ByLimb LimbType
+}
+
+type Memory struct {
+	Event string
+	Location Location
+}
+type Memories struct {
+	ShortTermMemory []Memory
+	LongTermMemory  []Memory
+}
 type RequestedAction struct {
 	TargetedAction
 	From *Person
@@ -121,6 +136,8 @@ type Brain struct {
     IsConscious bool
     IsAlive bool
     BrainDamage int
+	IsUnderAttack IsUnderAttack
+	Memories Memories
 }
 type Vision struct {
 	Buildings []BuildingCleaned `json:"buildings"`

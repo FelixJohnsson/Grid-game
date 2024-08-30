@@ -19,6 +19,8 @@ func NewBrain() *Brain {
         IsConscious: true,
         IsAlive:    true,
         BrainDamage: 0,
+        IsUnderAttack: IsUnderAttack{false, nil, "", ""}, 
+        Memories: Memories{make([]Memory, 0), make([]Memory, 0)},
     }
 }
 
@@ -63,6 +65,21 @@ func (b *Brain) mainLoop() {
 
             fmt.Println(b.Owner.FullName + "'s brain is thinking...")
 
+            if  b.IsUnderAttack.Active && b.IsUnderAttack.From.Body.Head == nil {
+                // The attacker is dead
+                b.AddMemoryToLongTerm("Killed " + b.IsUnderAttack.From.FullName, b.IsUnderAttack.From.Location)
+
+                b.IsUnderAttack = IsUnderAttack{false, nil, "", ""}
+                fmt.Println(b.Owner.FullName + " is no longer under attack.")
+            }
+
+            // Check if the person is under attack
+            if b.IsUnderAttack.Active{
+                b.UnderAttack(b.IsUnderAttack.From, b.IsUnderAttack.Target, b.IsUnderAttack.ByLimb)
+                b.Owner.UpdateRelationship(b.IsUnderAttack.From.FullName, "Enemy", 100)
+                b.AddMemoryToLongTerm("Under Attack", b.IsUnderAttack.From.Location)
+            }
+
             obs := b.processInputs()
             b.makeDecisions(obs)
             b.performActions()
@@ -73,6 +90,36 @@ func (b *Brain) mainLoop() {
         }
     }
     
+}
+
+// AddMemoryToShortTerm adds a memory to the short term memory
+func (b *Brain) AddMemoryToShortTerm(event string, location Location) {
+    memory := Memory{event, location}
+    b.Memories.ShortTermMemory = append(b.Memories.ShortTermMemory, memory)
+}
+
+// AddMemoryToLongTerm adds a memory to the long term memory
+func (b *Brain) AddMemoryToLongTerm(event string, location Location) {
+    memory := Memory{event, location}
+    b.Memories.LongTermMemory = append(b.Memories.LongTermMemory, memory)
+}
+
+// UnderAttack is called when the person is being attacked
+func (b *Brain) UnderAttack(attacker *Person, targettedLimb LimbType, attackersLimb LimbType) {
+	// Decide between fight or flight
+
+	// Check if arms or hands are broken, if so, attack with legs
+	if !b.Owner.Body.RightArm.IsBroken {
+		b.Owner.AttackWithArm(attacker, targettedLimb, b.Owner.Body.RightArm.Hand)
+	} else if !b.Owner.Body.LeftArm.IsBroken {
+		b.Owner.AttackWithArm(attacker, targettedLimb, b.Owner.Body.LeftArm.Hand)
+	} else if !b.Owner.Body.RightLeg.IsBroken {
+		b.Owner.AttackWithLeg(attacker, targettedLimb, b.Owner.Body.RightLeg)
+	} else if !b.Owner.Body.LeftLeg.IsBroken {
+		b.Owner.AttackWithLeg(attacker, targettedLimb, b.Owner.Body.LeftLeg)
+	} else {
+		//
+	}
 }
 
 func (b *Brain) processInputs() Vision {
@@ -152,7 +199,7 @@ func (b *Brain) makeDecisions(obs Vision) {
                                 }
                             }
                         }
-                        b.Owner.updateRelationship(person.FullName, relationship.Relationship, relationship.Intensity)
+                        b.Owner.UpdateRelationship(person.FullName, relationship.Relationship, relationship.Intensity)
                     }
                 }
             } else { // If the person does not have a relationship with the other person

@@ -152,6 +152,12 @@ func (p *Person) RemoveLimb(limb LimbType) {
 
 // AddResidue adds a residue to the limb
 func (p *Person) AddResidue(limb LimbType, residue Residue) {
+
+	// Check that the person has the limb
+	if p.Body.Head == nil && limb == "Head" {
+		fmt.Println("The person has no head to add residue to")
+		return
+	}
 	switch limb {
 	case "LeftFoot":
 		// Should loop over the residues and add the new residue if it doesn't exist
@@ -259,7 +265,7 @@ func (p *Person) removeRelationship(person Person) {
 	}
 }
 
-func (p *Person) updateRelationship(fullName string, relationship string, intensity int) {
+func (p *Person) UpdateRelationship(fullName string, relationship string, intensity int) {
 	for i, rel := range p.Relationships {
 		if rel.WithPerson == fullName {
 			p.Relationships[i].Relationship = relationship
@@ -271,7 +277,40 @@ func (p *Person) updateRelationship(fullName string, relationship string, intens
 
 // ---------------- Hostile actions ----------------
 
-func (p *Person) CalculateDamageGiven(target *Person, targetLimb LimbType, withLimb *LimbThatCanGrab) Damage {
+// CalculateLegDamageGiven calculates the damage given by the leg
+func (p *Person) CalculateLegDamageGiven(target *Person, targetLimb LimbType, withLimb *Leg) Damage {
+	// Calculate the damage based on limb status, physical attributes and experience.
+	damage := Damage{}
+
+	if withLimb.IsBroken || withLimb == nil {
+		return damage
+	} else {
+		damage.AmountBluntDamage = 1 + p.Strength
+	}
+
+	// Add a random factor to the damage
+	damage.AmountBluntDamage += rand.Intn(3)
+
+	// Calculate the defense of the target
+	defense := target.CalculateDefense(targetLimb)
+
+	// Apply the defense to the damage
+	damage.AmountBluntDamage -= defense
+
+	if damage.AmountBluntDamage < 0 {
+		damage.AmountBluntDamage = 0
+	}
+	if damage.AmountSharpDamage < 0 {
+		damage.AmountSharpDamage = 0
+	}
+
+	return damage
+}
+
+
+
+// CalculateArmDamageGiven calculates the damage given by the arm
+func (p *Person) CalculateArmDamageGiven(target *Person, targetLimb LimbType, withLimb *LimbThatCanGrab) Damage {
 		// Calculate the damage based on limb status, item in hand, physical attributes and experience.
 		damage := Damage{}
 
@@ -301,10 +340,17 @@ func (p *Person) CalculateDamageGiven(target *Person, targetLimb LimbType, withL
 	damage.AmountBluntDamage -= defense
 	damage.AmountSharpDamage -= defense
 
+	if damage.AmountBluntDamage < 0 {
+		damage.AmountBluntDamage = 0
+	}
+	if damage.AmountSharpDamage < 0 {
+		damage.AmountSharpDamage = 0
+	}
+
 	return damage
 }
 
-func (p *Person) CalculateDefense (targetLimb LimbType) int {
+func (p *Person) CalculateDefense(targetLimb LimbType) int {
 	// Calculate the defense based on limb status, item in hand, physical attributes and experience.
 	defense := 0
 
@@ -313,51 +359,41 @@ func (p *Person) CalculateDefense (targetLimb LimbType) int {
 
 	return defense
 }
-
-// UnderAttack is called when the person is being attacked
-func (p *Person) UnderAttack(attacker *Person, targettedLimb LimbType, attackersLimb *LimbThatCanGrab) {
-	// Decide between fight or flight
-	if p.FeelingSafe < p.FeelingScared { // This is a SUPER simple way to decide between fight or flight
-		p.Flee(attacker)
-	} else {
-		// Check if the person has a weapon in the right hand or left hand
-		if p.Body.RightArm.Hand.Items != nil {
-			p.AttackWith(attacker, targettedLimb, p.Body.RightArm.Hand)
-		} else if p.Body.LeftArm.Hand.Items != nil {
-			p.AttackWith(attacker, targettedLimb, p.Body.LeftArm.Hand)
-		} else {
-			// Check if any of the limbs are injured and if they can still fight
-			if !p.Body.RightArm.Hand.IsBroken {
-				fmt.Println("Right hand is broken and cannot hold a weapon")
-			} else if p.Body.LeftArm.Hand.IsBroken {
-				fmt.Println("Left hand is broken and cannot hold a weapon")
-			} else {
-				fmt.Println("No weapon in hand")
-				
-			}
-		}
-
-	}
-}
 	
 // Flee is called when the person is feeling scared
 func (p *Person) Flee(attacker *Person) {
 	// Move away from the attacker
 	
 }
-		
-// AttackWithWeapon - target is the person being attacked, targetLimb is the limb being attacked, withLimb (probably hand) is the limb that is attacking
-func (p *Person) AttackWith(target *Person, targetLimb LimbType, withLimb *LimbThatCanGrab) Damage {
+// AttackWithLeg - target is the person being attacked, targetLimb is the limb being attacked, withLimb (probably leg) is the limb that is attacking
+func (p *Person) AttackWithLeg(target *Person, targetLimb LimbType, withLimb *Leg) Damage {
 	if target == nil {
 		fmt.Println("No target to attack")
 		return Damage{}
 	}
 
-	damage := p.CalculateDamageGiven(target, targetLimb, withLimb)
+	damage := p.CalculateLegDamageGiven(target, targetLimb, withLimb)
 	target.ReceivingApplyDamageTo(targetLimb, damage)
 
 	return damage
-	// TODO: This should also be sent to the brain's Being Attacked function
+}
+		
+// AttackWithArm - target is the person being attacked, targetLimb is the limb being attacked, withLimb (probably hand) is the limb that is attacking
+func (p *Person) AttackWithArm(target *Person, targetLimb LimbType, withLimb *LimbThatCanGrab) Damage {
+	if target == nil {
+		fmt.Println("No target to attack")
+		return Damage{}
+	}
+
+	damage := p.CalculateArmDamageGiven(target, targetLimb, withLimb)
+	fmt.Println(p.FullName, "is attacking", target.FullName, "and causing", damage.AmountBluntDamage, "blunt damage and", damage.AmountSharpDamage, "sharp damage")
+	target.ReceivingApplyDamageTo(targetLimb, damage)
+
+	if target.Body.Head != nil {
+		target.Body.Head.Brain.IsUnderAttack = IsUnderAttack{true, p, targetLimb, "RightHand"}
+	}
+
+	return damage
 }
 
 // Logic for being attacked, if the hands are broken, drop the items in the hands
