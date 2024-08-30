@@ -7,7 +7,7 @@ import (
 )
 
 // NewPlant creates a new plant with the given name.
-func NewPlant(name string, tile *Tile) *Plant {
+func NewPlant(name string, tile *Tile, x, y int) *Plant {
 	plantLife := NewPlantLife(tile)
 
 	return &Plant{
@@ -19,6 +19,7 @@ func NewPlant(name string, tile *Tile) *Plant {
 		ProducesFruit: false,
 		Fruit:         []Fruit{},
 		PlantLife:     plantLife,
+        Location:      Location{x, y},
 	}
 }
 

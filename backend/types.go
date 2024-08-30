@@ -25,7 +25,7 @@ type Tile struct {
 	Building *Building `json:"Building,omitempty"`
 	Persons  []*Person   `json:"Persons,omitempty"`
 	Items    []*Item    `json:"Items,omitempty"`
-	Plants   []*Plant    `json:"Plant,omitempty"`
+	Plants   []*Plant    `json:"Plants,omitempty"`
 	NutritionalValue int `json:"NutritionalValue,omitempty"`
 }
 type World struct {
@@ -140,8 +140,8 @@ type Brain struct {
 	Memories Memories
 }
 type Vision struct {
-	Buildings []BuildingCleaned `json:"buildings"`
-	Persons   []PersonInVision   `json:"persons"`
+	Plants    []*Plant            `json:"Plants"`
+	Persons   []PersonInVision   `json:"Persons"`
 }
 
 // ----------------- Body -------------------
@@ -269,6 +269,7 @@ type Plant struct {
 	Fruit         []Fruit
 	PlantStage    PlantStage
 	PlantLife     *PlantLife
+	Location	  Location
 }
 
 // ----------------- Items ------------------

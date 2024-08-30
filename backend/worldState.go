@@ -1,10 +1,13 @@
 package main
 
+import "math"
+
 type WorldAccessor interface {
 	GetVision(x, y, visionRange int) Vision
 	GetPersonByFullName(FullName string) *Person
 	GetTileType(x, y int) TileType
 	IsAdjacent(x1, y1, x2, y2 int) bool
+	CalculateDistance(x1, y1, x2, y2 int) int
 }
 
 // NewWorld creates a new world with the given dimensions.
@@ -36,8 +39,8 @@ func (w *World) GetTiles() [][]Tile {
 }
 
 func (w *World) GetVision(x, y, visionRange int) Vision {
-	var buildings []BuildingCleaned
 	var persons []PersonInVision
+	var plants []*Plant
 
 	for i := -visionRange; i <= visionRange; i++ {
 		for j := -visionRange; j <= visionRange; j++ {
@@ -45,16 +48,6 @@ func (w *World) GetVision(x, y, visionRange int) Vision {
 
 			if tx >= 0 && tx < len(w.Tiles[0]) && ty >= 0 && ty < len(w.Tiles) {
 				tile := w.Tiles[ty][tx]
-
-				if tile.Building != nil {
-					cleanedBuilding := BuildingCleaned{
-						Name:     tile.Building.Name,
-						Type:     string(tile.Building.Type),
-						Location: tile.Building.Location,
-					}
-					buildings = append(buildings, cleanedBuilding)
-				}
-
 				for _, person := range tile.Persons {
 					cleanedPerson := PersonInVision{
 						FirstName:  person.FirstName,
@@ -67,16 +60,23 @@ func (w *World) GetVision(x, y, visionRange int) Vision {
 					}
 					persons = append(persons, cleanedPerson)
 				}
+				plants = append(plants, tile.Plants...)
 			}
 		}
 	}
 
 	vision := Vision{
-		Buildings: buildings,
-		Persons:   persons,
+		Plants:  plants,
+		Persons: persons,
 	}
 
 	return vision
+}
+
+
+// CalculateDistance calculates the distance between two locations.
+func (w *World) CalculateDistance(x1, y1, x2, y2 int) int {
+	return int(math.Abs(float64(x1-x2)) + math.Abs(float64(y1-y2)))
 }
 
 // AddBuilding adds a building to the tile at the given location.
