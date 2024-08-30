@@ -117,7 +117,7 @@ func (p *Person) DropLeft() {
 }
 
 // RemoveLimb removes a limb from the person
-func (p *Person) RemoveLimb(limb LimbType) {
+func (p *Person) RemoveLimb(limb BodyPartType) {
 	fmt.Println(limb, "has been SEVERED!!!")
 
 	switch limb {
@@ -151,7 +151,7 @@ func (p *Person) RemoveLimb(limb LimbType) {
 }
 
 // AddResidue adds a residue to the limb
-func (p *Person) AddResidue(limb LimbType, residue Residue) {
+func (p *Person) AddResidue(limb BodyPartType, residue Residue) {
 
 	// Check that the person has the limb
 	if p.Body.Head == nil && limb == "Head" {
@@ -268,8 +268,8 @@ func (p *Person) UpdateRelationship(fullName string, relationship string, intens
 
 // WalkTo - Walk to a location - This assumes that the person can physically walk and that it's possible to walk to the location. This should be one tile away, so one step.
 func (p *Person) WalkTo(x, y int) {
-	requiredLimbs := []LimbType{"RightLeg", "LeftLeg"}
-	p.IsMoving = TargetedAction{"Walk", string(x) + ", " + string(y), true, requiredLimbs}
+	requiredLimbs := []BodyPartType{"RightLeg", "LeftLeg"}
+	p.IsMoving = TargetedAction{"Walk", string(x) + ", " + string(y), true, requiredLimbs, 10}
 }
 
 // ---------------- Finding ----------------------------

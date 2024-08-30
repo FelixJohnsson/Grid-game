@@ -19,6 +19,8 @@ func initializeWorld() *World {
 	newPerson1 := world.createNewPerson(1, 1)
 	newPerson1.Title = "Leader"
 	newPerson1.Thinking = "I am the leader of this group."
+	newPerson1.Body.Head.Nose.IsBroken = true
+	newPerson1.Body.Head.Mouth.IsObstructed = true
 
 	newPerson2 := world.createNewPerson(9, 9)
 	newPerson2.Title = "Follower"
@@ -30,7 +32,6 @@ func initializeWorld() *World {
 
 	// Turn on the brain for the people
 	newPerson1.Body.Head.Brain.turnOn()
-	newPerson2.Body.Head.Brain.turnOn()
 
 	// Create a Wooden spear item from items
 	woodenSpear := items[0]
@@ -67,7 +68,6 @@ func initializeWorld() *World {
 	lumberTreesFound := newPerson1.FindLumberTrees()
 	if lumberTreesFound != nil {
 		closestLumberTree := newPerson1.FindTheClosestPlant(lumberTreesFound)
-		fmt.Println("And the closest lumber tree is at", closestLumberTree.Location.X, closestLumberTree.Location.Y)
 		newPerson1.Body.Head.Brain.WalkOverPath(closestLumberTree.Location.X, closestLumberTree.Location.Y)
 	} else {
 		fmt.Println("No lumber trees found in vision")

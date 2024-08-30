@@ -66,6 +66,16 @@ func CreateNewLeg() *Leg {
 	return &leg
 }
 
+func CreateNewBodyPart(name string) *BodyPart {
+	bodyPart := BodyPart{
+		Name:         name,
+		IsBleeding:   false,
+		IsBroken:     false,
+		IsObstructed: false,
+	}
+	return &bodyPart
+}
+
 func CreateNewHead() *Head {
 	head := Head{
 		LimbStatus: LimbStatus{
@@ -78,6 +88,11 @@ func CreateNewHead() *Head {
 			IsAttached:  true,
 		},
 	}
+	head.Eyes = CreateNewBodyPart("Eyes")
+	head.Ears = CreateNewBodyPart("Ears")
+	head.Nose = CreateNewBodyPart("Nose")
+	head.Mouth = CreateNewBodyPart("Mouth")
+
 	head.Brain = NewBrain()
 	return &head
 }

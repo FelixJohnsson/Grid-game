@@ -8,7 +8,7 @@ import (
 // ---------------- Hostile actions ----------------
 
 // CalculateLegDamageGiven calculates the damage given by the leg
-func (p *Person) CalculateLegDamageGiven(target *Person, targetLimb LimbType, withLimb *Leg) Damage {
+func (p *Person) CalculateLegDamageGiven(target *Person, targetLimb BodyPartType, withLimb *Leg) Damage {
 	// Calculate the damage based on limb status, physical attributes and experience.
 	damage := Damage{}
 
@@ -40,7 +40,7 @@ func (p *Person) CalculateLegDamageGiven(target *Person, targetLimb LimbType, wi
 
 
 // CalculateArmDamageGiven calculates the damage given by the arm
-func (p *Person) CalculateArmDamageGiven(target *Person, targetLimb LimbType, withLimb *LimbThatCanGrab) Damage {
+func (p *Person) CalculateArmDamageGiven(target *Person, targetLimb BodyPartType, withLimb *LimbThatCanGrab) Damage {
 		// Calculate the damage based on limb status, item in hand, physical attributes and experience.
 		damage := Damage{}
 
@@ -80,7 +80,7 @@ func (p *Person) CalculateArmDamageGiven(target *Person, targetLimb LimbType, wi
 	return damage
 }
 
-func (p *Person) CalculateDefense(targetLimb LimbType) int {
+func (p *Person) CalculateDefense(targetLimb BodyPartType) int {
 	// Calculate the defense based on limb status, item in hand, physical attributes and experience.
 	defense := 0
 
@@ -96,7 +96,7 @@ func (p *Person) Flee(attacker *Person) {
 	
 }
 // AttackWithLeg - target is the person being attacked, targetLimb is the limb being attacked, withLimb (probably leg) is the limb that is attacking
-func (p *Person) AttackWithLeg(target *Person, targetLimb LimbType, withLimb *Leg) Damage {
+func (p *Person) AttackWithLeg(target *Person, targetLimb BodyPartType, withLimb *Leg) Damage {
 	if target == nil {
 		fmt.Println("No target to attack")
 		return Damage{}
@@ -109,7 +109,7 @@ func (p *Person) AttackWithLeg(target *Person, targetLimb LimbType, withLimb *Le
 }
 		
 // AttackWithArm - target is the person being attacked, targetLimb is the limb being attacked, withLimb (probably hand) is the limb that is attacking
-func (p *Person) AttackWithArm(target *Person, targetLimb LimbType, withLimb *LimbThatCanGrab) Damage {
+func (p *Person) AttackWithArm(target *Person, targetLimb BodyPartType, withLimb *LimbThatCanGrab) Damage {
 	if target == nil {
 		fmt.Println("No target to attack")
 		return Damage{}
@@ -127,7 +127,7 @@ func (p *Person) AttackWithArm(target *Person, targetLimb LimbType, withLimb *Li
 }
 
 // Logic for being attacked, if the hands are broken, drop the items in the hands
-func (p *Person) ReceivingApplyDamageTo(limb LimbType, damage Damage) {
+func (p *Person) ReceivingApplyDamageTo(limb BodyPartType, damage Damage) {
 	// TODO: Check if the limb is covered with a wearable that can protect the limb from the damage
 
 	var bluntDamageUntilBroken = 50

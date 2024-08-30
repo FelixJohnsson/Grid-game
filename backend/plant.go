@@ -42,7 +42,6 @@ func (l *PlantLife) turnOn() {
         return
     }
 
-    fmt.Println("Plant life is now active.")
     l.active = true
 
     go l.mainLoop()

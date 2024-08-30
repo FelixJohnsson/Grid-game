@@ -104,14 +104,15 @@ type TargetedAction struct {
 	Action string
 	Target string
 	IsActive bool
-	RequiresLimb []LimbType
+	RequiresLimb []BodyPartType
+	Priority int
 }
 
 type IsUnderAttack struct {
 	Active bool
 	From *Person
-	Target LimbType
-	ByLimb LimbType
+	Target BodyPartType
+	ByLimb BodyPartType
 }
 
 type Memory struct {
@@ -127,17 +128,36 @@ type RequestedAction struct {
 	From *Person
 }
 
+type PhysiologicalNeeds struct {
+	Thirst int
+	Hunger int
+	CanBreath bool
+	HasShelter bool
+	IsSufficientlyWarm bool
+	Rested int
+	IsInPain bool
+	NeedToExcrete bool
+	IsInSafeArea bool
+	IsCapableOfDefendingSelf bool
+}
+
 type Brain struct {
 	Owner  *Person
     Active bool
     Ctx    context.Context
     Cancel context.CancelFunc
-	Actions []TargetedAction
+	ActionList []TargetedAction
     IsConscious bool
+	CanBreath bool
+	OxygenLevel int
+	PainLevel int
+	PainTolerance int
     IsAlive bool
     BrainDamage int
 	IsUnderAttack IsUnderAttack
 	Memories Memories
+
+	PhysiologicalNeeds PhysiologicalNeeds 
 }
 type Vision struct {
 	Plants    []*Plant            `json:"Plants"`
@@ -156,17 +176,29 @@ type LimbStatus struct {
 	IsAttached bool
 }
 
-type LimbType string
+type BodyPartType string
+
+type BodyPart struct {
+	Name string
+	IsBleeding bool
+	IsBroken bool
+	IsObstructed bool
+}
 
 const (
-	RightHand LimbType = "RightHand"
-	LeftHand  LimbType = "LeftHand"
-	RightFoot LimbType = "RightFoot"
-	LeftFoot  LimbType = "LeftFoot"
-	RightLeg  LimbType = "RightLeg"
-	LeftLeg   LimbType = "LeftLeg"
-	TheHead   LimbType = "Head"
-	Torso     LimbType = "Torso"
+	RightHand BodyPartType = "RightHand"
+	LeftHand  BodyPartType = "LeftHand"
+	RightFoot BodyPartType = "RightFoot"
+	LeftFoot  BodyPartType = "LeftFoot"
+	RightLeg  BodyPartType = "RightLeg"
+	LeftLeg   BodyPartType = "LeftLeg"
+	TheHead   BodyPartType = "Head"
+	Torso     BodyPartType = "Torso"
+
+	Mouth    BodyPartType = "Mouth"
+	Nose     BodyPartType = "Nose"
+	Eyes     BodyPartType = "Eyes"
+	Ears     BodyPartType = "Ears"
 )
 
 type LimbThatCanHold struct {
@@ -183,6 +215,10 @@ type Damage struct {
 type Head struct {
 	LimbStatus
 	Brain *Brain
+	Eyes *BodyPart
+	Ears *BodyPart
+	Nose *BodyPart
+	Mouth *BodyPart
 }
 
 type LimbThatCanGrab struct {

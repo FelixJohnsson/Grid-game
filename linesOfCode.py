@@ -57,4 +57,4 @@ if __name__ == "__main__":
 
 # 30/08/2024
 #Total files scanned: 27
-#Total lines of code: 2849
+#Total lines of code: 3089
