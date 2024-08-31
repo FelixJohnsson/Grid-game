@@ -9,7 +9,7 @@ type Tile = {
   Type: TileType;
   Persons?: Person[];
   Items?: Item[];
-  Plants?: Plant[];
+  Plant?: Plant;
   NutritionalValue?: number;
 };
 
@@ -263,7 +263,7 @@ export type CleanedTile = {
   Building?: BuildingCleaned;
   Persons?: PersonCleaned[];
   Items?: Item[];
-  Plants?: PlantCleaned[];
+  Plant?: PlantCleaned;
 };
 
 type PlantCleaned = {

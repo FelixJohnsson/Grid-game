@@ -25,7 +25,7 @@ func NewBrain() *Brain {
         IsUnderAttack: IsUnderAttack{false, nil, "", ""}, 
         Memories: Memories{make([]Memory, 0), make([]Memory, 0)},
 
-        PhysiologicalNeeds: PhysiologicalNeeds{0, 0, true, false, true, 100, false, false, false, false},
+        PhysiologicalNeeds: PhysiologicalNeeds{0, 0, false, false, false, true, false, true, 100, false, false, false, false},
     }
 }
 
@@ -40,19 +40,39 @@ func (b *Brain) OxygenHandler() {
     b.ConsumeOxygen()
 
     if b.OxygenLevel <= 0 {
-        b.Owner.Body.Head.Brain.turnOff()
+        b.turnOff()
         fmt.Println(b.Owner.FullName + "'s brain is shutting down due to lack of oxygen.")
         return
     }
+}
+
+// IncreaseHungerLevel is a function that increases the hunger level of the person
+func (b *Brain) IncreaseHungerLevel() {
+    b.PhysiologicalNeeds.Hunger += 1
+}
+
+//IncreaseThirstLevel is a function that increases the thirst level of the person
+func (b *Brain) IncreaseThirstLevel() {
+    b.PhysiologicalNeeds.Thirst += 1
+}
+
+// FoodHandler is a function that handles the food level of the person
+func (b *Brain) FoodHandler() {
+    b.IncreaseHungerLevel()
+}
+
+// ThirstHandler is a function that handles the thirst level of the person
+func (b *Brain) ThirstHandler() {
+    b.IncreaseThirstLevel()
 }
 
 // IsUnderAttackHandler is a function that handles the person being under attack
 func (b *Brain) IsUnderAttackHandler() {
     if b.IsUnderAttack.Active && !b.IsUnderAttack.From.Body.Head.Brain.IsConscious {
         b.IsUnderAttack = IsUnderAttack{false, b.IsUnderAttack.From, "", ""}
-        fmt.Println(b.Owner.FullName + " is no longer under attack because they're unconscious.")
+        fmt.Println(b.Owner.FullName + " is no longer under attack because attacker is unconscious.")
         b.AddMemoryToShortTerm("Knocked out", b.IsUnderAttack.From.FullName, b.IsUnderAttack.From.Location)
-    } else if b.IsUnderAttack.Active && b.IsUnderAttack.From.Body.Head.Brain.IsConscious {
+    } else if b.IsUnderAttack.Active {
         b.UnderAttack(b.IsUnderAttack.From, b.IsUnderAttack.Target, b.IsUnderAttack.ByLimb)
         b.Owner.UpdateRelationship(b.IsUnderAttack.From.FullName, "Enemy", 100)
         b.AddMemoryToShortTerm("Under attack", b.IsUnderAttack.From.FullName, b.IsUnderAttack.From.Location)
@@ -68,9 +88,13 @@ func (b *Brain) mainLoop() {
             b.Active = false
             return
         default:
+
+        if !b.Active {
+            return
+        }
         b.OxygenHandler()
 
-        if !b.IsConscious{
+        if !b.IsConscious && b.Active {
             fmt.Println(b.Owner.FullName + "'s brain is not conscious but still alive.")
             return
         }
@@ -79,14 +103,16 @@ func (b *Brain) mainLoop() {
             b.IsUnderAttackHandler()
         }
         
-        if b.Active {
+        if b.Active && b.IsConscious {
             b.CalculatePainLevel()
             b.PainHandler()
+            b.FoodHandler()
+            b.ThirstHandler()
 
-            obs := b.processInputs()
-            b.makeDecisions(obs)
+
             b.CalculateWant()
             b.TranslateWantToTaskList()
+            fmt.Println(b.ActionList)
             b.performActions()
 
             // Sleep for 2 seconds
@@ -94,19 +120,6 @@ func (b *Brain) mainLoop() {
         }
         }
     }
-}
-
-func (b *Brain) processInputs() Vision {
-    // Get the vision of the person
-    obs := b.Owner.GetVision()
-
-    // Check the tile type of the person
-    b.checkTileType()
-
-    // Check if the area is safe
-    b.isAreaSafe(obs)
-
-    return obs
 }
 
 // Helper function that goes through the observation list and returns a boolean if the person is there

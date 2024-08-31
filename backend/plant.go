@@ -10,7 +10,7 @@ import (
 func NewPlant(name string, tile *Tile, x, y int) *Plant {
 	plantLife := NewPlantLife(tile)
 
-	return &Plant{
+	newPlant := &Plant{
 		Name:          name,
 		PlantStage:    0,
 		Age:           0,
@@ -21,6 +21,12 @@ func NewPlant(name string, tile *Tile, x, y int) *Plant {
 		PlantLife:     plantLife,
         Location:      Location{x, y},
 	}
+
+    if name == "Apple Tree" {
+        newPlant.ProducesFruit = true
+    }
+
+    return newPlant
 }
 
 // NewPlantLife creates a new plant life and assigns an owner to it.
@@ -62,3 +68,4 @@ func (l *PlantLife) mainLoop() {
         }
     }
 }
+

@@ -235,10 +235,6 @@ func (p *Person) AddResidue(limb BodyPartType, residue Residue) {
 	}
 }
 
-func (p *Person) GetVision() Vision {
-    return p.WorldProvider.GetVision(p.Location.X, p.Location.Y, p.VisionRange)
-}
-
 func (p *Person) GetPersonByFullName(FullName string) *Person {
 	return p.WorldProvider.GetPersonByFullName(FullName)
 }
@@ -276,12 +272,12 @@ func (p *Person) WalkTo(x, y int) {
 
 // Find Wood - Find wood in the vision
 func (p *Person) FindLumberTrees() []*Plant {
-	vision := p.GetVision()
+	vision := p.WorldProvider.GetPlantsInVision(p.Location.X, p.Location.Y, p.VisionRange)
 
 	lumberTreesInVision := []*Plant{}
 
 	// Check if there are any Lumber trees in the vision, which are trees called "Oak Tree", for now.
-	for _, plant := range vision.Plants {
+	for _, plant := range vision {
 		if plant.Name == "Oak Tree" {
 			lumberTreesInVision = append(lumberTreesInVision, plant)
 		}

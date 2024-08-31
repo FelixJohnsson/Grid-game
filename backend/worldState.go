@@ -3,7 +3,10 @@ package main
 import "math"
 
 type WorldAccessor interface {
-	GetVision(x, y, visionRange int) Vision
+	GetPersonInVision(x, y, visionRange int) []PersonInVision
+	GetWaterInVision(x, y, visionRange int) []TileInVision
+	GetPlantsInVision(x, y, visionRange int) []*Plant
+	
 	GetPersonByFullName(FullName string) *Person
 	GetTileType(x, y int) TileType
 	IsAdjacent(x1, y1, x2, y2 int) bool
@@ -44,10 +47,9 @@ func (w *World) CanWalk(x, y int) bool {
 	return w.Tiles[y][x].Type != Water && w.Tiles[y][x].Type != Mountain && w.Tiles[y][x].Building == nil
 }
 
-// GetVision returns the vision of the person at the given location, up to the given range.
-func (w *World) GetVision(x, y, visionRange int) Vision {
+// GetPersonInVision returns the vision of the person at the given location, up to the given range.
+func (w *World) GetPersonInVision(x, y, visionRange int) []PersonInVision {
 	var persons []PersonInVision
-	var plants []*Plant
 
 	for i := -visionRange; i <= visionRange; i++ {
 		for j := -visionRange; j <= visionRange; j++ {
@@ -67,17 +69,56 @@ func (w *World) GetVision(x, y, visionRange int) Vision {
 					}
 					persons = append(persons, cleanedPerson)
 				}
-				plants = append(plants, tile.Plants...)
+				
+			}
+		}
+	}
+	
+	return persons
+}
+
+// GetWaterInVision returns the water in the vision of the person at the given location, up to the given range.
+func (w *World) GetWaterInVision(x, y, visionRange int) []TileInVision {
+	var water []TileInVision
+
+	for i := -visionRange; i <= visionRange; i++ {
+		for j := -visionRange; j <= visionRange; j++ {
+			tx, ty := x+i, y+j
+
+			if tx >= 0 && tx < len(w.Tiles[0]) && ty >= 0 && ty < len(w.Tiles) {
+				tile := w.Tiles[ty][tx]
+				if tile.Type == Water {
+					tileInVision := TileInVision{
+						Tile:     tile,
+						Location: Location{X: tx, Y: ty},
+					}
+					water = append(water, tileInVision)
+				}
 			}
 		}
 	}
 
-	vision := Vision{
-		Plants:  plants,
-		Persons: persons,
+	return water
+}
+
+// GetPlantsInVision returns the plants in the vision of the person at the given location, up to the given range.
+func (w *World) GetPlantsInVision(x, y, visionRange int) []*Plant {
+	var plants []*Plant
+
+	for i := -visionRange; i <= visionRange; i++ {
+		for j := -visionRange; j <= visionRange; j++ {
+			tx, ty := x+i, y+j
+
+			if tx >= 0 && tx < len(w.Tiles[0]) && ty >= 0 && ty < len(w.Tiles) {
+				tile := w.Tiles[ty][tx]
+				if tile.Plant != nil {
+					plants = append(plants, tile.Plant)
+				}
+			}
+		}
 	}
 
-	return vision
+	return plants
 }
 
 
@@ -251,34 +292,19 @@ func (w *World) RemoveItem(Item *Item, x, y int) []*Item {
 
 // AddPlant adds a plant to the tile at the given location.
 func (w *World) AddPlant(x, y int, plant *Plant) {
-	w.Tiles[y][x].Plants = append(w.Tiles[y][x].Plants, plant)
+	w.Tiles[y][x].Plant = plant
 }
 
 // GetPlants returns the plants at the given location.
-func (w *World) GetPlants(x, y int) []*Plant {
+func (w *World) GetPlants(x, y int) *Plant {
 	tile := w.Tiles[y][x]
 
-	return tile.Plants
+	return tile.Plant
 }
 
 // RemovePlant removes the plant from the tile at the given location.
-func (w *World) RemovePlant(Plant *Plant, x, y int) []*Plant {
-	tile := w.Tiles[y][x]
+func (w *World) RemovePlant(Plant *Plant, x, y int) Tile {
+	w.Tiles[y][x].Plant = nil
 
-	// Find the plant in the tile and remove it
-	everything := tile.Plants
-	for i, plant := range everything {
-		if plant == Plant {
-			everything = append(everything[:i], everything[i+1:]...)
-			break
-		}
-	}
-
-	// Update the tile with the new list of plants
-	tile.Plants = everything
-
-	// Update the world with the updated tile
-	w.Tiles[y][x] = tile
-
-	return everything
+	return w.Tiles[y][x]
 }

@@ -21,11 +21,11 @@ const (
 	Mountain
 )
 type Tile struct {
-	Type     TileType  `json:"Type"`
-	Building *Building `json:"Building,omitempty"`
+	Type     TileType    `json:"Type"`
+	Building *Building   `json:"Building,omitempty"`
 	Persons  []*Person   `json:"Persons,omitempty"`
-	Items    []*Item    `json:"Items,omitempty"`
-	Plants   []*Plant    `json:"Plants,omitempty"`
+	Items    []*Item     `json:"Items,omitempty"`
+	Plant    *Plant      `json:"Plant,omitempty"`
 	NutritionalValue int `json:"NutritionalValue,omitempty"`
 }
 type World struct {
@@ -132,6 +132,9 @@ type RequestedAction struct {
 type PhysiologicalNeeds struct {
 	Thirst int
 	Hunger int
+	FoodSupply bool
+	WayOfGettingFood bool
+	WayOfGettingWater bool
 	CanBreath bool
 	HasShelter bool
 	IsSufficientlyWarm bool
@@ -162,7 +165,8 @@ type Brain struct {
 }
 type Vision struct {
 	Plants    []*Plant            `json:"Plants"`
-	Persons   []PersonInVision   `json:"Persons"`
+	Persons   []PersonInVision    `json:"Persons"`
+	Tiles     []TileInVision      `json:"TileInVision"`
 }
 
 // ----------------- Body -------------------
@@ -347,7 +351,7 @@ type CleanedTile struct {
     Building *BuildingCleaned `json:"Building,omitempty"`
     Persons  []PersonCleaned  `json:"Persons,omitempty"`
 	Items    []*Item          `json:"Items,omitempty"`
-	Plants   []*PlantCleaned  `json:"Plants,omitempty"`
+	Plant    *PlantCleaned    `json:"Plant,omitempty"`
 }
 type PlantCleaned struct {
 	Name      string `json:"Name"`
@@ -411,4 +415,9 @@ type PersonInVision struct {
 	Title 		 string
 	Location     Location
 	Body 		 *HumanBody
+}
+
+type TileInVision struct {
+	Tile    Tile
+	Location Location
 }

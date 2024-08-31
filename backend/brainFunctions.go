@@ -29,6 +29,8 @@ func (b *Brain) turnOff() {
     }
 
     fmt.Println(b.Owner.FullName + "'s brain is shutting down")
+	b.Active = false
+	b.IsConscious = false
     b.Cancel()
 }
 
@@ -295,28 +297,133 @@ func (b *Brain) CalculateWant() {
     }
 }
 
+// IsTaskInActionList - Check if the task is already in the action list
+func (b *Brain) IsTaskInActionList(task TargetedAction) bool {
+	for _, action := range b.ActionList {
+		if action.Action == task.Action && action.Target == task.Target {
+			return true
+		}
+	}
+	return false
+}
+
+//RemoveActionFromActionList - Remove an action from the action list
+func (b *Brain) RemoveActionFromActionList(action TargetedAction) {
+	for i, a := range b.ActionList {
+		if a.Action == action.Action && a.Target == action.Target {
+			b.ActionList = append(b.ActionList[:i], b.ActionList[i+1:]...)
+		}
+	}
+}
+
+// AddTaskToActionList - Add a task to the action list
+func (b *Brain) AddTaskToActionList(task TargetedAction) {
+	// Check if "Idle" is in the list, if so, remove it
+	for i, action := range b.ActionList {
+		if action.Action == "Idle" {
+			b.ActionList = append(b.ActionList[:i], b.ActionList[i+1:]...)
+		}
+	}
+
+	b.ActionList = append(b.ActionList, task)
+}
+
 // Translate the want to a list of tasks with priorities
 func (b *Brain) TranslateWantToTaskList() {
 
     // Check if the person is breathing
     if !b.CheckIfCanBreath() {
-
-        if b.Owner.Body.Head.Mouth == nil {
-            return
-        }
         if b.Owner.Body.Head.Mouth.IsObstructed {
-            b.ActionList = append(b.ActionList, TargetedAction{"Clear airway", "Mouth", false,[]BodyPartType{"Hands"}, 100})
-        }
-        if b.Owner.Body.Head.Nose == nil {
-            return
+            action := TargetedAction{"Clear airway", "Mouth", false,[]BodyPartType{"Hands"}, 100}
+			if !b.IsTaskInActionList(action) {
+				b.AddTaskToActionList(action)
+			}
         }
         if b.Owner.Body.Head.Nose.IsObstructed {
-            b.ActionList = append(b.ActionList, TargetedAction{"Clear airway", "Nose", false,[]BodyPartType{"Hands"}, 100})
+            action := TargetedAction{"Clear airway", "Nose", false,[]BodyPartType{"Hands"}, 100}
+			if !b.IsTaskInActionList(action) {
+				b.AddTaskToActionList(action)
+			}
         }
         if b.Owner.Body.Head.Nose.IsBroken {
-            b.ActionList = append(b.ActionList, TargetedAction{"Fix nose", "Nose", false,[]BodyPartType{"Hands"}, 100})
+            action := TargetedAction{"Fix nose", "Nose", false,[]BodyPartType{"Hands"}, 100}
+			if !b.IsTaskInActionList(action) {
+				b.AddTaskToActionList(action)
+			}
         }
     }
+	if b.PhysiologicalNeeds.IsInPain {
+		action := TargetedAction{"Reduce pain", "", false,[]BodyPartType{"Hands"}, 95}
+		if !b.IsTaskInActionList(action) {
+			b.AddTaskToActionList(action)
+		}	
+	}
+	if !b.PhysiologicalNeeds.WayOfGettingWater {
+		action := TargetedAction{"Find a water supply", "", false,[]BodyPartType{"Hands"}, 90}
+		if !b.IsTaskInActionList(action) {
+			b.AddTaskToActionList(action)
+		}
+	}
+	if !b.PhysiologicalNeeds.WayOfGettingFood {
+		action := TargetedAction{"Find a food supply", "", false,[]BodyPartType{"Hands"}, 90}
+		if !b.IsTaskInActionList(action) {
+			b.AddTaskToActionList(action)
+		}
+	}
+	if !b.PhysiologicalNeeds.FoodSupply {
+		action := TargetedAction{"Have food for storage", "", false,[]BodyPartType{"Hands"}, 90}
+		if !b.IsTaskInActionList(action) {
+			b.AddTaskToActionList(action)
+		}
+	}
+	if b.PhysiologicalNeeds.Thirst > 30 {
+		action := TargetedAction{"Drink water", "", false,[]BodyPartType{"Hands"}, 90}
+		if !b.IsTaskInActionList(action) {
+			b.AddTaskToActionList(action)
+		}
+	}
+	if b.PhysiologicalNeeds.Hunger > 30 {
+		action := TargetedAction{"Eat food", "", false,[]BodyPartType{"Hands"}, 90}
+		if !b.IsTaskInActionList(action) {
+			b.AddTaskToActionList(action)
+		}
+	}
+	if !b.PhysiologicalNeeds.IsSufficientlyWarm {
+		action := TargetedAction{"Get warm", "", false,[]BodyPartType{"Hands"}, 85}
+		if !b.IsTaskInActionList(action) {
+			b.AddTaskToActionList(action)
+		}
+	}
+	if b.PhysiologicalNeeds.NeedToExcrete {
+		action := TargetedAction{"Excrete", "", false,[]BodyPartType{"Hands"}, 80}
+		if !b.IsTaskInActionList(action) {
+			b.AddTaskToActionList(action)
+		}
+	}
+	if !b.PhysiologicalNeeds.IsInSafeArea {
+		action := TargetedAction{"Find a safe area", "", false,[]BodyPartType{"Hands"}, 75}
+		if !b.IsTaskInActionList(action) {
+			b.AddTaskToActionList(action)
+		}
+	}
+	if !b.PhysiologicalNeeds.IsCapableOfDefendingSelf {
+		action := TargetedAction{"Improve defense", "", false,[]BodyPartType{"Hands"}, 70}
+		if !b.IsTaskInActionList(action) {
+			b.AddTaskToActionList(action)
+		}
+	}
+	if !b.PhysiologicalNeeds.HasShelter {
+		action := TargetedAction{"Make shelter", "", false,[]BodyPartType{"Hands"}, 65}
+		if !b.IsTaskInActionList(action) {
+			b.AddTaskToActionList(action)
+		}
+	}
+	if b.PhysiologicalNeeds.Rested < 20 {
+		action := TargetedAction{"Rest", "", false,[]BodyPartType{"Hands"}, 60}
+		if !b.IsTaskInActionList(action) {
+			b.AddTaskToActionList(action)
+		}
+	}
 }
 
 // ----------------- Tasks ---------------------
@@ -342,13 +449,25 @@ func (b *Brain) performActions() {
 
     // Perform the action
     switch action.Action {
+	case "Clear airway":
+        b.ClearAirway(action)
+		return
+    case "Fix nose":
+        b.FixBrokenNose(action)
+		return
+	case "Reduce pain":
+		//b.ReducePain()
+		return
+	case "Find a water supply":
+		b.FindWaterSupply(action)
+		return
+	case "Find a food supply":
+		b.FindFoodSupply(action)
+		return
     case "Idle":
         fmt.Println(b.Owner.FullName + " is idle.")
-    case "Clear airway":
-        b.ClearAirway(action.Target)
-    case "Fix nose":
-		// Decide if the person wants to fix the broken nose
-        b.FixBrokenNose(action.Target)
+		return
+
     }
 }
 

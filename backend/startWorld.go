@@ -6,10 +6,12 @@ import (
 )
 
 // AddPlantToTheWorld adds a plant to the world at the given location.
-func (w *World) AddPlantToTheWorld(x, y int, plant string) {
+func (w *World) AddPlantToTheWorld(x, y int, plant string) *Plant {
 	newPlant := NewPlant(plant, &w.Tiles[x][y], x, y)
 	w.AddPlant(x, y, newPlant)
 	newPlant.PlantLife.turnOn()
+
+	return newPlant
 }
 
 func initializeWorld() *World {
@@ -19,8 +21,6 @@ func initializeWorld() *World {
 	newPerson1 := world.createNewPerson(1, 1)
 	newPerson1.Title = "Leader"
 	newPerson1.Thinking = "I am the leader of this group."
-	newPerson1.Body.Head.Nose.IsBroken = true
-	newPerson1.Body.Head.Mouth.IsObstructed = true
 
 	newPerson2 := world.createNewPerson(9, 9)
 	newPerson2.Title = "Follower"
@@ -48,7 +48,8 @@ func initializeWorld() *World {
 	world.AddItem(1, 1, &woodenSpear)
 
 	// Add a plant
-	world.AddPlantToTheWorld(5, 5, "Apple Tree")
+	appleTree := world.AddPlantToTheWorld(5, 5, "Apple Tree")
+	appleTree.Fruit = append(appleTree.Fruit, Fruit{"Apple", "Sweet", 3, 3, true, make([]Nutrients, 0)})
 
 	// Add some lumber trees
 	world.AddPlantToTheWorld(3, 6, "Oak Tree")

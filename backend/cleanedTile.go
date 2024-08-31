@@ -46,18 +46,17 @@ func (w *World) CleanTiles() [][]CleanedTile {
 					Relationships:    person.Relationships,
 				})
 			}
-			var cleanedPlants []*PlantCleaned
-			for _, plant := range tile.Plants {
-				// Remove the PlantLife from the Plant before sending it to the client
-				cleanedPlants = append(cleanedPlants, &PlantCleaned{
-					Name:          plant.Name,
-					Age:           plant.Age,
-					Health:        plant.Health,
-					IsAlive:       plant.IsAlive,
-					ProducesFruit: plant.ProducesFruit,
-					Fruit:         plant.Fruit,
-					PlantStage:    plant.PlantStage,
-				})
+			var cleanedPlant *PlantCleaned
+			// Remove the PlantLife from the Plant before sending it to the client
+			plant := tile.Plant
+			cleanedPlant = &PlantCleaned{
+				Name:          plant.Name,
+				Age:           plant.Age,
+				Health:        plant.Health,
+				IsAlive:       plant.IsAlive,
+				ProducesFruit: plant.ProducesFruit,
+				Fruit:         plant.Fruit,
+				PlantStage:    plant.PlantStage,
 			}
 
 			cleanedTiles[y][x] = CleanedTile{
@@ -65,7 +64,7 @@ func (w *World) CleanTiles() [][]CleanedTile {
 				Building: cleanedBuilding,
 				Persons:  cleanedPersons,
 				Items:    tile.Items,
-				Plants:   cleanedPlants,
+				Plant:    cleanedPlant,
 			}
 		}
 	}

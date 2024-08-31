@@ -63,25 +63,6 @@ const Map = ({ world, grab }: Props) => {
                     </div>
                   ) : null}
 
-                  {tile.Plants ? (
-                    <div>
-                      {tile.Plants.map((plant, index) => (
-                        <div
-                          key={index}
-                          className={
-                            tile.Persons && tile.Persons.length > 0
-                              ? "hidden"
-                              : ""
-                          }
-                          onMouseEnter={(e) => handleMouseEnter(e, plant.Name)}
-                          onMouseLeave={handleMouseLeave}
-                        >
-                          <p className="text-red-700">|/</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-
                   {tile.Persons ? (
                     <div>
                       {tile.Persons.map((person, index) => (
