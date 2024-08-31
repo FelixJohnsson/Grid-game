@@ -66,6 +66,8 @@ type Person struct {
 	Personality 	 string
 	Genes            []string
 
+	OwnedItems	     []*Item
+
 	IsMoving         TargetedAction
 	IsTalking        TargetedAction
 	IsSitting        TargetedAction
@@ -151,6 +153,7 @@ type Brain struct {
     Ctx    context.Context
     Cancel context.CancelFunc
 	ActionList []TargetedAction
+	CurrentTask TargetedAction
     IsConscious bool
 	CanBreath bool
 	OxygenLevel int
@@ -342,6 +345,7 @@ type Item struct {
 	Weight    int
 	Material  []Material
 	Residues  []Residue
+	Location Location
 }
 
 // ----------------- Cleaned ------------------

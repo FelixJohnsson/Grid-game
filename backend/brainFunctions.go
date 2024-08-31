@@ -464,6 +464,8 @@ func (b *Brain) performActions() {
 	case "Find a food supply":
 		b.FindFoodSupply(action)
 		return
+	case "Have food for storage":
+		b.GetFoodForStorage(action)
     case "Idle":
         fmt.Println(b.Owner.FullName + " is idle.")
 		return
@@ -551,8 +553,11 @@ func (b *Brain) WalkOverPath(x, y int) {
         return
     }
     for _, node := range path {
+		// Wait for a half second before walking to the next node
+		time.Sleep(500 * time.Millisecond)
         b.Owner.WalkTo(node.X, node.Y)
     }
+	b.CurrentTask.IsActive = false
 }
 
 // ----------------- Tiles --------------------------

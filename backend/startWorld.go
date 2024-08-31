@@ -47,6 +47,12 @@ func initializeWorld() *World {
 	// Add the wooden spear to the world
 	world.AddItem(1, 1, &woodenSpear)
 
+	// Add a woven grass basket to the world
+	wovenGrassBasket := items[6]
+	world.AddItem(1, 1, &wovenGrassBasket)
+
+	newPerson1.OwnedItems = append(newPerson1.OwnedItems, &wovenGrassBasket)
+
 	// Add a plant
 	appleTree := world.AddPlantToTheWorld(5, 5, "Apple Tree")
 	appleTree.Fruit = append(appleTree.Fruit, Fruit{"Apple", "Sweet", 3, 3, true, make([]Nutrients, 0)})

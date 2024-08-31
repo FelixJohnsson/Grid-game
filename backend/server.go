@@ -130,7 +130,8 @@ func (w *World) moveHandler(writer http.ResponseWriter, r *http.Request) {
 	}
 
 	// We need to calculate the new coordinates based on the direction
-	startingCoordinates := w.GetPersonByFullName(moveRequest.FullName).Location
+	person := w.GetPersonByFullName(moveRequest.FullName)
+	startingCoordinates := person.Location
 	switch moveRequest.Direction {
 	case "up":
 		startingCoordinates.Y--
@@ -143,7 +144,7 @@ func (w *World) moveHandler(writer http.ResponseWriter, r *http.Request) {
 	}
 
 	// Move the person in the world
-	w.MovePerson(moveRequest.FullName, startingCoordinates.X, startingCoordinates.Y)
+	w.MovePerson(person, startingCoordinates.X, startingCoordinates.Y)
 
 	response := WorldResponse{
 		Message: w.CleanTiles(),

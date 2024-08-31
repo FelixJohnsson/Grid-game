@@ -12,6 +12,8 @@ type WorldAccessor interface {
 	IsAdjacent(x1, y1, x2, y2 int) bool
 	CalculateDistance(x1, y1, x2, y2 int) int
 	CanWalk(x, y int) bool
+
+	MovePerson(person *Person, newX, newY int)
 }
 
 // NewWorld creates a new world with the given dimensions.
@@ -207,13 +209,13 @@ func (w *World) GetAllPersons() []*Person {
 }
 
 // RemovePerson removes the person with the given full name and coordinates from the world.
-func (w *World) RemovePerson(FullName string, x, y int) []*Person {
+func (w *World) RemovePerson(person *Person, x, y int) []*Person {
 	tile := w.Tiles[y][x]
 
 	// Find the person in the tile and remove it
 	everyone := tile.Persons
 	for i, p := range everyone {
-		if p.FullName == FullName {
+		if p.FullName == person.FullName {
 			everyone = append(everyone[:i], everyone[i+1:]...)
 			break
 		}
@@ -229,24 +231,12 @@ func (w *World) RemovePerson(FullName string, x, y int) []*Person {
 }
 
 // MovePerson moves the person with the given full name to the new location.
-func (w *World) MovePerson(FullName string, newX, newY int) {
-	// Find the person in the world
-	var person *Person
-	var oldX, oldY int
-	for y, row := range w.Tiles {
-		for x, tile := range row {
-			for _, p := range tile.Persons {
-				if p.FullName == FullName {
-					person = p
-					oldX, oldY = x, y
-					break
-				}
-			}
-		}
-	}
+func (w *World) MovePerson(person *Person, newX, newY int) {
+	// Get the person's current location
+	oldX, oldY := person.Location.X, person.Location.Y
 
 	// Remove the person from the old location
-	w.Tiles[oldY][oldX].Persons = w.RemovePerson(FullName, oldX, oldY)
+	w.Tiles[oldY][oldX].Persons = w.RemovePerson(person, oldX, oldY)
 
 	// Update the person's location
 	person.UpdateLocation(newX, newY)
@@ -258,6 +248,8 @@ func (w *World) MovePerson(FullName string, newX, newY int) {
 
 // AddItem adds an item to the tile at the given location.
 func (w *World) AddItem(x, y int, item *Item) {
+	item.Location.X = x
+	item.Location.Y = y
 	w.Tiles[y][x].Items = append(w.Tiles[y][x].Items, item)
 }
 

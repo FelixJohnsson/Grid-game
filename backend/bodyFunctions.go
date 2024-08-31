@@ -73,6 +73,82 @@ func (b *Brain) HasFruitsThatAreEdible(plant *Plant) bool {
     return false
 }
 
+// GetFoodForStorage - Get food for storage
+func (b *Brain) GetFoodForStorage(action TargetedAction) {
+    fmt.Println("Do I have a storage where I can store food?")
+
+    storage := ""
+    basket := false
+
+    if b.Owner.OwnedItems != nil {
+        for _, item := range b.Owner.OwnedItems {
+            if item.Name == "Wooden Crate" || item.Name == "Wooden Box" {
+                storage = item.Name
+                fmt.Println("I have a" + storage + "where I can store food.")
+            } else {
+                fmt.Println("I don't have a storage where I can store food. So I should make one.")
+                fmt.Println("I should find materials to make a storage.")
+
+                success := b.FindWood()
+                if success != nil {
+                    fmt.Println("I found wood. Now I need to get it.")
+                    b.CurrentTask = TargetedAction{"Walk", "Wood", true, []BodyPartType{"RightLeg", "LeftLeg"}, 100}
+                    // Make a go routine to walk to the location
+                    go b.WalkOverPath(success.Location.X, success.Location.Y)
+                }
+
+            }
+            if item.Name == "Woven Grass Basket" {
+                basket = true
+            }
+        }
+    }
+
+    fmt.Println("Do I have a basket or something to carry food?")
+    if basket {
+        fmt.Println("I have a basket. Then I should find food.")
+
+        success := b.Find("Food supply")
+        if success {
+            fmt.Println("I found food. Now I need to get it.")
+        } else {
+            fmt.Println("I can't see any food. Do I remember where I saw food last time?")
+
+            if len(b.Memories.LongTermMemory) > 0 {
+                for _, memory := range b.Memories.LongTermMemory {
+                    if memory.Event == "Found food supply" {
+                        fmt.Println("I remember where I saw food last time.")
+                        fmt.Println("I should go there and get food.")
+
+                        b.CurrentTask = TargetedAction{"Walk", memory.Details, true, []BodyPartType{"RightLeg", "LeftLeg"}, 100}
+                        // Make a go routine to walk to the location
+                        go b.WalkOverPath(memory.Location.X, memory.Location.Y)
+                    }
+                }
+            }
+    }
+    }
+}
+
+// FindWood - Find wood
+func (b *Brain) FindWood() *Plant {
+    fmt.Println("Check vision for wood")
+    vision := b.Owner.WorldProvider.GetPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+    lumberTrees := []*Plant{}
+
+    for _, PlantInVision := range vision {
+        if PlantInVision.Name == "Oak Tree" {
+            lumberTrees = append(lumberTrees, PlantInVision)
+        }
+    }
+    closestLumberTree := b.Owner.FindTheClosestPlant(lumberTrees)
+    if closestLumberTree != nil {
+        fmt.Println("Found wood at", closestLumberTree.Location.X, closestLumberTree.Location.Y)
+        return closestLumberTree
+    }
+    return nil
+}
+
 // Find - Find a target
 func (b *Brain) Find(target string) bool {
     // Find whatever the target is
@@ -103,9 +179,7 @@ func (b *Brain) Find(target string) bool {
                 }
             }
         }
-    case "Have food for storage":
-        fmt.Println("Check vision for food supply")
-    }
 
+    }
     return false
 }

@@ -16,6 +16,7 @@ func NewBrain() *Brain {
         ActionList: []TargetedAction{
             {"Idle", "", false, make([]BodyPartType, 0), 0},
         },
+        CurrentTask: TargetedAction{"Idle", "", false, make([]BodyPartType, 0), 0},
         IsConscious: true,
         OxygenLevel: 100,
         PainLevel: 0,
@@ -113,7 +114,9 @@ func (b *Brain) mainLoop() {
             b.CalculateWant()
             b.TranslateWantToTaskList()
             fmt.Println(b.ActionList)
-            b.performActions()
+            if !b.CurrentTask.IsActive {
+                b.performActions()
+            }
 
             // Sleep for 2 seconds
             time.Sleep(2000 * time.Millisecond)
