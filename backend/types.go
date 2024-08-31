@@ -117,6 +117,7 @@ type IsUnderAttack struct {
 
 type Memory struct {
 	Event string
+	Details string
 	Location Location
 }
 type Memories struct {

@@ -113,6 +113,10 @@ func (p *Person) AttackWithArm(target *Person, targetLimb BodyPartType, withLimb
 	if target == nil {
 		fmt.Println("No target to attack")
 		return Damage{}
+	} 
+	if !target.Body.Head.Brain.IsConscious {
+		fmt.Println("The target is unconscious, decide what to do next")
+		return Damage{}
 	}
 
 	damage := p.CalculateArmDamageGiven(target, targetLimb, withLimb)
