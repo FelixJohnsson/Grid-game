@@ -44,61 +44,6 @@ func (b *Brain) LooseConsciousness(duration int) {
     }()
 }
 
-// Decide if the area is safe or not
-func (b *Brain) isAreaSafe(obs Vision) {
-    // Loop through the observations and make decisions based on relationships with the people
-
-    collectiveIntensity := 0
-    numberOfPeople := len(obs.Persons)
-
-    for _, person := range obs.Persons {
-        if b.Owner.hasRelationship(person.FullName) {
-            for _, relationship := range b.Owner.Relationships {
-                if relationship.WithPerson == person.FullName {
-                    collectiveIntensity += relationship.Intensity
-                }
-            }
-        }
-    }
-
-    // This is a pretty dumb way to determine if the area is safe or not, but it's a start
-    b.Owner.FeelingSafe = collectiveIntensity/numberOfPeople
-}
-
-func (b *Brain) makeDecisions(obs Vision) {
-    // Check if we're engaging in conversation with someone and if we are and we dont have that person in the observation, we should cancel the conversation
-    if b.Owner.IsTalking.IsActive {
-        if !obs.HasPerson(b.Owner.IsTalking.Target) {
-            fmt.Println(b.Owner.FullName + " is no longer talking to " + b.Owner.IsTalking.Target)
-            b.Owner.IsTalking = TargetedAction{"", "", false, make([]BodyPartType, 0), 10}
-        }
-    }
-    // Loop through the observations and make decisions based on people
-    for _, person := range obs.Persons {
-        if person.FullName != b.Owner.FullName {
-            if b.Owner.hasRelationship(person.FullName) {
-                for _, relationship := range b.Owner.Relationships {
-                    if relationship.WithPerson == person.FullName {
-                        relationship.Intensity++
-                        if relationship.Intensity > 3 { // This should be a constant and above 15 and below 40
-                            relationship.Relationship = "Aquantance"
-                            if !b.Owner.IsTalking.IsActive {
-                                targetPerson := b.Owner.GetPersonByFullName(relationship.WithPerson)
-                                if targetPerson != nil {
-                                    b.SendTaskRequest(targetPerson, "Talk")
-                                }
-                            }
-                        }
-                        b.Owner.UpdateRelationship(person.FullName, relationship.Relationship, relationship.Intensity)
-                    }
-                }
-            } else { // If the person does not have a relationship with the other person
-                b.Owner.addRelationship(person, "Stranger", 0)
-            }
-        }
-    }
-}
-
 // ----------------- Memory Functions -----------------
 
 // AddMemoryToShortTerm adds a memory to the short term memory
@@ -118,6 +63,8 @@ func (b *Brain) AddMemoryToLongTerm(event string, details string, location Locat
 
 // PainHandler is a function that handles the pain level of the person
 func (b *Brain) PainHandler() {
+    b.CalculatePainLevel()
+
     if b.PainLevel > b.PainTolerance {
         // Get a random number for duration of unconsciousness
         durationInSeconds := rand.Intn(60)
@@ -130,7 +77,6 @@ func (b *Brain) PainHandler() {
 // ApplyPain - Apply pain to the person
 func (b *Brain) ApplyPain(amount int) {
 	b.PainLevel += amount
-	b.PainHandler()
 }
 
 // CalculatePainLevel - Calculate the pain level of the person
@@ -241,59 +187,40 @@ func (b *Brain) CheckIfCanBreath() bool {
 	Rested int
 } */
 
+// CheckIfWantIsAlreadyInList - Check if the want is already in the list
+func (b *Brain) CheckIfWantIsAlreadyInList(want string) bool {
+    for _, w := range b.Owner.WantsTo {
+        if w == want {
+            return true
+        }
+    }
+    return false
+}
+
 // CalculateWant - Calculate the want of the person
 func (b *Brain) CalculateWant() {
-    // Check the current situation of the person
-    // We can be more specific when we have a "Dopamin" system in place
-
-    // Check if breathing
-    if !b.CheckIfCanBreath() {
-        b.Owner.WantsTo = "Be able to breath"
-    }
-
-    // Check if in pain
-    if b.PhysiologicalNeeds.IsInPain {
-        b.Owner.WantsTo = "Relieve pain"
-    }
-
-    // Check thirst
-    if b.PhysiologicalNeeds.Thirst > 30 {
-        b.Owner.WantsTo = "Consume water"
-    }
-
-    // Check hunger
-    if b.PhysiologicalNeeds.Hunger > 30 {
-        b.Owner.WantsTo = "Consume food"
-    }
-    
-    // Check IsSufficientlyWarm
-    if !b.PhysiologicalNeeds.IsSufficientlyWarm {
-        b.Owner.WantsTo = "Get warm"
-    }
-
-    // Check NeedToExcrete
-    if b.PhysiologicalNeeds.NeedToExcrete {
-        b.Owner.WantsTo = "Excrete"
-    }
-
-    // Check IsInSafeArea
-    if !b.PhysiologicalNeeds.IsInSafeArea {
-        b.Owner.WantsTo = "Find a safe area"
-    }
-
-    // Check IsCapableOfDefendingSelf
-    if !b.PhysiologicalNeeds.IsCapableOfDefendingSelf {
-        b.Owner.WantsTo = "Improve defense"
-    }
-
-    // Check HasShelter
-    if !b.PhysiologicalNeeds.HasShelter {
-        b.Owner.WantsTo = "Make shelter"
-    }
-
-    // Check Rested
-    if b.PhysiologicalNeeds.Rested < 20 {
-        b.Owner.WantsTo = "Rest"
+    // Check the current situation of the person using a switch statement
+    switch {
+    case !b.CheckIfCanBreath() && !b.CheckIfWantIsAlreadyInList("Be able to breath"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Be able to breath")
+    case b.PhysiologicalNeeds.IsInPain && !b.CheckIfWantIsAlreadyInList("Relieve pain"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Relieve pain")
+    case b.PhysiologicalNeeds.Thirst > 30 && !b.CheckIfWantIsAlreadyInList("Consume water"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Consume water")
+    case b.PhysiologicalNeeds.Hunger > 30 && !b.CheckIfWantIsAlreadyInList("Consume food"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Consume food")
+    case !b.PhysiologicalNeeds.IsSufficientlyWarm && !b.CheckIfWantIsAlreadyInList("Get warm"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Get warm")
+    case b.PhysiologicalNeeds.NeedToExcrete && !b.CheckIfWantIsAlreadyInList("Excrete"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Excrete")
+    case !b.PhysiologicalNeeds.IsInSafeArea && !b.CheckIfWantIsAlreadyInList("Find a safe area"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Find a safe area")
+    case !b.PhysiologicalNeeds.IsCapableOfDefendingSelf && !b.CheckIfWantIsAlreadyInList("Improve defense"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Improve defense")
+    case !b.PhysiologicalNeeds.HasShelter && !b.CheckIfWantIsAlreadyInList("Make shelter"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Make shelter")
+    case b.PhysiologicalNeeds.Rested < 20 && !b.CheckIfWantIsAlreadyInList("Rest"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Rest")
     }
 }
 
@@ -318,7 +245,6 @@ func (b *Brain) RemoveActionFromActionList(action TargetedAction) {
 
 // AddTaskToActionList - Add a task to the action list
 func (b *Brain) AddTaskToActionList(task TargetedAction) {
-	// Check if "Idle" is in the list, if so, remove it
 	for i, action := range b.ActionList {
 		if action.Action == "Idle" {
 			b.ActionList = append(b.ActionList[:i], b.ActionList[i+1:]...)
@@ -330,8 +256,6 @@ func (b *Brain) AddTaskToActionList(task TargetedAction) {
 
 // Translate the want to a list of tasks with priorities
 func (b *Brain) TranslateWantToTaskList() {
-
-    // Check if the person is breathing
     if !b.CheckIfCanBreath() {
         if b.Owner.Body.Head.Mouth.IsObstructed {
             action := TargetedAction{"Clear airway", "Mouth", false,[]BodyPartType{"Hands"}, 100}
@@ -477,7 +401,7 @@ func (b *Brain) performActions() {
 // Receive a requested task from another person
 func (b *Brain) ReceiveTaskRequest(requestedTask RequestedAction) bool {
     fmt.Println(b.Owner.FullName + " received a task request from " + requestedTask.From.FullName)
-    // Check the relationship between the two people
+    
     hasRelationship := b.Owner.hasRelationship(requestedTask.From.FullName)
 
     // For now we will just accept the task
@@ -521,8 +445,6 @@ func (b *Brain) SendTaskRequest(to *Person, taskType string) {
 // UnderAttack is called when the person is being attacked
 func (b *Brain) UnderAttack(attacker *Person, targettedLimb BodyPartType, attackersLimb BodyPartType) {
 	// Decide between fight or flight
-
-	// Check if arms or hands are broken, if so, attack with legs
 	if !b.Owner.Body.RightArm.IsBroken {
 		b.Owner.AttackWithArm(attacker, targettedLimb, b.Owner.Body.RightArm.Hand)
 	} else if !b.Owner.Body.LeftArm.IsBroken {
@@ -558,12 +480,4 @@ func (b *Brain) WalkOverPath(x, y int) {
         b.Owner.WalkTo(node.X, node.Y)
     }
 	b.CurrentTask.IsActive = false
-}
-
-// ----------------- Tiles --------------------------
-
-// Check what tile type the person is on
-func (b *Brain) checkTileType() {
-    // Check the tile type of the person
-    b.Owner.OnTileType = b.Owner.WorldProvider.GetTileType(b.Owner.Location.X, b.Owner.Location.Y)
 }

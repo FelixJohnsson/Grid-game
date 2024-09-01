@@ -93,9 +93,8 @@ func (b *Brain) mainLoop() {
         if !b.Active {
             return
         }
-        b.OxygenHandler()
 
-        if !b.IsConscious && b.Active {
+        if !b.IsConscious {
             fmt.Println(b.Owner.FullName + "'s brain is not conscious but still alive.")
             return
         }
@@ -103,24 +102,22 @@ func (b *Brain) mainLoop() {
         if b.IsUnderAttack.Active {
             b.IsUnderAttackHandler()
         }
+
+        b.OxygenHandler()
         
-        if b.Active && b.IsConscious {
-            b.CalculatePainLevel()
-            b.PainHandler()
-            b.FoodHandler()
-            b.ThirstHandler()
+        b.PainHandler()
+        b.FoodHandler()
+        b.ThirstHandler()
 
-
-            b.CalculateWant()
-            b.TranslateWantToTaskList()
-            fmt.Println(b.ActionList)
-            if !b.CurrentTask.IsActive {
-                b.performActions()
-            }
-
-            // Sleep for 2 seconds
-            time.Sleep(2000 * time.Millisecond)
+        b.CalculateWant()
+        b.TranslateWantToTaskList()
+        fmt.Println(b.ActionList)
+        if !b.CurrentTask.IsActive {
+            b.performActions()
         }
+
+        // Sleep for 2 seconds
+        time.Sleep(2000 * time.Millisecond)
         }
     }
 }

@@ -33,7 +33,7 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 		IsEating:         TargetedAction{},
 		IsSleeping:       TargetedAction{},
 		Thinking:         "",
-		WantsTo:          "",
+		WantsTo:          make([]string, 0),
 		FeelingSafe: 	  0,
 		FeelingScared:    0,
 		Relationships:    []Relationship{},

@@ -75,7 +75,7 @@ type Person struct {
 	IsSleeping       TargetedAction
 
 	Thinking         string
-	WantsTo          string
+	WantsTo          []string
 	FeelingSafe 	 int
 	FeelingScared	 int
 

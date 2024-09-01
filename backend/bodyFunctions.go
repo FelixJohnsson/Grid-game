@@ -93,7 +93,7 @@ func (b *Brain) GetFoodForStorage(action TargetedAction) {
                 if success != nil {
                     fmt.Println("I found wood. Now I need to get it.")
                     b.CurrentTask = TargetedAction{"Walk", "Wood", true, []BodyPartType{"RightLeg", "LeftLeg"}, 100}
-                    // Make a go routine to walk to the location
+                                                                                                                                          
                     go b.WalkOverPath(success.Location.X, success.Location.Y)
                 }
 
@@ -129,6 +129,12 @@ func (b *Brain) GetFoodForStorage(action TargetedAction) {
     }
     }
 }
+
+// GetWood - Get wood
+func (b *Brain) GetWood(action TargetedAction) {
+    
+}
+
 
 // FindWood - Find wood
 func (b *Brain) FindWood() *Plant {
