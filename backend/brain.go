@@ -38,7 +38,7 @@ func (b *Brain) mainLoop() {
             b.Active = false
             return
         default:
-
+        b.Owner.WorldProvider.DisplayMap()
         if !b.Active {
             return
         }

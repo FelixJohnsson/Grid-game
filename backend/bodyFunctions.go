@@ -42,13 +42,12 @@ func (b *Brain) FixBrokenNose(action TargetedAction) {
 // FindWaterSupply - Find a water supply
 func (b *Brain) FindWaterSupply(action TargetedAction) {
     fmt.Println("Looking for water supply")
-    success := b.Find("Clean water")
+    success := b.FindAndNote("Clean water")
     if success {
         b.RemoveActionFromActionList(action)
     }
 
 }
-
 
 // DrinkWater - Drink water
 func (b *Brain) DrinkWater() {
@@ -75,7 +74,7 @@ func (b *Brain) DrinkWater() {
 func (b *Brain) FindFoodSupply(action TargetedAction) {
     fmt.Println("Looking for food supply")
 
-    success := b.Find("Food supply")
+    success := b.FindAndNote("Food supply")
     if success {
         b.RemoveActionFromActionList(action)
     }
@@ -132,10 +131,9 @@ func (b *Brain) GetFoodForStorage(action TargetedAction) {
 
     if hasFoodStorage == nil {
         fmt.Println("I need a food storage to store food.")
-        woodLog := b.GetWood()
+        b.GetWood()
 
         foodBox := b.Craft("Food Box")
-        b.Owner.WorldProvider.DestroyItem(woodLog)
         b.Owner.GrabRight(foodBox)
         b.Owner.OwnedItems = append(b.Owner.OwnedItems, foodBox)
         b.RemoveActionFromActionList(action)
@@ -163,7 +161,8 @@ func (b *Brain) GetWood() *Item {
     if nearestTree != nil {
         fmt.Println("I found wood. Now I need to get it.")
         b.WalkOverPath(nearestTree.Location.X, nearestTree.Location.Y)
-        woodLog := b.ChopDownTree()
+        tree := b.Owner.WorldProvider.GetTile(nearestTree.Location.X, nearestTree.Location.Y).Plant
+        woodLog := b.ChopDownTree(tree)
         return woodLog
     } else {
         fmt.Println("I can't see any wood. Do I remember where I saw wood last time?")
@@ -192,16 +191,16 @@ func (b *Brain) FindWood() *Plant {
 }
 
 // ChopDownTree - Chop down a tree
-func (b *Brain) ChopDownTree() *Item {
+func (b *Brain) ChopDownTree(tree *Plant) *Item {
     if b.HasItemEquippedInRight("Stone Axe") {
-        fmt.Println("I have a stone axe in my right hand. I can chop down the tree.")
+        b.Owner.WorldProvider.RemovePlant(tree)
         b.Owner.DropRight("Stone Axe")
         wood := CreateNewItem("Wood log")
         b.Owner.GrabRight(wood)
         fmt.Println("I chopped down the tree.")
         return wood
     } else if b.HasItemEquippedInLeft("Stone Axe") {
-        fmt.Println("I have a stone axe in my left hand. I can chop down the tree.")
+        b.Owner.WorldProvider.RemovePlant(tree)
         b.Owner.DropLeft("Stone Axe")
         wood := CreateNewItem("Wood log")
         b.Owner.GrabLeft(wood)
@@ -215,6 +214,18 @@ func (b *Brain) ChopDownTree() *Item {
 
 // ConstructShelter - Construct a shelter
 func (b *Brain) ConstructShelter() bool {
+    // Find a Grass tile that is empty and construct a shelter there
+    vision := b.Owner.WorldProvider.GetGrassInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+    closestGrass := b.Owner.FindClosestEmptyGrass(vision)
+
+    path := b.DecidePathTo(closestGrass.Location.X, closestGrass.Location.Y)
+    if path == nil {
+        fmt.Println("I can't find a path to the grass tile.")
+        return false
+    }
+
+    b.WalkOverPath(closestGrass.Location.X, closestGrass.Location.Y)
+
     newShelter := NewShelter(b.Owner.Location.X, b.Owner.Location.Y, b.Owner)
     hasWoodLog := b.FindInOwnedItems("Wood log")
     if hasWoodLog != nil {
@@ -248,14 +259,32 @@ func (b *Brain) MakeShelter(action TargetedAction) {
 }
 
 // ImproveDefense - Improve defense
-func (b *Brain) ImproveDefense(action TargetedAction) {
+func (b *Brain) ImproveDefense() bool {
+    // Check the tile it's standing on
+    isTileEmpty := b.Owner.IsTileEmpty(b.Owner.Location.X, b.Owner.Location.Y)
 
-    b.Owner.CombatSkill += 1
-    fmt.Println("My combat skill is now", b.Owner.CombatSkill)
+    if isTileEmpty {
+        b.Owner.CombatSkill += 1
+        fmt.Println("My combat skill is now", b.Owner.CombatSkill)
+    } else {
+
+    vision := b.Owner.WorldProvider.GetGrassInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+    closestGrass := b.Owner.FindClosestEmptyGrass(vision)
+    path := b.DecidePathTo(closestGrass.Location.X, closestGrass.Location.Y)
+    
+    if path == nil {
+        fmt.Println("I can't find a path to the grass tile.")
+        return false
+    }
+        b.WalkOverPath(closestGrass.Location.X, closestGrass.Location.Y)
+        b.ImproveDefense()
+    }
+
+    return true
 }
 
 // Find - Find a target
-func (b *Brain) Find(target string) bool {
+func (b *Brain) FindAndNote(target string) bool {
     // Find whatever the target is
     // For example, find water, find food, find shelter, find a person, etc.
 

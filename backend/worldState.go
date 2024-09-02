@@ -7,10 +7,13 @@ import (
 type WorldAccessor interface {
 	GetPersonInVision(x, y, visionRange int) []PersonInVision
 	GetWaterInVision(x, y, visionRange int) []Tile
+	// Returns a Tile slice of grass tiles in the vision of the person at the given location, up to the given range.
+	GetGrassInVision(x, y, visionRange int) []Tile
 	GetPlantsInVision(x, y, visionRange int) []*Plant
 	
 	GetPersonByFullName(FullName string) *Person
 	GetTileType(x, y int) TileType
+	GetTile(x, y int) Tile
 	IsAdjacent(x1, y1, x2, y2 int) bool
 	CalculateDistance(x1, y1, x2, y2 int) int
 	CanWalk(x, y int) bool
@@ -19,8 +22,11 @@ type WorldAccessor interface {
 
 	AddItem(x, y int, item *Item)
 	DestroyItem(item *Item)
+	RemovePlant(Plant *Plant) Tile
 
 	AddShelter(x, y int, shelter *Shelter)
+
+	DisplayMap()
 }
 
 // NewTile creates a new tile with the given type and updates it's location.
@@ -119,6 +125,28 @@ func (w *World) GetWaterInVision(x, y, visionRange int) []Tile {
 
 	return water
 }
+
+// GetGrassInVision returns the grass in the vision of the person at the given location, up to the given range.
+func (w *World) GetGrassInVision(x, y, visionRange int) []Tile {
+	var grass []Tile
+
+	for i := -visionRange; i <= visionRange; i++ {
+		for j := -visionRange; j <= visionRange; j++ {
+			tx, ty := x+i, y+j
+
+			if tx >= 0 && tx < len(w.Tiles[0]) && ty >= 0 && ty < len(w.Tiles) {
+				tile := w.Tiles[ty][tx]
+				if tile.Type == Grass {
+					tileInVision := tile
+					grass = append(grass, tileInVision)
+				}
+			}
+		}
+	}
+
+	return grass
+}
+
 
 // GetPlantsInVision returns the plants in the vision of the person at the given location, up to the given range.
 func (w *World) GetPlantsInVision(x, y, visionRange int) []*Plant {
@@ -277,8 +305,8 @@ func (w *World) GetPlants(x, y int) *Plant {
 }
 
 // RemovePlant removes the plant from the tile at the given location.
-func (w *World) RemovePlant(Plant *Plant, x, y int) Tile {
-	w.Tiles[y][x].Plant = nil
+func (w *World) RemovePlant(Plant *Plant) Tile {
+	w.Tiles[Plant.Location.Y][Plant.Location.X].Plant = nil
 
-	return w.Tiles[y][x]
+	return w.Tiles[Plant.Location.Y][Plant.Location.X]
 }

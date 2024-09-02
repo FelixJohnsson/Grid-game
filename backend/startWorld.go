@@ -1,8 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"time"
 )
+
+var Reset = "\033[0m" 
+var Red = "\033[31m" 
+var Green = "\033[32m" 
+var Yellow = "\033[33m" 
+var Blue = "\033[34m" 
+var Magenta = "\033[35m" 
+var Cyan = "\033[36m" 
+var Gray = "\033[37m" 
+var White = "\033[97m"
 
 // AddPlantToTheWorld adds a plant to the world at the given location.
 func (w *World) AddPlantToTheWorld(x, y int, plant string) *Plant {
@@ -13,11 +24,45 @@ func (w *World) AddPlantToTheWorld(x, y int, plant string) *Plant {
 	return newPlant
 }
 
-func initializeWorld() *World {
-	world := NewWorld(10, 10) 
+// Display the map of the world in the console, super simple for now
+func (w *World) DisplayMap() {
+	if true {
+		fmt.Println()
+		fmt.Println()
+		for y := 0; y < w.Height; y++ {
+			for x := 0; x < w.Width; x++ {
+				if w.Tiles[x][y].Person != nil {
+					if w.Tiles[x][y].Person.Body.Head.Brain.IsAlive {
+						fmt.Print(Red + "P" + Reset)
+					} else {
+						fmt.Print("X")
+					}
+				} else if w.Tiles[x][y].Plant != nil {
+					if w.Tiles[x][y].Plant.Name == "Apple Tree" {
+						fmt.Print("A")
+					} else if w.Tiles[x][y].Plant.Name == "Oak Tree" {
+						fmt.Print("T")
+					}
+				} else if w.Tiles[x][y].Type == 1 {
+					fmt.Print(Blue + "W" + Reset)
+				} else if w.Tiles[x][y].Shelter != nil {
+					fmt.Print(Yellow + "S" + Reset)
+				} else {
+					fmt.Print(Green + "G" + Reset)
+				}
+
+			}
+			fmt.Println()
+		}
+	}
+	time.Sleep(1 * time.Second)
+}
+
+func InitializeWorld() *World {
+	world := NewWorld(10, 10)
 
 	// Create people
-	newPerson1 := world.createNewPerson(1, 1)
+	newPerson1 := world.createNewPerson(2, 2)
 	newPerson1.Title = "Leader"
 	newPerson1.Thinking = "I am the leader of this group."
 	newPerson1.Body.Head.Brain.PhysiologicalNeeds.Hunger = 40

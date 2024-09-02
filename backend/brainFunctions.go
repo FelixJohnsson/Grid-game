@@ -436,7 +436,7 @@ func (b *Brain) performActions() {
         b.ClearCurrentTask()
     case "Find shelter":
         b.CurrentTask = action
-        b.Find("Shelter")
+        b.FindAndNote("Shelter")
         b.ClearCurrentTask()
         return
     case "Make shelter":
@@ -448,7 +448,7 @@ func (b *Brain) performActions() {
     case "Improve defense":
         fmt.Println(b.Owner.FullName + " is improving defense.")
         b.CurrentTask = action
-        b.ImproveDefense(action)
+        b.ImproveDefense()
     case "Idle":
         b.CurrentTask = action
         fmt.Println(b.Owner.FullName + " is idle.")

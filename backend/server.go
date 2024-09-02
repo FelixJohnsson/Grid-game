@@ -290,7 +290,7 @@ func writeJSONResponse(w http.ResponseWriter, response interface{}) {
 
 func main() {
 	// Initialize the world
-	world := initializeWorld()
+	world := InitializeWorld()
 
 	// Define routes with CORS middleware and pass the world instance
 	http.Handle("/world", corsMiddleware(http.HandlerFunc(world.worldHandler)))

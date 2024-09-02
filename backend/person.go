@@ -323,6 +323,32 @@ func (p *Person) FindTheClosestPlant(plants []*Plant) *Plant {
 		return closestPlant
 }
 
+// FindClosestGrass - Find the closest grass from a list
+func (p *Person) FindClosestEmptyGrass(grass []Tile) Tile {
+	closestGrass := grass[0]
+	for _, tile := range grass {
+		if p.IsTileEmpty(tile.Location.X, tile.Location.Y) {
+			if p.WorldProvider.CalculateDistance(p.Location.X, p.Location.Y, tile.Location.X, tile.Location.Y) < p.WorldProvider.CalculateDistance(p.Location.X, p.Location.Y, closestGrass.Location.X, closestGrass.Location.Y) {
+				closestGrass = tile
+			}
+		}
+	}
+
+	return closestGrass
+}
+
+// IsTileEmpty - Check if a tile is empty
+func (p *Person) IsTileEmpty(x, y int) bool {
+	tile := p.WorldProvider.GetTile(x, y)
+	if tile.Shelter == nil && tile.Plant == nil {
+		if tile.Person != nil && tile.Person.FullName != p.FullName {
+			return false
+		}
+		return true
+	}
+	return false
+}
+
 //FindClosestWater - Find the closest water from a list of water
 func (p *Person) FindClosestWaterSupply(water []Tile) Tile {
 	closestWater := water[0]
