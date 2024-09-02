@@ -58,6 +58,7 @@ func (b *Brain) mainLoop() {
         b.FoodHandler()
         b.ThirstHandler()
 
+        b.ClearWants()
         b.CalculateWant()
         b.TranslateWantToTaskList()
         fmt.Println(b.ActionList)
@@ -93,6 +94,15 @@ func (b *Brain) IncreaseHungerLevel() {
     b.PhysiologicalNeeds.Hunger += 1
 }
 
+//DecreaseHungerLevel is a function that decreases the hunger level of the person
+func (b *Brain) DecreaseHungerLevel(amount int) {
+    b.PhysiologicalNeeds.Hunger -= amount
+    if b.PhysiologicalNeeds.Hunger < 0 {
+        b.PhysiologicalNeeds.Hunger = 0
+    }
+    fmt.Println("After eating, Current hunger level: ", b.PhysiologicalNeeds.Hunger)
+}
+
 //IncreaseThirstLevel is a function that increases the thirst level of the person
 func (b *Brain) IncreaseThirstLevel() {
     b.PhysiologicalNeeds.Thirst += 1
@@ -105,7 +115,6 @@ func (b *Brain) DecreaseThirstLevel(amount int) {
         b.PhysiologicalNeeds.Thirst = 0
     }
     fmt.Println("After drinking water, Current thirst level: ", b.PhysiologicalNeeds.Thirst)
-
 }
 
 // FoodHandler is a function that handles the food level of the person

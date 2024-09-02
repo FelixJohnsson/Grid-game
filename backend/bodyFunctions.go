@@ -51,7 +51,7 @@ func (b *Brain) FindWaterSupply(action TargetedAction) {
 
 
 // DrinkWater - Drink water
-func (b *Brain) DrinkWater(action TargetedAction) {
+func (b *Brain) DrinkWater() {
     vision := b.Owner.WorldProvider.GetWaterInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
     if len(vision) == 0 {
         fmt.Println("I can't see any water. Do I remember where I saw water last time?")
@@ -68,9 +68,6 @@ func (b *Brain) DrinkWater(action TargetedAction) {
         water := Liquid{"Water"}
         b.Owner.Drink(water)
         b.PhysiologicalNeeds.WayOfGettingWater = true
-        if b.PhysiologicalNeeds.Thirst < 20 {
-            b.RemoveActionFromActionList(action)
-        }
     }
 }
 
@@ -96,6 +93,37 @@ func (b *Brain) HasFruitsThatAreEdible(plant *Plant) bool {
         return false
     }
     return false
+}
+
+// EatFruit - Eat fruit from a fruit tree
+func (b *Brain) EatFruit() {
+    vision := b.Owner.WorldProvider.GetPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+    if len(vision) == 0 {
+        fmt.Println("I can't see any food. Do I remember where I saw food last time?")
+        return
+    }
+
+    fruitTrees := []*Plant{}
+    for _, PlantInVision := range vision {
+        if PlantInVision.ProducesFruit {
+            if b.HasFruitsThatAreEdible(PlantInVision) {
+                fruitTrees = append(fruitTrees, PlantInVision)
+            }
+        }
+    }
+
+    closestFruitTree := b.Owner.FindTheClosestPlant(fruitTrees)
+    if closestFruitTree != nil {
+        path := b.DecidePathTo(closestFruitTree.Location.X, closestFruitTree.Location.Y)
+        if path == nil {
+            fmt.Println("I can't find a path to the fruit tree.")
+        } else {
+            b.WalkOverPath(closestFruitTree.Location.X, closestFruitTree.Location.Y)
+            fruit := closestFruitTree.Fruit[0]
+            b.Owner.Eat(fruit)
+            b.PhysiologicalNeeds.WayOfGettingFood = true
+        }
+    }
 }
 
 // GetFoodForStorage - Get food for storage
@@ -221,7 +249,6 @@ func (b *Brain) MakeShelter(action TargetedAction) {
 
 // ImproveDefense - Improve defense
 func (b *Brain) ImproveDefense(action TargetedAction) {
-    fmt.Println("I'm training to improve my defense.")
 
     b.Owner.CombatSkill += 1
     fmt.Println("My combat skill is now", b.Owner.CombatSkill)

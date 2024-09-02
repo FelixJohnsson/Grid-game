@@ -268,6 +268,13 @@ type HumanBody struct {
 	LeftLeg *Leg
 }
 
+// ----------------- Food -------------------
+
+type Food interface {
+	GetName() string
+	GetNutritionalValue() int
+}
+
 // ----------------- Plants -----------------
 type PlantAction struct {
 	Name string
@@ -293,12 +300,18 @@ type Nutrients struct {
 }
 
 type Fruit struct {
-	Name      string
-	Taste     string
-	Age       int
-	RipeAge   int
-	IsRipe    bool
-	Nutrients []Nutrients
+	Name        string
+	RipeAge     int
+	IsRipe      bool
+	NutritionalValue int
+}
+
+func (f Fruit) GetName() string {
+	return f.Name
+}
+
+func (f Fruit) GetNutritionalValue() int {
+	return f.NutritionalValue
 }
 
 type PlantStage int

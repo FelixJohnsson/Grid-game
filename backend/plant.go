@@ -69,3 +69,11 @@ func (l *PlantLife) mainLoop() {
     }
 }
 
+func CreateNewFruit(name string, ripeAge int, isRipe bool, nutritionalValue int) Fruit {
+    return Fruit{
+        Name: name,
+        RipeAge: ripeAge,
+        IsRipe: isRipe,
+        NutritionalValue: nutritionalValue,
+    }
+}

@@ -20,7 +20,7 @@ func initializeWorld() *World {
 	newPerson1 := world.createNewPerson(1, 1)
 	newPerson1.Title = "Leader"
 	newPerson1.Thinking = "I am the leader of this group."
-	newPerson1.Body.Head.Brain.PhysiologicalNeeds.Thirst = 40
+	newPerson1.Body.Head.Brain.PhysiologicalNeeds.Hunger = 40
 
 	world.AddPerson(2, 2, newPerson1)
 
@@ -39,7 +39,13 @@ func initializeWorld() *World {
 
 	// Add a plant
 	appleTree := world.AddPlantToTheWorld(5, 5, "Apple Tree")
-	appleTree.Fruit = append(appleTree.Fruit, Fruit{"Apple", "Sweet", 3, 3, true, make([]Nutrients, 0)})
+
+	// Add 10 fruits to the apple tree
+	apple := CreateNewFruit("Apple", 5, true, 20)
+
+	for i := 0; i < 10; i++ {
+		appleTree.Fruit = append(appleTree.Fruit, apple)
+	}
 
 	// Add some lumber trees
 	world.AddPlantToTheWorld(3, 6, "Oak Tree")

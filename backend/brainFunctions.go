@@ -197,9 +197,13 @@ func (b *Brain) CheckIfWantIsAlreadyInList(want string) bool {
     return false
 }
 
+// ClearWants - Clear the wants of the person
+func (b *Brain) ClearWants() {
+    b.Owner.WantsTo = make([]string, 0)
+}
+
 // CalculateWant - Calculate the want of the person
 func (b *Brain) CalculateWant() {
-    // Check the current situation of the person using a switch statement
     switch {
     case !b.CheckIfCanBreath() && !b.CheckIfWantIsAlreadyInList("Be able to breath"):
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Be able to breath")
@@ -208,6 +212,7 @@ func (b *Brain) CalculateWant() {
     case b.PhysiologicalNeeds.Thirst > 30 && !b.CheckIfWantIsAlreadyInList("Consume water"):
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Consume water")
     case b.PhysiologicalNeeds.Hunger > 30 && !b.CheckIfWantIsAlreadyInList("Consume food"):
+        fmt.Println(b.Owner.FullName + " wants to consume food.", b.PhysiologicalNeeds.Hunger)
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Consume food")
     case !b.PhysiologicalNeeds.IsSufficientlyWarm && !b.CheckIfWantIsAlreadyInList("Get warm"):
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Get warm")
@@ -258,12 +263,17 @@ func (b *Brain) AddTaskToActionList(task TargetedAction) {
 			b.ActionList = append(b.ActionList[:i], b.ActionList[i+1:]...)
 		}
 	}
-
 	b.ActionList = append(b.ActionList, task)
+}
+
+// ClearActionList - Clear the action list
+func (b *Brain) ClearActionList() {
+    b.ActionList = make([]TargetedAction, 0)
 }
 
 // Translate the want to a list of tasks with priorities
 func (b *Brain) TranslateWantToTaskList() {
+    b.ClearActionList()
     if !b.CheckIfCanBreath() {
         if b.Owner.Body.Head.Mouth.IsObstructed {
             action := TargetedAction{"Clear airway", "Mouth", false,[]BodyPartType{"Hands"}, 100}
@@ -388,9 +398,13 @@ func (b *Brain) performActions() {
     switch action.Action {
     case "Drink water":
         b.CurrentTask = action
-        b.DrinkWater(action)
+        b.DrinkWater()
         b.ClearCurrentTask()
         return
+    case "Eat food":
+        b.CurrentTask = action
+        b.EatFruit()
+        b.ClearCurrentTask()
 	case "Clear airway":
         b.CurrentTask = action
         b.ClearAirway(action)
@@ -519,6 +533,7 @@ func (b *Brain) WalkOverPath(x, y int) {
         fmt.Println(b.Owner.FullName + " could not find a path to the location.")
         return
     }
+    fmt.Println(b.Owner.FullName + " is walking to ", x, y)
     for _, node := range path {
 		// Wait for a half second before walking to the next node
 		time.Sleep(500 * time.Millisecond)

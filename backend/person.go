@@ -127,6 +127,15 @@ func (p *Person) Drink(liquid Liquid) {
     }
 }
 
+// Eat - Consume food
+func (p *Person) Eat(food Food) {
+	switch food.GetName() {
+	case "Apple":
+		fmt.Println("Eating an apple")
+		p.Body.Head.Brain.DecreaseHungerLevel(food.GetNutritionalValue())
+	}
+}
+
 // RemoveLimb removes a limb from the person
 func (p *Person) RemoveLimb(limb BodyPartType) {
 	fmt.Println(limb, "has been SEVERED!!!")
@@ -275,7 +284,6 @@ func (p *Person) UpdateRelationship(fullName string, relationship string, intens
 
 // WalkTo - Walk to a location - This assumes that the person can physically walk and that it's possible to walk to the location. This should be one tile away, so one step.
 func (p *Person) WalkTo(x, y int) {
-	fmt.Println(p.FullName, "is walking to", x, y)
 	requiredLimbs := []BodyPartType{"RightLeg", "LeftLeg"}
 	p.IsMoving = TargetedAction{"Walk", string(x) + ", " + string(y), true, requiredLimbs, 10}
 	p.WorldProvider.MovePerson(p, x, y)
