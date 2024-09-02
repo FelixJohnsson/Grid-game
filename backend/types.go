@@ -6,11 +6,14 @@ import (
 
 // ----------------- World ------------------
 
+type Location struct {
+	X int `json:"X"`
+	Y int `json:"Y"`
+}
+
 type WorldState struct {
 	Map 	 	[][]string;
-  	Buildings	[]Building;
   	Persons	 	[]Person;
-  	Resources 	Resources;
 }
 
 type TileType int
@@ -21,15 +24,18 @@ const (
 	Mountain
 )
 type Tile struct {
-	Type     TileType    `json:"Type"`
-	Building *Building   `json:"Building,omitempty"`
-	Persons  []*Person   `json:"Persons,omitempty"`
-	Items    []*Item     `json:"Items,omitempty"`
-	Plant    *Plant      `json:"Plant,omitempty"`
-	NutritionalValue int `json:"NutritionalValue,omitempty"`
+	Type     TileType     `json:"Type"`
+	Person   *Person       `json:"Person,omitempty"`
+	Items    []*Item      `json:"Items,omitempty"`
+	Plant    *Plant       `json:"Plant,omitempty"`
+	NutritionalValue int  `json:"NutritionalValue,omitempty"`
+	Shelter  *Shelter     `json:"Shelter,omitempty"`
+	Location Location     `json:"Location"`
 }
 type World struct {
 	Tiles [][]Tile `json:"tiles"`
+	Width int      `json:"width"`
+	Height int     `json:"height"`
 }
 
 // ----------------- People -----------------
@@ -169,7 +175,7 @@ type Brain struct {
 type Vision struct {
 	Plants    []*Plant            `json:"Plants"`
 	Persons   []PersonInVision    `json:"Persons"`
-	Tiles     []TileInVision      `json:"TileInVision"`
+	Tiles     []Tile              `json:"Tile"`
 }
 
 // ----------------- Body -------------------
@@ -316,6 +322,12 @@ type Plant struct {
 	Location	  Location
 }
 
+// ----------------- Liquid ------------------
+
+type Liquid struct {
+	Name string
+}
+
 // ----------------- Items ------------------
 
 type Wearable struct {
@@ -352,7 +364,6 @@ type Item struct {
 
 type CleanedTile struct {
     Type     TileType         `json:"Type"`
-    Building *BuildingCleaned `json:"Building,omitempty"`
     Persons  []PersonCleaned  `json:"Persons,omitempty"`
 	Items    []*Item          `json:"Items,omitempty"`
 	Plant    *PlantCleaned    `json:"Plant,omitempty"`
@@ -419,9 +430,4 @@ type PersonInVision struct {
 	Title 		 string
 	Location     Location
 	Body 		 *HumanBody
-}
-
-type TileInVision struct {
-	Tile    Tile
-	Location Location
 }

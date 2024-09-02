@@ -7,45 +7,34 @@ func (w *World) CleanTiles() [][]CleanedTile {
 	for y, row := range tiles {
 		cleanedTiles[y] = make([]CleanedTile, len(row))
 		for x, tile := range row {
-			var cleanedBuilding *BuildingCleaned
-			if tile.Building != nil {
-				cleanedBuilding = &BuildingCleaned{
-					Name:     tile.Building.Name,
-					Type:     string(tile.Building.Type),
-					Location: tile.Building.Location,
-				}
-			}
-
 			var cleanedPersons []PersonCleaned
-			for _, person := range tile.Persons {
-				cleanedPersons = append(cleanedPersons, PersonCleaned{
-					FirstName:  person.FirstName,
-					FamilyName: person.FamilyName,
-					FullName:   person.FullName,
-					Gender:     person.Gender,
-					Age:        person.Age,
-					Title:      person.Title,
-					Location:   person.Location,
-					Thinking:   person.Thinking,
-					Head:       HeadCleaned{person.Body.Head.LimbStatus},
-					Torso:      person.Body.Torso,
-					RightArm:   person.Body.RightArm,
-					LeftArm:    person.Body.LeftArm,
-					RightLeg:   person.Body.RightLeg,
-					LeftLeg:    person.Body.LeftLeg,
+			cleanedPersons = append(cleanedPersons, PersonCleaned{
+				FirstName:  tile.Person.FirstName,
+				FamilyName: tile.Person.FamilyName,
+				FullName:   tile.Person.FullName,
+				Gender:     tile.Person.Gender,
+				Age:        tile.Person.Age,
+				Title:      tile.Person.Title,
+				Location:   tile.Person.Location,
+				Thinking:   tile.Person.Thinking,
+				Head:       HeadCleaned{tile.Person.Body.Head.LimbStatus},
+				Torso:      tile.Person.Body.Torso,
+				RightArm:   tile.Person.Body.RightArm,
+				LeftArm:    tile.Person.Body.LeftArm,
+				RightLeg:   tile.Person.Body.RightLeg,
+				LeftLeg:    tile.Person.Body.LeftLeg,
 
-					Strength:         person.Strength,
-					Agility:          person.Agility,
-					Intelligence:     person.Intelligence,
-					Charisma:         person.Charisma,
-					Stamina:          person.Stamina,
-					CombatExperience: person.CombatExperience,
-					CombatSkill:      person.CombatSkill,
-					CombatStyle:      person.CombatStyle,
-					IsIncapacitated:  person.IsIncapacitated,
-					Relationships:    person.Relationships,
-				})
-			}
+				Strength:         tile.Person.Strength,
+				Agility:          tile.Person.Agility,
+				Intelligence:     tile.Person.Intelligence,
+				Charisma:         tile.Person.Charisma,
+				Stamina:          tile.Person.Stamina,
+				CombatExperience: tile.Person.CombatExperience,
+				CombatSkill:      tile.Person.CombatSkill,
+				CombatStyle:      tile.Person.CombatStyle,
+				IsIncapacitated:  tile.Person.IsIncapacitated,
+				Relationships:    tile.Person.Relationships,
+			})
 			var cleanedPlant *PlantCleaned
 			// Remove the PlantLife from the Plant before sending it to the client
 			plant := tile.Plant
@@ -60,11 +49,10 @@ func (w *World) CleanTiles() [][]CleanedTile {
 			}
 
 			cleanedTiles[y][x] = CleanedTile{
-				Type:     tile.Type,
-				Building: cleanedBuilding,
-				Persons:  cleanedPersons,
-				Items:    tile.Items,
-				Plant:    cleanedPlant,
+				Type:    tile.Type,
+				Persons: cleanedPersons,
+				Items:   tile.Items,
+				Plant:   cleanedPlant,
 			}
 		}
 	}

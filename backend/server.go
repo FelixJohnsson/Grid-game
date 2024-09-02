@@ -78,26 +78,6 @@ func (w *World) personHandler(writer http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(writer, response)
 }
 
-// Hander for /buildings endpoint
-func (w *World) buildingHandler(writer http.ResponseWriter, r *http.Request) {
-	// Ignore favicon requests
-	if r.URL.Path == "/favicon.ico" {
-		http.NotFound(writer, r)
-		return
-	}
-
-	logRequest(r)
-
-	buildings := w.GetAllBuildings()
-
-	response := BuildingResponse{
-		Message: buildings,
-		Status:  200,
-	}
-
-	writeJSONResponse(writer, response)
-}
-
 // Handler for /world endpoint
 func (w *World) worldHandler(writer http.ResponseWriter, r *http.Request) {
     // Ignore favicon requests
@@ -164,8 +144,6 @@ func (w *World) grabHandler(writer http.ResponseWriter, r *http.Request) {
 		http.Error(writer, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
-
-	fmt.Println(grabRequest)
 
 	// Find the person by full name
 	person := w.GetPersonByFullName(grabRequest.FullName)
@@ -318,7 +296,6 @@ func main() {
 	http.Handle("/world", corsMiddleware(http.HandlerFunc(world.worldHandler)))
 
 	http.Handle("/people", corsMiddleware(http.HandlerFunc(world.personHandler)))
-	http.Handle("/buildings", corsMiddleware(http.HandlerFunc(world.buildingHandler)))
 	http.Handle("/move", corsMiddleware(http.HandlerFunc(world.moveHandler)))
 	http.Handle("/entityGrab", corsMiddleware(http.HandlerFunc(world.grabHandler)))
 	http.Handle("/entityAttack", corsMiddleware(http.HandlerFunc(world.attackHandler)))
@@ -327,5 +304,5 @@ func main() {
 	http.Handle("/", corsMiddleware(http.HandlerFunc(defaultHandler)))
 
 	fmt.Println("Server started at :8080")
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe("127.0.0.1:8000", nil)
 }

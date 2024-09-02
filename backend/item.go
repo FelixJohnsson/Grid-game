@@ -17,18 +17,59 @@ var materials = []Material{
 	{"Soil", "Inorganic", 1, 1, 1, 1},
 }
 
+// GetMaterialByName - Get a material by name
+func GetMaterialByName(name string) Material {
+	for _, material := range materials {
+		if material.Name == name {
+			return material
+		}
+	}
+	return Material{}
+}
+
 // All available items
 var items = []Item{
 	// Weapons
-	{"Wooden Spear", 5, 4, 3, []Material{materials[0]}, make([]Residue, 0), Location{0, 0}},
-	{"Wooden Staff", 1, 8, 2, []Material{materials[0]}, make([]Residue, 0), Location{0, 0}},
-	{"Stone Axe", 6, 2, 5, []Material{materials[1], materials[0], materials[2]}, make([]Residue, 0), Location{0, 0}},
+	{"Wooden Spear", 5, 4, 3, []Material{GetMaterialByName("Wood")}, make([]Residue, 0), Location{0, 0}},
+	{"Wooden Staff", 1, 8, 2, []Material{GetMaterialByName("Wood")}, make([]Residue, 0), Location{0, 0}},
 
 	// Tools
+	{"Stone Axe", 6, 2, 5, []Material{materials[1], GetMaterialByName("Wood"), GetMaterialByName("Stone")}, make([]Residue, 0), Location{0, 0}},
 
 	// Storage
-	{"Wooden Basket", 1, 1, 1, []Material{materials[0]}, make([]Residue, 0), Location{0, 0}},
-	{"Wooden Box", 1, 1, 1, []Material{materials[0]}, make([]Residue, 0), Location{0, 0}},
-	{"Wooden Crate", 1, 1, 1, []Material{materials[0]}, make([]Residue, 0), Location{0, 0}},
-	{"Woven Grass Basket", 1, 1, 1, []Material{materials[0]}, make([]Residue, 0), Location{0, 0}},
+	{"Food Box", 1, 1, 1, []Material{GetMaterialByName("Wood")}, make([]Residue, 0), Location{0, 0}},
+	{"Wooden Box", 1, 1, 1, []Material{GetMaterialByName("Wood")}, make([]Residue, 0), Location{0, 0}},
+	{"Wooden Crate", 1, 1, 1, []Material{GetMaterialByName("Wood")}, make([]Residue, 0), Location{0, 0}},
+	{"Woven Grass Basket", 1, 1, 1, []Material{GetMaterialByName("Grass")}, make([]Residue, 0), Location{0, 0}},
+}
+
+var BuildingMaterials = []Item{
+	{"Wood log", 1, 1, 1, []Material{GetMaterialByName("Wood")}, make([]Residue, 0), Location{0, 0}},
+}
+
+// CreateNewItem - Create a new item
+func CreateNewItem(itemType string) *Item {
+	switch itemType {
+	// Items
+	case "Wooden Spear":
+		return &items[0]
+	case "Wooden Staff":
+		return &items[1]
+	case "Stone Axe":
+		return &items[2]
+	case "Food Box":
+		return &items[3]
+	case "Wooden Box":
+		return &items[4]
+	case "Wooden Crate":
+		return &items[5]
+	case "Woven Grass Basket":
+		return &items[6]
+
+	// Building materials
+	case "Wood log":
+		return &BuildingMaterials[0]
+	}
+
+	return nil
 }

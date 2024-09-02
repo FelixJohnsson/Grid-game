@@ -104,11 +104,6 @@ type Brain = {
   BrainDamage: number;
 };
 
-type Vision = {
-  Buildings: BuildingCleaned[];
-  Persons: PersonInVision[];
-};
-
 // ----------------- Body -------------------
 
 type LimbStatus = {

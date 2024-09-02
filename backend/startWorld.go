@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -21,31 +20,16 @@ func initializeWorld() *World {
 	newPerson1 := world.createNewPerson(1, 1)
 	newPerson1.Title = "Leader"
 	newPerson1.Thinking = "I am the leader of this group."
-
-	newPerson2 := world.createNewPerson(9, 9)
-	newPerson2.Title = "Follower"
-	newPerson2.Thinking = "I follow the leader."
+	newPerson1.Body.Head.Brain.PhysiologicalNeeds.Thirst = 40
 
 	world.AddPerson(2, 2, newPerson1)
-	world.AddPerson(9, 9, newPerson2)
-
 
 	// Turn on the brain for the people
 	newPerson1.Body.Head.Brain.turnOn()
 
-	// Create a Wooden spear item from items
-	woodenSpear := items[0]
-	woodenSpear.Residues = append(woodenSpear.Residues, Residue{"Dirt", 1})
+	stoneAxe := CreateNewItem("Stone Axe")
+	newPerson1.GrabRight(stoneAxe)
 
-	// Create a Wooden staff item from items
-	woodenStaff := items[1]
-	woodenStaff.Residues = append(woodenStaff.Residues, Residue{"Blood", 1})
-	stoneAxe := items[2]
-
-	newPerson1.GrabRight(&stoneAxe)
-
-	// Add the wooden spear to the world
-	world.AddItem(1, 1, &woodenSpear)
 
 	// Add a woven grass basket to the world
 	wovenGrassBasket := items[6]
@@ -70,15 +54,6 @@ func initializeWorld() *World {
 	world.SetTileType(0, 3, 1)
 	world.SetTileType(1, 2, 1)
 	world.SetTileType(1, 3, 1)
-
-	// Test the FindLumberTrees function
-	lumberTreesFound := newPerson1.FindLumberTrees()
-	if lumberTreesFound != nil {
-		closestLumberTree := newPerson1.FindTheClosestPlant(lumberTreesFound)
-		newPerson1.Body.Head.Brain.WalkOverPath(closestLumberTree.Location.X, closestLumberTree.Location.Y)
-	} else {
-		fmt.Println("No lumber trees found in vision")
-	}
 
 	return world
 }

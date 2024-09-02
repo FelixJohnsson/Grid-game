@@ -49,6 +49,31 @@ func (b *Brain) FindWaterSupply(action TargetedAction) {
 
 }
 
+
+// DrinkWater - Drink water
+func (b *Brain) DrinkWater(action TargetedAction) {
+    vision := b.Owner.WorldProvider.GetWaterInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+    if len(vision) == 0 {
+        fmt.Println("I can't see any water. Do I remember where I saw water last time?")
+        return
+    }
+
+    closestWater := b.Owner.FindClosestWaterSupply(vision)
+
+    path := b.DecidePathTo(closestWater.Location.X, closestWater.Location.Y)
+    if path == nil {
+        fmt.Println("I can't find a path to the water.")
+    } else {
+        b.WalkOverPath(closestWater.Location.X, closestWater.Location.Y)
+        water := Liquid{"Water"}
+        b.Owner.Drink(water)
+        b.PhysiologicalNeeds.WayOfGettingWater = true
+        if b.PhysiologicalNeeds.Thirst < 20 {
+            b.RemoveActionFromActionList(action)
+        }
+    }
+}
+
 // FindFoodSupply - Find a food supply
 func (b *Brain) FindFoodSupply(action TargetedAction) {
     fmt.Println("Looking for food supply")
@@ -75,64 +100,47 @@ func (b *Brain) HasFruitsThatAreEdible(plant *Plant) bool {
 
 // GetFoodForStorage - Get food for storage
 func (b *Brain) GetFoodForStorage(action TargetedAction) {
-    fmt.Println("Do I have a storage where I can store food?")
+    hasFoodStorage := b.FindInOwnedItems("Food Box")
 
-    storage := ""
-    basket := false
+    if hasFoodStorage == nil {
+        fmt.Println("I need a food storage to store food.")
+        woodLog := b.GetWood()
 
-    if b.Owner.OwnedItems != nil {
-        for _, item := range b.Owner.OwnedItems {
-            if item.Name == "Wooden Crate" || item.Name == "Wooden Box" {
-                storage = item.Name
-                fmt.Println("I have a" + storage + "where I can store food.")
-            } else {
-                fmt.Println("I don't have a storage where I can store food. So I should make one.")
-                fmt.Println("I should find materials to make a storage.")
-
-                success := b.FindWood()
-                if success != nil {
-                    fmt.Println("I found wood. Now I need to get it.")
-                    b.CurrentTask = TargetedAction{"Walk", "Wood", true, []BodyPartType{"RightLeg", "LeftLeg"}, 100}
-                                                                                                                                          
-                    go b.WalkOverPath(success.Location.X, success.Location.Y)
-                }
-
-            }
-            if item.Name == "Woven Grass Basket" {
-                basket = true
-            }
-        }
-    }
-
-    fmt.Println("Do I have a basket or something to carry food?")
-    if basket {
-        fmt.Println("I have a basket. Then I should find food.")
-
-        success := b.Find("Food supply")
-        if success {
-            fmt.Println("I found food. Now I need to get it.")
-        } else {
-            fmt.Println("I can't see any food. Do I remember where I saw food last time?")
-
-            if len(b.Memories.LongTermMemory) > 0 {
-                for _, memory := range b.Memories.LongTermMemory {
-                    if memory.Event == "Found food supply" {
-                        fmt.Println("I remember where I saw food last time.")
-                        fmt.Println("I should go there and get food.")
-
-                        b.CurrentTask = TargetedAction{"Walk", memory.Details, true, []BodyPartType{"RightLeg", "LeftLeg"}, 100}
-                        // Make a go routine to walk to the location
-                        go b.WalkOverPath(memory.Location.X, memory.Location.Y)
-                    }
-                }
-            }
-    }
+        foodBox := b.Craft("Food Box")
+        b.Owner.WorldProvider.DestroyItem(woodLog)
+        b.Owner.GrabRight(foodBox)
+        b.Owner.OwnedItems = append(b.Owner.OwnedItems, foodBox)
+        b.RemoveActionFromActionList(action)
+        b.PhysiologicalNeeds.FoodSupply = true
+        fmt.Println("I got the wood and crafted a food box.")
     }
 }
 
+// Craft - Craft an item
+func (b *Brain) Craft(item string) *Item {
+    switch item {
+    case "Stone Axe":
+            stoneAxe := Item{"Stone Axe", 1, 10, 5, []Material{materials[0]}, make([]Residue, 0), Location{b.Owner.Location.X, b.Owner.Location.Y}}
+        return &stoneAxe
+    case "Food Box":
+        foodBox := Item{"Food Box", 1, 1, 1, []Material{materials[0]}, make([]Residue, 0), Location{b.Owner.Location.X, b.Owner.Location.Y}}
+        return &foodBox
+    }
+    return nil
+}
+
 // GetWood - Get wood
-func (b *Brain) GetWood(action TargetedAction) {
-    
+func (b *Brain) GetWood() *Item {
+    nearestTree := b.FindWood()
+    if nearestTree != nil {
+        fmt.Println("I found wood. Now I need to get it.")
+        b.WalkOverPath(nearestTree.Location.X, nearestTree.Location.Y)
+        woodLog := b.ChopDownTree()
+        return woodLog
+    } else {
+        fmt.Println("I can't see any wood. Do I remember where I saw wood last time?")
+        return nil
+    }
 }
 
 
@@ -155,6 +163,70 @@ func (b *Brain) FindWood() *Plant {
     return nil
 }
 
+// ChopDownTree - Chop down a tree
+func (b *Brain) ChopDownTree() *Item {
+    if b.HasItemEquippedInRight("Stone Axe") {
+        fmt.Println("I have a stone axe in my right hand. I can chop down the tree.")
+        b.Owner.DropRight("Stone Axe")
+        wood := CreateNewItem("Wood log")
+        b.Owner.GrabRight(wood)
+        fmt.Println("I chopped down the tree.")
+        return wood
+    } else if b.HasItemEquippedInLeft("Stone Axe") {
+        fmt.Println("I have a stone axe in my left hand. I can chop down the tree.")
+        b.Owner.DropLeft("Stone Axe")
+        wood := CreateNewItem("Wood log")
+        b.Owner.GrabLeft(wood)
+        fmt.Println("I chopped down the tree.")
+        return wood
+    } else {
+        fmt.Println("I need a stone axe to chop down the tree.")
+        return nil
+    }
+}
+
+// ConstructShelter - Construct a shelter
+func (b *Brain) ConstructShelter() bool {
+    newShelter := NewShelter(b.Owner.Location.X, b.Owner.Location.Y, b.Owner)
+    hasWoodLog := b.FindInOwnedItems("Wood log")
+    if hasWoodLog != nil {
+        b.Owner.WorldProvider.AddShelter(b.Owner.Location.X, b.Owner.Location.Y, newShelter)
+        return true
+    } else {
+        return false
+    }
+}
+
+// MakeShelter - Make a shelter
+func (b *Brain) MakeShelter(action TargetedAction) {
+    hasWoodLog := b.FindInOwnedItems("Wood log")
+
+    if hasWoodLog == nil {
+        fmt.Println("I need wood to make a shelter.")
+        b.GetWood()
+        b.ConstructShelter()
+    } else {
+        fmt.Println("I have wood. Now I can make a shelter.")
+        success := b.ConstructShelter()
+        if success {
+            b.RemoveActionFromActionList(action)
+            b.PhysiologicalNeeds.HasShelter = true
+            b.AddMemoryToLongTerm("Made a shelter", "Shelter", b.Owner.Location)
+            fmt.Println("I made a shelter.")
+        } else {
+            fmt.Println("I couldnt make a shelter here.")
+        }
+    }
+}
+
+// ImproveDefense - Improve defense
+func (b *Brain) ImproveDefense(action TargetedAction) {
+    fmt.Println("I'm training to improve my defense.")
+
+    b.Owner.CombatSkill += 1
+    fmt.Println("My combat skill is now", b.Owner.CombatSkill)
+}
+
 // Find - Find a target
 func (b *Brain) Find(target string) bool {
     // Find whatever the target is
@@ -165,7 +237,7 @@ func (b *Brain) Find(target string) bool {
         fmt.Println("Check vision for water supply")
         vision := b.Owner.WorldProvider.GetWaterInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
         for _, TileInVision := range vision {
-            if TileInVision.Tile.Type == 1 {
+            if TileInVision.Type == 1 {
                 fmt.Println("Found water supply at", TileInVision.Location.X, TileInVision.Location.Y)
                 b.AddMemoryToLongTerm("Found water supply", "Water", TileInVision.Location)
                 b.PhysiologicalNeeds.WayOfGettingWater = true
@@ -185,7 +257,8 @@ func (b *Brain) Find(target string) bool {
                 }
             }
         }
-
+    case "Shelter":
+        return false
     }
     return false
 }

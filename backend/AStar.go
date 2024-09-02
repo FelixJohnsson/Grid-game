@@ -129,7 +129,7 @@ func (b *Brain) getNeighbors(node *Node) []*Node {
 
 	for _, dir := range directions {
 		nx, ny := node.X+dir[0], node.Y+dir[1]
-		if nx >= 0 && ny >= 0 && b.Owner.WorldProvider.CanWalk(nx, ny) {
+		if nx >= 0 && ny >= 0 && nx < 10 && ny < 10 && b.Owner.WorldProvider.CanWalk(nx, ny) {
 			neighbors = append(neighbors, &Node{X: nx, Y: ny, G: math.MaxFloat64})
 		}
 	}

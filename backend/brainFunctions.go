@@ -216,6 +216,9 @@ func (b *Brain) CalculateWant() {
     case !b.PhysiologicalNeeds.IsInSafeArea && !b.CheckIfWantIsAlreadyInList("Find a safe area"):
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Find a safe area")
     case !b.PhysiologicalNeeds.IsCapableOfDefendingSelf && !b.CheckIfWantIsAlreadyInList("Improve defense"):
+        if b.Owner.CombatSkill > 30 {
+            b.PhysiologicalNeeds.IsCapableOfDefendingSelf = true
+        }
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Improve defense")
     case !b.PhysiologicalNeeds.HasShelter && !b.CheckIfWantIsAlreadyInList("Make shelter"):
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Make shelter")
@@ -241,6 +244,11 @@ func (b *Brain) RemoveActionFromActionList(action TargetedAction) {
 			b.ActionList = append(b.ActionList[:i], b.ActionList[i+1:]...)
 		}
 	}
+}
+
+// ClearCurrentTask - Clear the current task
+func (b *Brain) ClearCurrentTask() {
+    b.CurrentTask = TargetedAction{"Idle", "Nothing", false, []BodyPartType{"Hands"}, 0}
 }
 
 // AddTaskToActionList - Add a task to the action list
@@ -276,6 +284,18 @@ func (b *Brain) TranslateWantToTaskList() {
 			}
         }
     }
+    if b.PhysiologicalNeeds.Thirst > 30 {
+		action := TargetedAction{"Drink water", "", false,[]BodyPartType{"Hands"}, 99}
+		if !b.IsTaskInActionList(action) {
+			b.AddTaskToActionList(action)
+		}
+	}
+	if b.PhysiologicalNeeds.Hunger > 30 {
+		action := TargetedAction{"Eat food", "", false,[]BodyPartType{"Hands"}, 98}
+		if !b.IsTaskInActionList(action) {
+			b.AddTaskToActionList(action)
+		}
+	}
 	if b.PhysiologicalNeeds.IsInPain {
 		action := TargetedAction{"Reduce pain", "", false,[]BodyPartType{"Hands"}, 95}
 		if !b.IsTaskInActionList(action) {
@@ -300,18 +320,7 @@ func (b *Brain) TranslateWantToTaskList() {
 			b.AddTaskToActionList(action)
 		}
 	}
-	if b.PhysiologicalNeeds.Thirst > 30 {
-		action := TargetedAction{"Drink water", "", false,[]BodyPartType{"Hands"}, 90}
-		if !b.IsTaskInActionList(action) {
-			b.AddTaskToActionList(action)
-		}
-	}
-	if b.PhysiologicalNeeds.Hunger > 30 {
-		action := TargetedAction{"Eat food", "", false,[]BodyPartType{"Hands"}, 90}
-		if !b.IsTaskInActionList(action) {
-			b.AddTaskToActionList(action)
-		}
-	}
+
 	if !b.PhysiologicalNeeds.IsSufficientlyWarm {
 		action := TargetedAction{"Get warm", "", false,[]BodyPartType{"Hands"}, 85}
 		if !b.IsTaskInActionList(action) {
@@ -330,24 +339,26 @@ func (b *Brain) TranslateWantToTaskList() {
 			b.AddTaskToActionList(action)
 		}
 	}
-	if !b.PhysiologicalNeeds.IsCapableOfDefendingSelf {
-		action := TargetedAction{"Improve defense", "", false,[]BodyPartType{"Hands"}, 70}
-		if !b.IsTaskInActionList(action) {
-			b.AddTaskToActionList(action)
-		}
-	}
+
 	if !b.PhysiologicalNeeds.HasShelter {
-		action := TargetedAction{"Make shelter", "", false,[]BodyPartType{"Hands"}, 65}
+		action := TargetedAction{"Make shelter", "", false,[]BodyPartType{"Hands"}, 70}
 		if !b.IsTaskInActionList(action) {
 			b.AddTaskToActionList(action)
 		}
 	}
-	if b.PhysiologicalNeeds.Rested < 20 {
-		action := TargetedAction{"Rest", "", false,[]BodyPartType{"Hands"}, 60}
+    if b.PhysiologicalNeeds.Rested < 20 {
+		action := TargetedAction{"Rest", "", false,[]BodyPartType{"Hands"}, 65}
 		if !b.IsTaskInActionList(action) {
 			b.AddTaskToActionList(action)
 		}
 	}
+    if !b.PhysiologicalNeeds.IsCapableOfDefendingSelf {
+		action := TargetedAction{"Improve defense", "", false,[]BodyPartType{"Hands"}, 60}
+		if !b.IsTaskInActionList(action) {
+			b.AddTaskToActionList(action)
+		}
+	}
+
 }
 
 // ----------------- Tasks ---------------------
@@ -371,26 +382,61 @@ func (b *Brain) performActions() {
     // Take the action with the highest priority
     action := b.RankTasks()
 
+    fmt.Println(b.Owner.FullName + " is performing the action: " + action.Action)
+
     // Perform the action
     switch action.Action {
+    case "Drink water":
+        b.CurrentTask = action
+        b.DrinkWater(action)
+        b.ClearCurrentTask()
+        return
 	case "Clear airway":
+        b.CurrentTask = action
         b.ClearAirway(action)
+        b.ClearCurrentTask()
 		return
     case "Fix nose":
+        b.CurrentTask = action
         b.FixBrokenNose(action)
+        b.ClearCurrentTask()
 		return
 	case "Reduce pain":
+        b.CurrentTask = action
 		//b.ReducePain()
+        b.ClearCurrentTask()
 		return
 	case "Find a water supply":
+        b.CurrentTask = action
 		b.FindWaterSupply(action)
+        b.ClearCurrentTask()
 		return
 	case "Find a food supply":
+        b.CurrentTask = action
 		b.FindFoodSupply(action)
+        b.ClearCurrentTask()
 		return
 	case "Have food for storage":
+        b.CurrentTask = action
 		b.GetFoodForStorage(action)
+        b.ClearCurrentTask()
+    case "Find shelter":
+        b.CurrentTask = action
+        b.Find("Shelter")
+        b.ClearCurrentTask()
+        return
+    case "Make shelter":
+        fmt.Println(b.Owner.FullName + " is making a shelter.")
+        b.CurrentTask = action
+        b.MakeShelter(action)
+        b.ClearCurrentTask()
+        return
+    case "Improve defense":
+        fmt.Println(b.Owner.FullName + " is improving defense.")
+        b.CurrentTask = action
+        b.ImproveDefense(action)
     case "Idle":
+        b.CurrentTask = action
         fmt.Println(b.Owner.FullName + " is idle.")
 		return
 
@@ -458,7 +504,6 @@ func (b *Brain) UnderAttack(attacker *Person, targettedLimb BodyPartType, attack
 	}
 }
 
-
 // ----------------- Pathfinding ---------------------
 
 // Decide a path to the target location - Check first if it's physically possible to walk.
@@ -480,4 +525,36 @@ func (b *Brain) WalkOverPath(x, y int) {
         b.Owner.WalkTo(node.X, node.Y)
     }
 	b.CurrentTask.IsActive = false
+}
+
+// ----------------- Items -------------------------
+
+// FindInOwnedItems - Find an item in the owned items
+func (b *Brain) FindInOwnedItems(itemName string) *Item {
+    for _, item := range b.Owner.OwnedItems {
+        if item.Name == itemName {
+            return item
+        }
+    }
+    return nil
+}
+
+// HasItemEquippedInRight - Check if the person has an item equipped in right hand
+func (b *Brain) HasItemEquippedInRight(itemName string) bool {
+    for _, item := range b.Owner.Body.RightArm.Hand.Items {
+        if item.Name == itemName {
+            return true
+        }
+    }
+    return false
+}
+
+// HasItemEquippedInLeft - Check if the person has an item equipped in left hand
+func (b *Brain) HasItemEquippedInLeft(itemName string) bool {
+    for _, item := range b.Owner.Body.LeftArm.Hand.Items {
+        if item.Name == itemName {
+            return true
+        }
+    }
+    return false
 }

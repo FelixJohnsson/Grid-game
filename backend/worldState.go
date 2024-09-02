@@ -1,10 +1,12 @@
 package main
 
-import "math"
+import (
+	"math"
+)
 
 type WorldAccessor interface {
 	GetPersonInVision(x, y, visionRange int) []PersonInVision
-	GetWaterInVision(x, y, visionRange int) []TileInVision
+	GetWaterInVision(x, y, visionRange int) []Tile
 	GetPlantsInVision(x, y, visionRange int) []*Plant
 	
 	GetPersonByFullName(FullName string) *Person
@@ -14,16 +16,34 @@ type WorldAccessor interface {
 	CanWalk(x, y int) bool
 
 	MovePerson(person *Person, newX, newY int)
+
+	AddItem(x, y int, item *Item)
+	DestroyItem(item *Item)
+
+	AddShelter(x, y int, shelter *Shelter)
+}
+
+// NewTile creates a new tile with the given type and updates it's location.
+func NewTile(t TileType, x, y int) Tile {
+	return Tile{
+		Type:     t,
+		Location: Location{X: x, Y: y},
+	}
 }
 
 // NewWorld creates a new world with the given dimensions.
 func NewWorld(width, height int) *World {
 	world := World{
 		Tiles: make([][]Tile, height),
+		Width: width,
+		Height: height,
 	}
 
 	for i := range world.Tiles {
 		world.Tiles[i] = make([]Tile, width)
+		for j := range world.Tiles[i] {
+			world.Tiles[i][j] = NewTile(Grass, j, i)
+		}
 	}
 
 	return &world
@@ -46,7 +66,7 @@ func (w *World) GetTiles() [][]Tile {
 
 // CanWalk returns true if the person can walk on the tile at the given location.
 func (w *World) CanWalk(x, y int) bool {
-	return w.Tiles[y][x].Type != Water && w.Tiles[y][x].Type != Mountain && w.Tiles[y][x].Building == nil
+	return w.Tiles[y][x].Type != Mountain
 }
 
 // GetPersonInVision returns the vision of the person at the given location, up to the given range.
@@ -59,18 +79,18 @@ func (w *World) GetPersonInVision(x, y, visionRange int) []PersonInVision {
 
 			if tx >= 0 && tx < len(w.Tiles[0]) && ty >= 0 && ty < len(w.Tiles) {
 				tile := w.Tiles[ty][tx]
-				for _, person := range tile.Persons {
 					cleanedPerson := PersonInVision{
-						FirstName:  person.FirstName,
-						FamilyName: person.FamilyName,
-						Gender:     person.Gender,
-						Age:        person.Age,
-						Title:      person.Title,
-						Location:   person.Location,
-						Body:       person.Body,
+						FirstName:  tile.Person.FirstName,
+						FamilyName: tile.Person.FamilyName,
+						Gender:     tile.Person.Gender,
+						Age:        tile.Person.Age,
+						Title:      tile.Person.Title,
+						Location:   tile.Person.Location,
+						Body:       tile.Person.Body,
 					}
+
 					persons = append(persons, cleanedPerson)
-				}
+				
 				
 			}
 		}
@@ -80,8 +100,8 @@ func (w *World) GetPersonInVision(x, y, visionRange int) []PersonInVision {
 }
 
 // GetWaterInVision returns the water in the vision of the person at the given location, up to the given range.
-func (w *World) GetWaterInVision(x, y, visionRange int) []TileInVision {
-	var water []TileInVision
+func (w *World) GetWaterInVision(x, y, visionRange int) []Tile {
+	var water []Tile
 
 	for i := -visionRange; i <= visionRange; i++ {
 		for j := -visionRange; j <= visionRange; j++ {
@@ -90,10 +110,7 @@ func (w *World) GetWaterInVision(x, y, visionRange int) []TileInVision {
 			if tx >= 0 && tx < len(w.Tiles[0]) && ty >= 0 && ty < len(w.Tiles) {
 				tile := w.Tiles[ty][tx]
 				if tile.Type == Water {
-					tileInVision := TileInVision{
-						Tile:     tile,
-						Location: Location{X: tx, Y: ty},
-					}
+					tileInVision := tile
 					water = append(water, tileInVision)
 				}
 			}
@@ -130,8 +147,8 @@ func (w *World) CalculateDistance(x1, y1, x2, y2 int) int {
 }
 
 // AddBuilding adds a building to the tile at the given location.
-func (w *World) AddBuilding(x, y int, b Building) {
-	w.Tiles[y][x].Building = &b
+func (w *World) AddShelter(x, y int, shelter *Shelter) {
+	w.Tiles[y][x].Shelter = shelter
 }
 
 // IsAdjacent returns true if the two locations are adjacent to each other.
@@ -139,44 +156,17 @@ func (w *World) IsAdjacent(x1, y1, x2, y2 int) bool {
 	return (x1 == x2 && (y1 == y2+1 || y1 == y2-1)) || (y1 == y2 && (x1 == x2+1 || x1 == x2-1))
 }
 
-// RemoveBuilding removes the building from the tile at the given location.
-func (w *World) RemoveBuilding(x, y int) {
-	w.Tiles[y][x].Building = nil
-}
-
-// GetBuilding returns the building at the given location.
-func (w *World) GetBuilding(x, y int) *Building {
-	return w.Tiles[y][x].Building
-}
-
-// GetAllBuildings returns all the buildings in the world.
-func (w *World) GetAllBuildings() []Building {
-	var buildings []Building
-
-	for _, row := range w.Tiles {
-		for _, tile := range row {
-			if tile.Building != nil {
-				buildings = append(buildings, *tile.Building)
-			}
-		}
-	}
-
-	return buildings
-}
-
 // AddPerson adds a person to the tile at the given location.
-func (w *World) AddPerson(x, y int, p *Person) {
-	w.Tiles[y][x].Persons = append(w.Tiles[y][x].Persons, p)
+func (w *World) AddPerson(x, y int, person *Person) {
+	w.Tiles[y][x].Person = person
 }
 
 // GetPersonByFullName returns the person with the given full name in the world.
 func (w *World) GetPersonByFullName(FullName string) *Person {
 	for _, row := range w.Tiles {
 		for _, tile := range row {
-			for _, person := range tile.Persons {
-				if person.FullName == FullName {
-					return person
-				}
+			if tile.Person.FullName == FullName {
+				return tile.Person
 			}
 		}
 	}
@@ -189,10 +179,10 @@ func (w *World) GetTileType(x, y int) TileType {
 }
 
 // GetPersons returns the persons at the given location.
-func (w *World) GetPersons(x, y int) []*Person {
+func (w *World) GetPersons(x, y int) *Person {
 	tile := w.Tiles[y][x]
 
-	return tile.Persons
+	return tile.Person
 }
 
 // GetAllPersons returns all the persons in the world.
@@ -201,7 +191,7 @@ func (w *World) GetAllPersons() []*Person {
 
 	for _, row := range w.Tiles {
 		for _, tile := range row {
-			persons = append(persons, tile.Persons...)
+			persons = append(persons, tile.Person)
 		}
 	}
 
@@ -209,41 +199,27 @@ func (w *World) GetAllPersons() []*Person {
 }
 
 // RemovePerson removes the person with the given full name and coordinates from the world.
-func (w *World) RemovePerson(person *Person, x, y int) []*Person {
+func (w *World) RemovePerson(person *Person, x, y int) bool {
 	tile := w.Tiles[y][x]
 
-	// Find the person in the tile and remove it
-	everyone := tile.Persons
-	for i, p := range everyone {
-		if p.FullName == person.FullName {
-			everyone = append(everyone[:i], everyone[i+1:]...)
-			break
-		}
+	// Remove the person from the tile
+	if tile.Person == person {
+		tile.Person = nil
+		w.Tiles[y][x] = tile
+		return true
+	} else {
+		return false
 	}
-
-	// Update the tile with the new list of people
-	tile.Persons = everyone
-
-	// Update the world with the updated tile
-	w.Tiles[y][x] = tile
-
-	return everyone
 }
 
 // MovePerson moves the person with the given full name to the new location.
 func (w *World) MovePerson(person *Person, newX, newY int) {
-	// Get the person's current location
 	oldX, oldY := person.Location.X, person.Location.Y
 
-	// Remove the person from the old location
-	w.Tiles[oldY][oldX].Persons = w.RemovePerson(person, oldX, oldY)
-
-	// Update the person's location
+	w.RemovePerson(person, oldX, oldY)
+	w.AddPerson(newX, newY, person)
+	
 	person.UpdateLocation(newX, newY)
-
-	// Add the person to the new location
-	w.Tiles[newY][newX].Persons = append(w.Tiles[newY][newX].Persons, person)
-
 }
 
 // AddItem adds an item to the tile at the given location.
@@ -251,6 +227,12 @@ func (w *World) AddItem(x, y int, item *Item) {
 	item.Location.X = x
 	item.Location.Y = y
 	w.Tiles[y][x].Items = append(w.Tiles[y][x].Items, item)
+}
+
+// DestroyItem removes the memory allocation of the pointer to the item
+func (w *World) DestroyItem(item *Item) {
+	w.RemoveItem(item, item.Location.X, item.Location.Y)
+	item = nil
 }
 
 // GetItems returns the items at the given location.

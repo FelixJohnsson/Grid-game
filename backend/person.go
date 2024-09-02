@@ -72,50 +72,59 @@ func (p *Person) UpdateLocation(x, y int) {
 
 // Grab in the right hand
 func (p *Person) GrabRight(item *Item) {
-	if p.Body.RightArm.Hand.Items == nil {
-		p.Body.RightArm.Hand.Items = []*Item{item}
-		// If the item has residues, add them to the limb
-		if item.Residues != nil {
-			for _, residue := range item.Residues {
-				p.AddResidue("RightHand", residue)
-			}
+	p.Body.RightArm.Hand.Items = append(p.Body.RightArm.Hand.Items, item)
+	p.OwnedItems = append(p.OwnedItems, item)
+	// If the item has residues, add them to the limb
+	if item.Residues != nil {
+		for _, residue := range item.Residues {
+			p.AddResidue("RightHand", residue)
 		}
-	} else {
-		fmt.Println("Right hand is already holding something")
-	}
-}
-
-// Drop from the right hand
-func (p *Person) DropRight() {
-	if p.Body.RightArm.Hand.Items != nil {
-		p.Body.RightArm.Hand.Items = nil
-	} else {
-		fmt.Println("Right hand is empty")
 	}
 }
 
 // Grab in the left hand
 func (p *Person) GrabLeft(item *Item) {
-	if p.Body.LeftArm.Hand.Items == nil {
-		p.Body.LeftArm.Hand.Items = []*Item{item}
-		// If the item has residues, add them to the limb
-		if item.Residues != nil {
-			for _, residue := range item.Residues {
-				p.AddResidue("RightHand", residue)
-			}
+	p.Body.LeftArm.Hand.Items = append(p.Body.LeftArm.Hand.Items, item)
+	p.OwnedItems = append(p.OwnedItems, item)
+	// If the item has residues, add them to the limb
+	if item.Residues != nil {
+		for _, residue := range item.Residues {
+			p.AddResidue("RightHand", residue)
 		}
-	} else {
-		fmt.Println("Left hand is already holding something")
+	}
+}
+
+// Drop from the right hand
+func (p *Person) DropRight(item string) {
+	for i, heldItem := range p.Body.RightArm.Hand.Items {
+		if heldItem.Name == item {
+			p.Body.RightArm.Hand.Items = append(p.Body.RightArm.Hand.Items[:i], p.Body.RightArm.Hand.Items[i+1:]...)
+			p.WorldProvider.AddItem(p.Location.X, p.Location.Y, heldItem)
+			p.Body.Head.Brain.AddMemoryToShortTerm("Dropped my " + item, p.FullName, p.Location)
+			return
+		}
 	}
 }
 
 // Drop from the left hand
-func (p *Person) DropLeft() {
-	if p.Body.LeftArm.Hand.Items != nil {
-		p.Body.LeftArm.Hand.Items = nil
-	} else {
-		fmt.Println("Left hand is empty")
+func (p *Person) DropLeft(item string) {
+	for i, heldItem := range p.Body.LeftArm.Hand.Items {
+		if heldItem.Name == item {
+			p.Body.RightArm.Hand.Items = append(p.Body.RightArm.Hand.Items[:i], p.Body.RightArm.Hand.Items[i+1:]...)
+			p.WorldProvider.AddItem(p.Location.X, p.Location.Y, heldItem)
+			p.Body.Head.Brain.AddMemoryToShortTerm("Dropped my " + item, p.FullName, p.Location)
+			return
+		}
 	}
+}
+
+// Drink - Consume a liquid
+func (p *Person) Drink(liquid Liquid) {
+    switch liquid.Name {
+    case "Water":
+        fmt.Println("Drinking water") 
+        p.Body.Head.Brain.DecreaseThirstLevel(50)
+    }
 }
 
 // RemoveLimb removes a limb from the person
@@ -274,7 +283,7 @@ func (p *Person) WalkTo(x, y int) {
 
 // ---------------- Finding ----------------------------
 
-// Find Wood - Find wood in the vision
+// FindLumberTrees - Find wood in the vision
 func (p *Person) FindLumberTrees() []*Plant {
 	vision := p.WorldProvider.GetPlantsInVision(p.Location.X, p.Location.Y, p.VisionRange)
 
@@ -304,6 +313,18 @@ func (p *Person) FindTheClosestPlant(plants []*Plant) *Plant {
 		}
 
 		return closestPlant
+}
+
+//FindClosestWater - Find the closest water from a list of water
+func (p *Person) FindClosestWaterSupply(water []Tile) Tile {
+	closestWater := water[0]
+	for _, tile := range water {
+		if p.WorldProvider.CalculateDistance(p.Location.X, p.Location.Y, tile.Location.X, tile.Location.Y) < p.WorldProvider.CalculateDistance(p.Location.X, p.Location.Y, closestWater.Location.X, closestWater.Location.Y) {
+			closestWater = tile
+		}
+	}
+
+	return closestWater
 }
 
 // ---------------- Create a new person ----------------
