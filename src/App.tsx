@@ -3,7 +3,6 @@ import * as api from "./api/api";
 import * as T from "./api/types";
 import Map from "./components/Map";
 import InformationBar from "./components/InformationBar";
-import MoveControls from "./components/MoveControls";
 
 function App() {
   const [persons, setPersons] = useState<T.PersonCleaned[]>();

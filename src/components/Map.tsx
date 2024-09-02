@@ -26,67 +26,59 @@ const Map = ({ world, grab }: Props) => {
   return (
     <div className="w-full flex justify-center pt-6 relative">
       {world ? (
-        <div>
+        <div className="flex flex-wrap">
           {world.map((row, y) => (
-            <div key={y} className="flex">
+            <div>
               {row.map((tile, x) => (
                 <div
-                  key={x}
-                  style={{
-                    width: "30px",
-                    height: "30px",
-                    position: "relative",
-                    backgroundColor:
-                      tile.Type === T.TileType.Grass
-                        ? "green"
-                        : tile.Type === T.TileType.Water
-                        ? "blue"
-                        : "gray",
-                  }}
+                  key={`${y}-${x}`}
+                  className={`relative border ${
+                    tile.Type === T.TileType.Grass
+                      ? "bg-green-500"
+                      : tile.Type === T.TileType.Water
+                      ? "bg-blue-500"
+                      : "bg-gray-500"
+                  }`}
+                  style={{ width: "15px", height: "15px" }}
                 >
-                  {tile.Items ? (
-                    <div>
-                      {tile.Items.map((item, index) => (
-                        <div
-                          key={index}
-                          className={tile.Person ? "hidden" : ""}
-                          onMouseEnter={(e) => handleMouseEnter(e, item.Name)}
-                          onMouseLeave={handleMouseLeave}
-                        >
-                          {item.Name[0]}
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-
-                  {tile.Plant ? (
-                    <div>
+                  {/* Display Items */}
+                  {tile.Items &&
+                    tile.Items.map((item, index) => (
                       <div
-                        className="bg-orange-800"
-                        onMouseEnter={(e) =>
-                          handleMouseEnter(e, tile.Plant.Name)
-                        }
+                        key={index}
+                        className="absolute inset-0 flex justify-center items-center text-xs z-10"
+                        onMouseEnter={(e) => handleMouseEnter(e, item.Name)}
                         onMouseLeave={handleMouseLeave}
                       >
-                        {tile.Plant.Name[0]}
+                        <p>{item.Name[0]}</p>
                       </div>
-                    </div>
-                  ) : null}
+                    ))}
 
-                  {tile.Shelter ? (
-                    <div>
-                      <div
-                        className="bg-yellow-800"
-                        onMouseEnter={(e) => handleMouseEnter(e, "Shelter")}
-                        onMouseLeave={handleMouseLeave}
-                      >
-                        <p>Shelter</p>
-                      </div>
+                  {/* Display Plant */}
+                  {tile.Plant && (
+                    <div
+                      className="absolute inset-0 flex justify-center items-center bg-orange-800 text-xs z-20"
+                      onMouseEnter={(e) => handleMouseEnter(e, tile.Plant.Name)}
+                      onMouseLeave={handleMouseLeave}
+                    >
+                      <p>{tile.Plant.Name[0]}</p>
                     </div>
-                  ) : null}
+                  )}
 
-                  {tile.Person ? (
-                    <div>
+                  {/* Display Shelter */}
+                  {tile.Shelter && (
+                    <div
+                      className="absolute inset-0 flex justify-center items-center bg-yellow-800 text-xs z-30"
+                      onMouseEnter={(e) => handleMouseEnter(e, "Shelter")}
+                      onMouseLeave={handleMouseLeave}
+                    >
+                      <p>S</p>
+                    </div>
+                  )}
+
+                  {/* Display Person */}
+                  {tile.Person && (
+                    <div className="absolute inset-0 flex justify-center items-center z-40">
                       <Person
                         person={tile.Person}
                         currentTile={tile}
@@ -95,7 +87,7 @@ const Map = ({ world, grab }: Props) => {
                         onMouseLeave={handleMouseLeave}
                       />
                     </div>
-                  ) : null}
+                  )}
                 </div>
               ))}
             </div>
@@ -106,7 +98,7 @@ const Map = ({ world, grab }: Props) => {
       {tooltip && (
         <div
           className="absolute bg-gray-700 text-white text-xs rounded p-1"
-          style={{ top: tooltip.y - 300, left: tooltip.x - 50 }}
+          style={{ top: tooltip.y - 150, left: tooltip.x }}
         >
           {tooltip.text}
         </div>

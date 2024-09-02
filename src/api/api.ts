@@ -21,7 +21,6 @@ const api = {
 
 export const getWorld = async (): Promise<T.CleanedTile[][]> => {
   const data: T.WorldResponse = await api.get("world");
-  console.warn(data.message);
   return data.message;
 };
 

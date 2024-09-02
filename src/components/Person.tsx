@@ -1,6 +1,5 @@
 import * as T from "../api/types";
 import { useState } from "react";
-import PersonWidget from "./PersonWidget";
 
 const Person = ({
   person,
@@ -30,14 +29,6 @@ const Person = ({
       onMouseLeave={onMouseLeave}
     >
       {person.FullName[0]}
-      {showPersonWidget && (
-        <PersonWidget
-          person={person}
-          currentTile={currentTile}
-          grab={grab}
-          togglePersonWidget={togglePersonWidget}
-        />
-      )}
     </div>
   );
 };

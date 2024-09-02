@@ -59,7 +59,7 @@ func (w *World) DisplayMap() {
 }
 
 func InitializeWorld() *World {
-	world := NewWorld(10, 10)
+	world := NewWorld(100, 100)
 
 	// Create people
 	newPerson1 := world.createNewPerson(2, 2)
