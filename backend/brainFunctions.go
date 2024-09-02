@@ -15,7 +15,6 @@ func (b *Brain) turnOn() {
         return
     }
 
-    fmt.Println("Brain for: " + b.Owner.FullName + " is now active.")
     b.IsConscious = true
     b.Active = true
 
@@ -151,41 +150,6 @@ func (b *Brain) CheckIfCanBreath() bool {
 
     return mouthCanBreath || noseCanBreath
 }
-
-
-// ----------------- Wants ---------------------
-
-// Pseudo code for a "Want" system
-// For example, if the person is homeless, they want shelter
-// So we have to construct a system that translates a want into a list of tasks with priorities
-// The brain will then decide which task to do based on the priority and the current situation
-
-// Pseudo code for a "Want to task" system
-
-// Let's describe the Maslow's hierarchy of needs in terms of wants
-// 1. Physiological needs
-// 2. Safety needs
-// 3. Love and belonging
-// 4. Self-esteem
-// 5. Self-actualization
-
-// 1. Physiological needs
-/* type PhysiologicalNeeds struct {
-	IsBreathing bool
-	IsInPain bool
-
-	Thirst int
-	Hunger int
-	IsSufficientlyWarm bool
-
-	NeedToExcrete bool
-
-	IsInSafeArea bool
-	IsCapableOfDefendingSelf bool
-
-	HasShelter bool
-	Rested int
-} */
 
 // CheckIfWantIsAlreadyInList - Check if the want is already in the list
 func (b *Brain) CheckIfWantIsAlreadyInList(want string) bool {
@@ -398,9 +362,21 @@ func (b *Brain) performActions() {
     switch action.Action {
     case "Drink water":
         b.CurrentTask = action
-        b.DrinkWater()
-        b.ClearCurrentTask()
-        return
+        if b.MotorCortexCurrentTask.ActionReason != "Drink water" && !b.MotorCortexCurrentTask.IsActive {
+            b.MotorCortexFindDrinkWater()
+            return
+        } else if b.MotorCortexCurrentTask.ActionReason == "Drink water" && !b.MotorCortexCurrentTask.Finished && b.MotorCortexCurrentTask.IsActive {
+            return
+        }
+
+        if b.Owner.isStandingOnWater() && b.MotorCortexCurrentTask.ActionReason == "Drink water" && b.MotorCortexCurrentTask.Finished && !b.MotorCortexCurrentTask.IsActive {
+            water := Liquid{"Water"}
+            b.Owner.Drink(water)
+            b.AddMemoryToLongTerm("Found water supply", "Water", b.Owner.Location)
+            b.PhysiologicalNeeds.WayOfGettingWater = true
+            b.MotorCortexCurrentTask = MotorCortexAction{"None", "Idle", Location{0, 0}, false, false}
+        }
+
     case "Eat food":
         b.CurrentTask = action
         b.EatFruit()
@@ -527,11 +503,11 @@ func (b *Brain) DecidePathTo(x, y int) []*Node {
 }
 
 // WalkOverPath - Walk over the path that was decided
-func (b *Brain) WalkOverPath(x, y int) {
+func (b *Brain) WalkOverPath(x, y int) bool {
     path := b.DecidePathTo(x, y)
     if path == nil {
         fmt.Println(b.Owner.FullName + " could not find a path to the location.")
-        return
+        return false
     }
     fmt.Println(b.Owner.FullName + " is walking to ", x, y)
     for _, node := range path {
@@ -539,7 +515,8 @@ func (b *Brain) WalkOverPath(x, y int) {
 		time.Sleep(500 * time.Millisecond)
         b.Owner.WalkTo(node.X, node.Y)
     }
-	b.CurrentTask.IsActive = false
+	b.MotorCortexCurrentTask = MotorCortexAction{"None", "Idle", Location{0, 0}, false, true}
+    return true
 }
 
 // ----------------- Items -------------------------

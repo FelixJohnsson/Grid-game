@@ -49,8 +49,8 @@ func (b *Brain) FindWaterSupply(action TargetedAction) {
 
 }
 
-// DrinkWater - Drink water
-func (b *Brain) DrinkWater() {
+// MotorCortexFindDrinkWater - Drink water
+func (b *Brain) MotorCortexFindDrinkWater() {
     vision := b.Owner.WorldProvider.GetWaterInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
     if len(vision) == 0 {
         fmt.Println("I can't see any water. Do I remember where I saw water last time?")
@@ -63,10 +63,7 @@ func (b *Brain) DrinkWater() {
     if path == nil {
         fmt.Println("I can't find a path to the water.")
     } else {
-        b.WalkOverPath(closestWater.Location.X, closestWater.Location.Y)
-        water := Liquid{"Water"}
-        b.Owner.Drink(water)
-        b.PhysiologicalNeeds.WayOfGettingWater = true
+        b.MotorCortexCurrentTask = MotorCortexAction{"Drink water", "Walk", Location{closestWater.Location.X, closestWater.Location.Y}, false, false}
     }
 }
 

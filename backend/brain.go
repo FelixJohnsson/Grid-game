@@ -25,9 +25,36 @@ func NewBrain() *Brain {
         BrainDamage: 0,
         IsUnderAttack: IsUnderAttack{false, nil, "", ""}, 
         Memories: Memories{make([]Memory, 0), make([]Memory, 0)},
+        MotorCortexCurrentTask : MotorCortexAction{"None", "Idle", Location{0, 0}, false, false},
 
         PhysiologicalNeeds: PhysiologicalNeeds{0, 0, false, false, false, true, false, true, 100, false, false, true, false},
     }
+}
+
+// MotorCortex is a function that handles the motor cortex of the brain
+func (b *Brain) MotorCortex() {
+    if b.MotorCortexCurrentTask.ActionType == "Idle" {
+        return
+    } 
+    fmt.Println(b.Owner.FullName + "'s motor cortex is executing the task.")
+
+    switch b.MotorCortexCurrentTask.ActionType {
+    case "Walk":
+        success := b.WalkOverPath(b.MotorCortexCurrentTask.TargetLocation.X, b.MotorCortexCurrentTask.TargetLocation.Y)
+        if !success {
+            fmt.Println(b.Owner.FullName + " is unable to walk to the location.")
+        } else {
+            fmt.Println(b.Owner.FullName + " has arrived at the location.")
+            b.MotorCortexCurrentTask = MotorCortexAction{"Drink water", "Walk", Location{b.Owner.Location.X, b.Owner.Location.Y}, false, true}
+        }
+    case "Run":
+        //b.RunOverPath(closestWater.Location.X, closestWater.Location.Y)
+    }
+}
+
+// SensoryCortex is a function that handles the sensory cortex of the brain
+func (b *Brain) SensoryCortex() {
+    
 }
 
 // MainLoop is the main loop of the brain that handles the person's actions
@@ -38,9 +65,6 @@ func (b *Brain) mainLoop() {
             b.Active = false
             return
         default:
-            // Start timing the loop iteration
-            startTime := time.Now()
-
             if !b.Active {
                 return
             }
@@ -63,14 +87,9 @@ func (b *Brain) mainLoop() {
             b.ClearWants()
             b.CalculateWant()
             b.TranslateWantToTaskList()
-            fmt.Println(b.ActionList)
-            if !b.CurrentTask.IsActive {
-                b.performActions()
-            }
 
-            // End timing the loop iteration and calculate duration
-            duration := time.Since(startTime)
-            fmt.Printf("Main loop iteration took %v\n", duration)
+            b.performActions()
+            go b.MotorCortex()
 
             // Sleep for 2 seconds
             time.Sleep(2000 * time.Millisecond)

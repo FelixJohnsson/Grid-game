@@ -65,7 +65,7 @@ func InitializeWorld() *World {
 	newPerson1 := world.createNewPerson(2, 2)
 	newPerson1.Title = "Leader"
 	newPerson1.Thinking = "I am the leader of this group."
-	newPerson1.Body.Head.Brain.PhysiologicalNeeds.Hunger = 40
+	newPerson1.Body.Head.Brain.PhysiologicalNeeds.Thirst = 70
 
 	world.AddPerson(2, 2, newPerson1)
 

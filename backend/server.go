@@ -303,6 +303,5 @@ func main() {
 	// Default handler for the root path or undefined paths
 	http.Handle("/", corsMiddleware(http.HandlerFunc(defaultHandler)))
 
-	fmt.Println("Server started at :8080")
 	http.ListenAndServe("127.0.0.1:8080", nil)
 }

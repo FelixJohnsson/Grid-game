@@ -14,8 +14,6 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 	gender := gofakeit.Gender()
 	body := CreateNewBody()
 
-	fmt.Println("Creating a new person", age, firstName)
-
 	person := &Person{
 		Age:              age,
 		Title:            "",
@@ -60,8 +58,6 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 	}
 
 	person.Body.Head.Brain.Owner = person
-	fmt.Printf("%s has been created\n", person.FullName)
-
 	return person
 }
 // UpdateLocation updates the location of the person
@@ -359,6 +355,15 @@ func (p *Person) FindClosestWaterSupply(water []Tile) Tile {
 	}
 
 	return closestWater
+}
+
+// isStandingOnWater - Check if the person is standing on water
+func (p *Person) isStandingOnWater() bool {
+	tile := p.WorldProvider.GetTile(p.Location.X, p.Location.Y)
+	if tile.Type == Water {
+		return true
+	}
+	return false
 }
 
 // ---------------- Create a new person ----------------

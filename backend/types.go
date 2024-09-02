@@ -116,6 +116,13 @@ type TargetedAction struct {
 	Priority int
 }
 
+type MotorCortexAction struct {
+	ActionReason string
+	ActionType string
+	TargetLocation Location
+	IsActive bool
+	Finished bool
+}
 type IsUnderAttack struct {
 	Active bool
 	From *Person
@@ -169,6 +176,7 @@ type Brain struct {
     BrainDamage int
 	IsUnderAttack IsUnderAttack
 	Memories Memories
+	MotorCortexCurrentTask MotorCortexAction
 
 	PhysiologicalNeeds PhysiologicalNeeds 
 }
