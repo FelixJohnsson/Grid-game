@@ -30,7 +30,7 @@ type Building struct {
 }
 
 type Shelter struct {
-	Owner       *Person
+	OwnerName   string
 	Location    Location
 	Inhabitants []*Person
 	Inventory   []*Item
@@ -50,7 +50,7 @@ func NewBuilding(x, y int, buildingType BuildingType) *Building {
 
 func NewShelter(x, y int, owner *Person) *Shelter {
 	shelter := &Shelter{
-		Owner:       owner,
+		OwnerName:   owner.FullName,
 		Location:    Location{X: x, Y: y},
 		Inhabitants: []*Person{},
 		Inventory:   []*Item{},

@@ -6,41 +6,40 @@ import InformationBar from "./components/InformationBar";
 import MoveControls from "./components/MoveControls";
 
 function App() {
-  const [persons, setPersons] = useState<T.PersonCleaned[]>([]);
+  const [persons, setPersons] = useState<T.PersonCleaned[]>();
   const [world, setWorld] = useState<T.CleanedTile[][]>();
 
-  useEffect(() => {
-    setPersons([]);
+  const continuslyUpdate = () => {
     api.getWorld().then((data) => {
       setWorld(data);
 
-      // Loop through the tiles in the world and assign the persons and buildings to the state
+      // Update the persons
+      const persons: T.PersonCleaned[] = [];
       data.forEach((row) => {
         row.forEach((tile) => {
-          if (tile.Persons) {
-            for (const person of tile.Persons) {
-              // Push the person to the persons state
-              setPersons((persons) => {
-                if (persons) {
-                  return [...persons, person];
-                } else {
-                  return [person];
-                }
-              });
-            }
+          if (tile.Person) {
+            persons.push(tile.Person);
           }
         });
       });
-    });
-  }, []);
-
-  const move = (direction: string) => {
-    api.movePerson(persons[0].FullName, direction).then((data) => {
-      setWorld(data);
+      setPersons(persons);
     });
   };
 
-  const grab = (item: T.Item, person: T.Person) => {
+  useEffect(() => {
+    // Fetch the initial world state
+    api.getWorld().then((data) => {
+      setWorld(data);
+    });
+
+    // Set up the interval to continuously update the world state
+    const intervalId = setInterval(continuslyUpdate, 500);
+
+    // Clear the interval when the component unmounts to prevent memory leaks and infinite loops
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const grab = (item: T.Item, person: T.PersonCleaned) => {
     console.log(person.FullName + " wants to grab " + item.Name);
     api.grabItem(item, person).then((data) => {
       setWorld(data);
@@ -50,11 +49,10 @@ function App() {
   return (
     <div className="App">
       <div className="w-26">
-        <MoveControls move={move} />
         <div>
           {
             // Display the persons
-            persons.map((person) => (
+            persons?.map((person) => (
               <div className="border w-40" key={person.FullName}>
                 <h1 className="text-sm">{person.FullName}</h1>
                 <p className="text-xs">Title: {person.Title}</p>
@@ -63,10 +61,14 @@ function App() {
                   Thought: {person.Thinking.length > 0 ? person.Thinking : ""}
                 </p>
                 <p className="text-xs">
-                  {person.RightArm.Hand?.Items &&
+                  {person.RightArm?.Hand?.Items &&
                   person.RightArm.Hand.Items.length > 0
                     ? "Right Hand: " + person.RightArm.Hand.Items[0].Name
                     : ""}
+                </p>
+
+                <p className="text-xs">
+                  Current task: {person.CurrentTask.Action}
                 </p>
               </div>
             ))

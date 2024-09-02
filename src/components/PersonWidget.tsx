@@ -4,7 +4,7 @@ type Props = {
   person: T.PersonCleaned;
   togglePersonWidget: () => void;
   currentTile: T.CleanedTile;
-  grab: (item: T.Item, person: T.Person) => void;
+  grab: (item: T.Item, person: T.PersonCleaned) => void;
 };
 
 const PersonWidget = ({

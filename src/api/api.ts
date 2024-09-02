@@ -19,11 +19,6 @@ const api = {
   },
 };
 
-export const getPersons = async (): Promise<T.Person[]> => {
-  const data: T.PersonResponse = await api.get("people");
-  return data.message;
-};
-
 export const getWorld = async (): Promise<T.CleanedTile[][]> => {
   const data: T.WorldResponse = await api.get("world");
   console.warn(data.message);
@@ -35,7 +30,7 @@ export const movePerson = async (full_name: string, direction: string) => {
   return data.message;
 };
 
-export const grabItem = async (item: T.Item, person: T.Person) => {
+export const grabItem = async (item: T.Item, person: T.PersonCleaned) => {
   const requestData = {
     ItemName: item.Name,
     FullName: person.FullName,

@@ -4,7 +4,7 @@ import { useState } from "react";
 
 type Props = {
   world: T.CleanedTile[][] | undefined;
-  grab: (item: T.Item, person: T.Person) => void;
+  grab: (item: T.Item, person: T.PersonCleaned) => void;
 };
 
 const Map = ({ world, grab }: Props) => {
@@ -49,11 +49,7 @@ const Map = ({ world, grab }: Props) => {
                       {tile.Items.map((item, index) => (
                         <div
                           key={index}
-                          className={
-                            tile.Persons && tile.Persons.length > 0
-                              ? "hidden"
-                              : ""
-                          }
+                          className={tile.Person ? "hidden" : ""}
                           onMouseEnter={(e) => handleMouseEnter(e, item.Name)}
                           onMouseLeave={handleMouseLeave}
                         >
@@ -63,18 +59,41 @@ const Map = ({ world, grab }: Props) => {
                     </div>
                   ) : null}
 
-                  {tile.Persons ? (
+                  {tile.Plant ? (
                     <div>
-                      {tile.Persons.map((person, index) => (
-                        <Person
-                          key={index}
-                          person={person}
-                          currentTile={tile}
-                          grab={grab}
-                          onMouseEnter={handleMouseEnter}
-                          onMouseLeave={handleMouseLeave}
-                        />
-                      ))}
+                      <div
+                        className="bg-orange-800"
+                        onMouseEnter={(e) =>
+                          handleMouseEnter(e, tile.Plant.Name)
+                        }
+                        onMouseLeave={handleMouseLeave}
+                      >
+                        {tile.Plant.Name[0]}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {tile.Shelter ? (
+                    <div>
+                      <div
+                        className="bg-yellow-800"
+                        onMouseEnter={(e) => handleMouseEnter(e, "Shelter")}
+                        onMouseLeave={handleMouseLeave}
+                      >
+                        <p>Shelter</p>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {tile.Person ? (
+                    <div>
+                      <Person
+                        person={tile.Person}
+                        currentTile={tile}
+                        grab={grab}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
+                      />
                     </div>
                   ) : null}
                 </div>

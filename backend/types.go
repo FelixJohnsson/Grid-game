@@ -377,9 +377,10 @@ type Item struct {
 
 type CleanedTile struct {
     Type     TileType         `json:"Type"`
-    Persons  []PersonCleaned  `json:"Persons,omitempty"`
+    Person   *PersonCleaned    `json:"Person,omitempty"`
 	Items    []*Item          `json:"Items,omitempty"`
-	Plant    *PlantCleaned    `json:"Plant,omitempty"`
+	Plant    *PlantCleaned     `json:"Plant,omitempty"`
+	Shelter  *Shelter         `json:"Shelter,omitempty"`
 }
 type PlantCleaned struct {
 	Name      string `json:"Name"`
@@ -432,6 +433,8 @@ type PersonCleaned struct {
 	IsIncapacitated bool       `json:"IsIncapacitated"`
 
 	Relationships []Relationship `json:"Relationships"`
+
+	CurrentTask TargetedAction `json:"CurrentTask"`
 }
 
 type PersonInVision struct {

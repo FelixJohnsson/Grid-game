@@ -11,7 +11,7 @@ const Person = ({
 }: {
   person: T.PersonCleaned;
   currentTile: T.CleanedTile;
-  grab: (item: T.Item, person: T.Person) => void;
+  grab: (item: T.Item, person: T.PersonCleaned) => void;
   onMouseEnter: (event: React.MouseEvent, text: string) => void;
   onMouseLeave: () => void;
 }) => {

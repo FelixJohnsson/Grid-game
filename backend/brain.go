@@ -38,36 +38,42 @@ func (b *Brain) mainLoop() {
             b.Active = false
             return
         default:
-        b.Owner.WorldProvider.DisplayMap()
-        if !b.Active {
-            return
-        }
+            // Start timing the loop iteration
+            startTime := time.Now()
 
-        if !b.IsConscious {
-            fmt.Println(b.Owner.FullName + "'s brain is not conscious but still alive.")
-            return
-        }
+            if !b.Active {
+                return
+            }
 
-        if b.IsUnderAttack.Active {
-            b.IsUnderAttackHandler()
-        }
+            if !b.IsConscious {
+                fmt.Println(b.Owner.FullName + "'s brain is not conscious but still alive.")
+                return
+            }
 
-        b.OxygenHandler()
-        
-        b.PainHandler()
-        b.FoodHandler()
-        b.ThirstHandler()
+            if b.IsUnderAttack.Active {
+                b.IsUnderAttackHandler()
+            }
 
-        b.ClearWants()
-        b.CalculateWant()
-        b.TranslateWantToTaskList()
-        fmt.Println(b.ActionList)
-        if !b.CurrentTask.IsActive {
-            b.performActions()
-        }
+            b.OxygenHandler()
 
-        // Sleep for 2 seconds
-        time.Sleep(2000 * time.Millisecond)
+            b.PainHandler()
+            b.FoodHandler()
+            b.ThirstHandler()
+
+            b.ClearWants()
+            b.CalculateWant()
+            b.TranslateWantToTaskList()
+            fmt.Println(b.ActionList)
+            if !b.CurrentTask.IsActive {
+                b.performActions()
+            }
+
+            // End timing the loop iteration and calculate duration
+            duration := time.Since(startTime)
+            fmt.Printf("Main loop iteration took %v\n", duration)
+
+            // Sleep for 2 seconds
+            time.Sleep(2000 * time.Millisecond)
         }
     }
 }
