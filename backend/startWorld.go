@@ -32,7 +32,7 @@ func (w *World) DisplayMap() {
 		for y := 0; y < w.Height; y++ {
 			for x := 0; x < w.Width; x++ {
 				if w.Tiles[x][y].Person != nil {
-					if w.Tiles[x][y].Person.Body.Head.Brain.IsAlive {
+					if w.Tiles[x][y].Person.Brain.IsAlive {
 						fmt.Print(Red + "P" + Reset)
 					} else {
 						fmt.Print("X")
@@ -65,12 +65,15 @@ func InitializeWorld() *World {
 	newPerson1 := world.createNewPerson(2, 2)
 	newPerson1.Title = "Leader"
 	newPerson1.Thinking = "I am the leader of this group."
-	newPerson1.Body.Head.Brain.PhysiologicalNeeds.Thirst = 70
+	newPerson1.Brain.PhysiologicalNeeds.Thirst = 70
 
 	world.AddPerson(2, 2, newPerson1)
 
-	// Turn on the brain for the people
-	newPerson1.Body.Head.Brain.turnOn()
+
+	// Create wolf
+	wolf := world.CreateNewAnimalByType("Wolf", 3, 3)
+	world.AddAnimal(3, 3, wolf)
+
 
 	stoneAxe := CreateNewItem("Stone Axe")
 	newPerson1.GrabRight(stoneAxe)
@@ -105,6 +108,9 @@ func InitializeWorld() *World {
 	world.SetTileType(0, 3, 1)
 	world.SetTileType(1, 2, 1)
 	world.SetTileType(1, 3, 1)
+
+	newPerson1.Brain.turnOn()
+	wolf.Brain.turnOn()
 
 	return world
 }

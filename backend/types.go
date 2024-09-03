@@ -25,12 +25,13 @@ const (
 )
 type Tile struct {
 	Type     TileType     `json:"Type"`
-	Person   *Person       `json:"Person,omitempty"`
+	Person   *Person      `json:"Person,omitempty"`
 	Items    []*Item      `json:"Items,omitempty"`
 	Plant    *Plant       `json:"Plant,omitempty"`
 	NutritionalValue int  `json:"NutritionalValue,omitempty"`
 	Shelter  *Shelter     `json:"Shelter,omitempty"`
 	Location Location     `json:"Location"`
+	Animal   *Animal      `json:"Animal,omitempty"`
 }
 type World struct {
 	Tiles [][]Tile `json:"tiles"`
@@ -71,8 +72,10 @@ type Person struct {
 	SkinColor        string
 	Personality 	 string
 	Genes            []string
+	Species          string
 
 	OwnedItems	     []*Item
+	OwnedAnimals	 []*Animal
 
 	IsMoving         TargetedAction
 	IsTalking        TargetedAction
@@ -86,6 +89,7 @@ type Person struct {
 	FeelingScared	 int
 
 	Body 		     *HumanBody
+	Brain 		     *Brain
 
 	Strength         int
 	Agility          int
@@ -103,7 +107,6 @@ type Person struct {
 	VisionRange 	 int
 	WorldProvider    WorldAccessor
 	Location         Location
-	OnTileType 	     TileType
 }
 
 // ----------------- Brain ------------------
@@ -161,7 +164,6 @@ type PhysiologicalNeeds struct {
 }
 
 type Brain struct {
-	Owner  *Person
     Active bool
     Ctx    context.Context
     Cancel context.CancelFunc
@@ -178,7 +180,9 @@ type Brain struct {
 	Memories Memories
 	MotorCortexCurrentTask MotorCortexAction
 
-	PhysiologicalNeeds PhysiologicalNeeds 
+	PhysiologicalNeeds PhysiologicalNeeds
+
+	Owner *Person
 }
 type Vision struct {
 	Plants    []*Plant            `json:"Plants"`
@@ -236,7 +240,14 @@ type Damage struct {
 
 type Head struct {
 	LimbStatus
-	Brain *Brain
+	Eyes *BodyPart
+	Ears *BodyPart
+	Nose *BodyPart
+	Mouth *BodyPart
+}
+
+type AnimalHead struct {
+	LimbStatus
 	Eyes *BodyPart
 	Ears *BodyPart
 	Nose *BodyPart
@@ -274,6 +285,73 @@ type HumanBody struct {
 	LeftArm *Arm
 	RightLeg *Leg
 	LeftLeg *Leg
+}
+
+// ----------------- Animals -----------------
+type Animal struct {
+	Age              int
+	FullName 	     string
+	IsChild          bool
+	Gender           string
+	Description      string
+	Color            string
+	Personality 	 string
+	Genes            []string
+	Species		     string
+	OwnedItems       []*Item
+
+	IsMoving         TargetedAction
+	IsTalking        TargetedAction
+	IsSitting        TargetedAction
+	IsEating         TargetedAction
+	IsSleeping       TargetedAction
+
+	Thinking         string
+	WantsTo          []string
+	FeelingSafe 	 int
+	FeelingScared	 int
+
+	Body 		     *AnimalBody
+	Brain 		     *Brain
+
+	Strength         int
+	Agility          int
+	Intelligence     int
+	Charisma         int
+	Stamina          int
+
+	CombatExperience int
+	CombatSkill      int
+
+	Relationships    []Relationship
+
+	IsIncapacitated  bool
+	VisionRange 	 int
+	WorldProvider    WorldAccessor
+	Location         Location
+}
+
+// AnimalBody needs to be different kinds of bodies, for example quadrupedal and bipedal
+type AnimalBody struct {
+	Head  *Head
+	Torso *LimbStatus
+
+	// Legs
+	RightFrontLeg *Leg
+	LeftFrontLeg  *Leg
+	RightBackLeg  *Leg
+	LeftBackLeg   *Leg
+
+	// Arms
+	RightArm *Arm
+	RightLowerArm *Arm
+
+	LeftArm  *Arm
+	LeftLowerArm *Arm
+
+	// Tail
+	Tail          *LimbThatCanMove
+
 }
 
 // ----------------- Food -------------------
@@ -385,11 +463,49 @@ type Item struct {
 
 type CleanedTile struct {
     Type     TileType         `json:"Type"`
-    Person   *PersonCleaned    `json:"Person,omitempty"`
+    Person   *PersonCleaned   `json:"Person,omitempty"`
 	Items    []*Item          `json:"Items,omitempty"`
-	Plant    *PlantCleaned     `json:"Plant,omitempty"`
+	Plant    *PlantCleaned    `json:"Plant,omitempty"`
+	Animal   *AnimalCleaned   `json:"Animal,omitempty"`
 	Shelter  *Shelter         `json:"Shelter,omitempty"`
 }
+
+type AnimalCleaned struct {
+	FirstName    string       `json:"FirstName"`
+	FamilyName   string       `json:"FamilyName"`
+	FullName     string       `json:"FullName"`
+	Gender 	     string	      `json:"Gender"`
+	Age 		 int          `json:"Age"`
+	Title 		 string       `json:"Title"`
+
+	Location     Location     `json:"Location"`
+
+	Thinking 	 string       `json:"Thinking"`
+
+	Head 		 *Head        `json:"Head"`
+	Torso 		 *LimbStatus  `json:"Torso"`
+	RightFrontLeg *Leg        `json:"RightFrontLeg"`
+	LeftFrontLeg  *Leg         `json:"LeftFrontLeg"`
+	RightBackLeg  *Leg         `json:"RightBackLeg"`
+	LeftBackLeg   *Leg         `json:"LeftBackLeg"`
+
+	Strength 	 int          `json:"Strength"`
+	Agility 	int           `json:"Agility"`
+	Intelligence int          `json:"Intelligence"`
+	Charisma 	int           `json:"Charisma"`
+	Stamina 	int           `json:"Stamina"`
+
+	CombatExperience int      `json:"CombatExperience"`
+	CombatSkill int           `json:"CombatSkill"`
+	CombatStyle string        `json:"CombatStyle"`
+
+	IsIncapacitated bool       `json:"IsIncapacitated"`
+
+	Relationships []Relationship `json:"Relationships"`
+
+	CurrentTask TargetedAction `json:"CurrentTask"`
+}
+
 type PlantCleaned struct {
 	Name      string `json:"Name"`
 	Age       int    `json:"Age"`
@@ -405,10 +521,6 @@ type BuildingCleaned struct {
 	Location Location `json:"location"`
 }
 
-type HeadCleaned struct {
-	LimbStatus
-}
-
 type PersonCleaned struct {
 	FirstName    string       `json:"FirstName"`
 	FamilyName   string       `json:"FamilyName"`
@@ -421,7 +533,7 @@ type PersonCleaned struct {
 
 	Thinking 	 string       `json:"Thinking"`
 
-	Head 		 HeadCleaned `json:"Head"`
+	Head 		 *Head `json:"Head"`
 	Torso 		 *LimbStatus  `json:"Torso"`
 	RightArm 	 *Arm         `json:"RightArm"`
 	LeftArm 	 *Arm         `json:"LeftArm"`

@@ -48,6 +48,21 @@ func CreateNewFoot() *LimbThatCanMove {
 	return &foot
 }
 
+func CreateNewTail() *LimbThatCanMove {
+	tail := LimbThatCanMove{
+		LimbStatus: LimbStatus{
+			BluntDamage: 0,
+			SharpDamage: 0,
+			IsBleeding:  false,
+			IsBroken:    false,
+			Residues:    nil,
+			CoveredWith: nil,
+			IsAttached:  true,
+		},
+	}
+	return &tail
+}
+
 func CreateNewLeg() *Leg {
 	leg := Leg{
 		LimbThatCanMove: LimbThatCanMove{
@@ -93,7 +108,6 @@ func CreateNewHead() *Head {
 	head.Nose = CreateNewBodyPart("Nose")
 	head.Mouth = CreateNewBodyPart("Mouth")
 
-	head.Brain = NewBrain()
 	return &head
 }
 
@@ -111,20 +125,20 @@ func CreateNewTorso() *LimbStatus {
 }
 
 func CreateNewBody() *HumanBody {
-	head := CreateNewHead()
-	torso := CreateNewTorso()
-	rightArm := CreateNewArm()
-	leftArm := CreateNewArm()
-	rightLeg := CreateNewLeg()
-	leftLeg := CreateNewLeg()
+	Head := CreateNewHead()
+	Torso := CreateNewTorso()
+	RightArm := CreateNewArm()
+	LeftArm := CreateNewArm()
+	RightLeg := CreateNewLeg()
+	LeftLeg := CreateNewLeg()
 
 	body := HumanBody{
-		Head:     head,
-		Torso:    torso,
-		RightArm: rightArm,
-		LeftArm:  leftArm,
-		RightLeg: rightLeg,
-		LeftLeg:  leftLeg,
+		Head:     Head,
+		Torso:    Torso,
+		RightArm: RightArm,
+		LeftArm:  LeftArm,
+		RightLeg: RightLeg,
+		LeftLeg:  LeftLeg,
 	}
 	return &body
 }

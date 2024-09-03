@@ -114,7 +114,7 @@ func (p *Person) AttackWithArm(target *Person, targetLimb BodyPartType, withLimb
 		fmt.Println("No target to attack")
 		return Damage{}
 	} 
-	if !target.Body.Head.Brain.IsConscious {
+	if !target.Brain.IsConscious {
 		fmt.Println("The target is unconscious, decide what to do next")
 		return Damage{}
 	}
@@ -124,7 +124,7 @@ func (p *Person) AttackWithArm(target *Person, targetLimb BodyPartType, withLimb
 	target.ReceivingApplyDamageTo(targetLimb, damage)
 
 	if target.Body.Head != nil {
-		target.Body.Head.Brain.IsUnderAttack = IsUnderAttack{true, p, targetLimb, "RightHand"}
+		target.Brain.IsUnderAttack = IsUnderAttack{true, p, targetLimb, "RightHand"}
 	}
 
 	return damage
@@ -155,7 +155,7 @@ func (p *Person) ReceivingApplyDamageTo(limb BodyPartType, damage Damage) {
 		p.Body.Head.BluntDamage += damage.AmountBluntDamage
 		p.Body.Head.SharpDamage += damage.AmountSharpDamage
 
-		p.Body.Head.Brain.BrainDamage += damage.AmountBluntDamage
+		p.Brain.BrainDamage += damage.AmountBluntDamage
 
 		if p.Body.Head.SharpDamage > sharpDamageUntilSevered {
 			p.RemoveLimb("Head")
@@ -166,11 +166,11 @@ func (p *Person) ReceivingApplyDamageTo(limb BodyPartType, damage Damage) {
 		if p.Body.Head.BluntDamage > bluntDamageUntilBroken {
 			p.Body.Head.IsBroken = true
 			if p.Body.Head.BluntDamage > bluntDamageUntilUnconscious {
-				p.Body.Head.Brain.IsConscious = false
+				p.Brain.IsConscious = false
 				p.IsIncapacitated = true
 			}
-			if p.Body.Head.BluntDamage >= brainDamageUntilDead && p.Body.Head.Brain.Active {
-				p.Body.Head.Brain.turnOff()
+			if p.Body.Head.BluntDamage >= brainDamageUntilDead && p.Brain.Active {
+				p.Brain.turnOff()
 			}
 		}
 		if p.Body.Head.SharpDamage > sharpDamageUntilBleeding {

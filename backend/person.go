@@ -8,21 +8,21 @@ import (
 )
 
 func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
-	age := rand.Intn(63) + 2
-	firstName := gofakeit.FirstName()
-	familyName := gofakeit.LastName()
-	gender := gofakeit.Gender()
-	body := CreateNewBody()
+	Age := rand.Intn(63) + 2
+	FirstName := gofakeit.FirstName()
+	FamilyName := gofakeit.LastName()
+	Gender := gofakeit.Gender()
+	Body := CreateNewBody()
 
 	person := &Person{
-		Age:              age,
+		Age:              Age,
 		Title:            "",
-		FirstName:        firstName,
-		FamilyName:       familyName,
-		FullName:         firstName + " " + familyName,
-		Initials:         string(firstName[0]) + string(familyName[0]),
-		IsChild:          age < 18,
-		Gender:           gender,
+		FirstName:        FirstName,
+		FamilyName:       FamilyName,
+		FullName:         FirstName + " " + FamilyName,
+		Initials:         string(FirstName[0]) + string(FamilyName[0]),
+		IsChild:          Age < 18,
+		Gender:           Gender,
 		Description:      "",
 		Occupation:       Unemployed,
 		IsMoving:         TargetedAction{},
@@ -37,27 +37,28 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 		Relationships:    []Relationship{},
 		Personality:      "",
 		Genes:            []string{},
+		Species:          "Homo Sapiens",
 
 		OwnedItems:       []*Item{},
 
 		VisionRange:      5,
 		Location:         Location{X: x, Y: y},
 		WorldProvider:    worldAccessor,
-		OnTileType:       0,
-		Body:			  body,
+		Body:			  Body,
+		Brain:            NewBrain(),
 
 		Strength:         1,
 		Agility:          1,
 		Intelligence:     1,
 		Charisma:         1,
-		Stamina:          1,
+		Stamina:          1,	
 
 		CombatExperience: 1,
 		CombatSkill:      1,
 		CombatStyle:      "",
 	}
 
-	person.Body.Head.Brain.Owner = person
+	person.Body = Body
 	return person
 }
 // UpdateLocation updates the location of the person
@@ -96,7 +97,7 @@ func (p *Person) DropRight(item string) {
 		if heldItem.Name == item {
 			p.Body.RightArm.Hand.Items = append(p.Body.RightArm.Hand.Items[:i], p.Body.RightArm.Hand.Items[i+1:]...)
 			p.WorldProvider.AddItem(p.Location.X, p.Location.Y, heldItem)
-			p.Body.Head.Brain.AddMemoryToShortTerm("Dropped my " + item, p.FullName, p.Location)
+			p.Brain.AddMemoryToShortTerm("Dropped my " + item, p.FullName, p.Location)
 			return
 		}
 	}
@@ -108,7 +109,7 @@ func (p *Person) DropLeft(item string) {
 		if heldItem.Name == item {
 			p.Body.RightArm.Hand.Items = append(p.Body.RightArm.Hand.Items[:i], p.Body.RightArm.Hand.Items[i+1:]...)
 			p.WorldProvider.AddItem(p.Location.X, p.Location.Y, heldItem)
-			p.Body.Head.Brain.AddMemoryToShortTerm("Dropped my " + item, p.FullName, p.Location)
+			p.Brain.AddMemoryToShortTerm("Dropped my " + item, p.FullName, p.Location)
 			return
 		}
 	}
@@ -119,7 +120,7 @@ func (p *Person) Drink(liquid Liquid) {
     switch liquid.Name {
     case "Water":
         fmt.Println("Drinking water") 
-        p.Body.Head.Brain.DecreaseThirstLevel(50)
+        p.Brain.DecreaseThirstLevel(50)
     }
 }
 
@@ -128,7 +129,7 @@ func (p *Person) Eat(food Food) {
 	switch food.GetName() {
 	case "Apple":
 		fmt.Println("Eating an apple")
-		p.Body.Head.Brain.DecreaseHungerLevel(food.GetNutritionalValue())
+		p.Brain.DecreaseHungerLevel(food.GetNutritionalValue())
 	}
 }
 
@@ -138,7 +139,7 @@ func (p *Person) RemoveLimb(limb BodyPartType) {
 
 	switch limb {
 	case "Head":
-		p.Body.Head.Brain.turnOff()
+		p.Brain.turnOff()
 		p.Body.Head = nil
 		return
 	case "RightHand":

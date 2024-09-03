@@ -189,6 +189,11 @@ func (w *World) AddPerson(x, y int, person *Person) {
 	w.Tiles[y][x].Person = person
 }
 
+// AddAnimal adds an animal to the tile at the given location.
+func (w *World) AddAnimal(x, y int, animal *Animal) {
+	w.Tiles[y][x].Animal = animal
+}
+
 // GetPersonByFullName returns the person with the given full name in the world.
 func (w *World) GetPersonByFullName(FullName string) *Person {
 	for _, row := range w.Tiles {

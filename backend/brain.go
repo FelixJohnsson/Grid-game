@@ -57,8 +57,7 @@ func (b *Brain) SensoryCortex() {
     
 }
 
-// MainLoop is the main loop of the brain that handles the person's actions
-func (b *Brain) mainLoop() {
+func (b *Brain) WolfMainLoop() {
     for {
         select {
         case <-b.Ctx.Done():
@@ -85,7 +84,47 @@ func (b *Brain) mainLoop() {
             b.ThirstHandler()
 
             b.ClearWants()
-            b.CalculateWant()
+            b.HomoSapiensCalculateWant()
+            b.TranslateWantToTaskList()
+
+            b.performActions()
+            go b.MotorCortex()
+
+            // Sleep for 2 seconds
+            time.Sleep(2000 * time.Millisecond)
+        }
+    }
+}
+
+// MainLoop is the main loop of the brain that handles the person's actions
+func (b *Brain) HomoSapiensMainLoop() {
+    for {
+        select {
+        case <-b.Ctx.Done():
+            b.Active = false
+            return
+        default:
+            if !b.Active {
+                return
+            }
+
+            if !b.IsConscious {
+                fmt.Println(b.Owner.FullName + "'s brain is not conscious but still alive.")
+                return
+            }
+
+            if b.IsUnderAttack.Active {
+                b.IsUnderAttackHandler()
+            }
+
+            b.OxygenHandler()
+
+            b.PainHandler()
+            b.FoodHandler()
+            b.ThirstHandler()
+
+            b.ClearWants()
+            b.HomoSapiensCalculateWant()
             b.TranslateWantToTaskList()
 
             b.performActions()
@@ -154,7 +193,7 @@ func (b *Brain) ThirstHandler() {
 
 // IsUnderAttackHandler is a function that handles the person being under attack
 func (b *Brain) IsUnderAttackHandler() {
-    if b.IsUnderAttack.Active && !b.IsUnderAttack.From.Body.Head.Brain.IsConscious {
+    if b.IsUnderAttack.Active && !b.IsUnderAttack.From.Brain.IsConscious {
         b.IsUnderAttack = IsUnderAttack{false, b.IsUnderAttack.From, "", ""}
         fmt.Println(b.Owner.FullName + " is no longer under attack because attacker is unconscious.")
         b.AddMemoryToShortTerm("Knocked out", b.IsUnderAttack.From.FullName, b.IsUnderAttack.From.Location)

@@ -17,8 +17,13 @@ func (b *Brain) turnOn() {
 
     b.IsConscious = true
     b.Active = true
+    switch b.Owner.Species {
+    case "Wolf":
+        go b.WolfMainLoop()
+    case "Homo Sapiens":
+        go b.HomoSapiensMainLoop()
+    }
 
-    go b.mainLoop()
 }
 
 func (b *Brain) turnOff() {
@@ -166,8 +171,8 @@ func (b *Brain) ClearWants() {
     b.Owner.WantsTo = make([]string, 0)
 }
 
-// CalculateWant - Calculate the want of the person
-func (b *Brain) CalculateWant() {
+// HomoSapiensCalculateWant - Calculate the want of the person
+func (b *Brain) HomoSapiensCalculateWant() {
     switch {
     case !b.CheckIfCanBreath() && !b.CheckIfWantIsAlreadyInList("Be able to breath"):
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Be able to breath")
@@ -190,6 +195,31 @@ func (b *Brain) CalculateWant() {
         }
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Improve defense")
     case !b.PhysiologicalNeeds.HasShelter && !b.CheckIfWantIsAlreadyInList("Make shelter"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Make shelter")
+    case b.PhysiologicalNeeds.Rested < 20 && !b.CheckIfWantIsAlreadyInList("Rest"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Rest")
+    }
+}
+
+// AnimalCalculateWant - Calculate the want of the person
+func (b *Brain) AnimalCalculateWant() {
+    switch {
+    case !b.CheckIfCanBreath() && !b.CheckIfWantIsAlreadyInList("Be able to breath"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Be able to breath")
+    case b.PhysiologicalNeeds.IsInPain && !b.CheckIfWantIsAlreadyInList("Relieve pain"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Relieve pain")
+    case b.PhysiologicalNeeds.Thirst > 30 && !b.CheckIfWantIsAlreadyInList("Consume water"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Consume water")
+    case b.PhysiologicalNeeds.Hunger > 30 && !b.CheckIfWantIsAlreadyInList("Consume food"):
+        fmt.Println(b.Owner.FullName + " wants to consume food.", b.PhysiologicalNeeds.Hunger)
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Consume food")
+    case !b.PhysiologicalNeeds.IsSufficientlyWarm && !b.CheckIfWantIsAlreadyInList("Get warm"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Get warm")
+    case b.PhysiologicalNeeds.NeedToExcrete && !b.CheckIfWantIsAlreadyInList("Excrete"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Excrete")
+    case !b.PhysiologicalNeeds.IsInSafeArea && !b.CheckIfWantIsAlreadyInList("Find a safe area"):
+        b.Owner.WantsTo = append(b.Owner.WantsTo, "Find a safe area")
+    case !b.PhysiologicalNeeds.HasShelter && !b.CheckIfWantIsAlreadyInList("Find shelter"):
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Make shelter")
     case b.PhysiologicalNeeds.Rested < 20 && !b.CheckIfWantIsAlreadyInList("Rest"):
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Rest")
@@ -466,7 +496,7 @@ func (b *Brain) SendTaskRequest(to *Person, taskType string) {
     }
     fmt.Println(b.Owner.FullName + " is sending a task request to " + to.FullName)
     task := RequestedAction{TargetedAction{taskType, to.FullName, true, make([]BodyPartType, 0), 10}, b.Owner}
-    success := to.Body.Head.Brain.ReceiveTaskRequest(task)
+    success := to.Brain.ReceiveTaskRequest(task)
     if success {
         fmt.Println(to.FullName + " accepted the task request.")
         b.Owner.IsTalking = TargetedAction{"Hello " + to.FullName + ", how are you doing?", to.FullName, true, make([]BodyPartType, 0), 10}

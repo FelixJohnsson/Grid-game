@@ -11,7 +11,7 @@ func (w *World) CleanPerson(Person *Person) PersonCleaned {
 				Title:      Person.Title,
 				Location:   Person.Location,
 				Thinking:   Person.Thinking,
-				Head:       HeadCleaned{Person.Body.Head.LimbStatus},
+				Head:       Person.Body.Head,
 				Torso:      Person.Body.Torso,
 				RightArm:   Person.Body.RightArm,
 				LeftArm:    Person.Body.LeftArm,
@@ -29,7 +29,36 @@ func (w *World) CleanPerson(Person *Person) PersonCleaned {
 				IsIncapacitated:  Person.IsIncapacitated,
 				Relationships:    Person.Relationships,
 
-				CurrentTask:      Person.Body.Head.Brain.CurrentTask,
+				CurrentTask:      Person.Brain.CurrentTask,
+			}
+}
+
+// CleanAnimal is a function that cleans a Person struct
+func (w *World) CleanAnimal(Animal *Animal) AnimalCleaned {
+	return AnimalCleaned{
+				FullName:   Animal.FullName,
+				Gender:     Animal.Gender,
+				Age:        Animal.Age,
+				Location:   Animal.Location,
+				Thinking:   Animal.Thinking,
+				Head:       Animal.Body.Head,
+				Torso:      Animal.Body.Torso,
+				RightFrontLeg:   Animal.Body.RightFrontLeg,
+				LeftFrontLeg:    Animal.Body.LeftFrontLeg,
+				RightBackLeg:   Animal.Body.RightBackLeg,
+				LeftBackLeg:    Animal.Body.LeftBackLeg,
+
+				Strength:         Animal.Strength,
+				Agility:          Animal.Agility,
+				Intelligence:     Animal.Intelligence,
+				Charisma:         Animal.Charisma,
+				Stamina:          Animal.Stamina,
+				CombatExperience: Animal.CombatExperience,
+				CombatSkill:      Animal.CombatSkill,
+				IsIncapacitated:  Animal.IsIncapacitated,
+				Relationships:    Animal.Relationships,
+
+				CurrentTask:      Animal.Brain.CurrentTask,
 			}
 }
 
