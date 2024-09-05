@@ -31,8 +31,22 @@ func NewBrain() *Brain {
     }
 }
 
+func NewHumanBrain() *HumanBrain {
+    return &HumanBrain{
+        Brain: *NewBrain(),
+        Owner: nil,
+    }
+}
+
+func NewAnimalBrain() *AnimalBrain {
+    return &AnimalBrain{
+        Brain: *NewBrain(),
+        Owner: nil,
+    }
+}
+
 // MotorCortex is a function that handles the motor cortex of the brain
-func (b *Brain) MotorCortex() {
+func (b *HumanBrain) MotorCortex() {
     if b.MotorCortexCurrentTask.ActionType == "Idle" {
         return
     } 
@@ -53,51 +67,12 @@ func (b *Brain) MotorCortex() {
 }
 
 // SensoryCortex is a function that handles the sensory cortex of the brain
-func (b *Brain) SensoryCortex() {
+func (b *HumanBrain) SensoryCortex() {
     
 }
 
-func (b *Brain) WolfMainLoop() {
-    for {
-        select {
-        case <-b.Ctx.Done():
-            b.Active = false
-            return
-        default:
-            if !b.Active {
-                return
-            }
-
-            if !b.IsConscious {
-                fmt.Println(b.Owner.FullName + "'s brain is not conscious but still alive.")
-                return
-            }
-
-            if b.IsUnderAttack.Active {
-                b.IsUnderAttackHandler()
-            }
-
-            b.OxygenHandler()
-
-            b.PainHandler()
-            b.FoodHandler()
-            b.ThirstHandler()
-
-            b.ClearWants()
-            b.HomoSapiensCalculateWant()
-            b.TranslateWantToTaskList()
-
-            b.performActions()
-            go b.MotorCortex()
-
-            // Sleep for 2 seconds
-            time.Sleep(2000 * time.Millisecond)
-        }
-    }
-}
-
 // MainLoop is the main loop of the brain that handles the person's actions
-func (b *Brain) HomoSapiensMainLoop() {
+func (b *HumanBrain) MainLoop() {
     for {
         select {
         case <-b.Ctx.Done():
@@ -137,7 +112,7 @@ func (b *Brain) HomoSapiensMainLoop() {
 }
 
 // OxygenHandler is a function that handles the oxygen level of the person
-func (b *Brain) OxygenHandler() {
+func (b *HumanBrain) OxygenHandler() {
     if b.CheckIfCanBreath() {
         b.Breath()
     } else {
@@ -154,12 +129,12 @@ func (b *Brain) OxygenHandler() {
 }
 
 // IncreaseHungerLevel is a function that increases the hunger level of the person
-func (b *Brain) IncreaseHungerLevel() {
+func (b *HumanBrain) IncreaseHungerLevel() {
     b.PhysiologicalNeeds.Hunger += 1
 }
 
 //DecreaseHungerLevel is a function that decreases the hunger level of the person
-func (b *Brain) DecreaseHungerLevel(amount int) {
+func (b *HumanBrain) DecreaseHungerLevel(amount int) {
     b.PhysiologicalNeeds.Hunger -= amount
     if b.PhysiologicalNeeds.Hunger < 0 {
         b.PhysiologicalNeeds.Hunger = 0
@@ -168,12 +143,12 @@ func (b *Brain) DecreaseHungerLevel(amount int) {
 }
 
 //IncreaseThirstLevel is a function that increases the thirst level of the person
-func (b *Brain) IncreaseThirstLevel() {
+func (b *HumanBrain) IncreaseThirstLevel() {
     b.PhysiologicalNeeds.Thirst += 1
 }
 
 //DecreaseThirstLevel is a function that decreases the thirst level of the person
-func (b *Brain) DecreaseThirstLevel(amount int) {
+func (b *HumanBrain) DecreaseThirstLevel(amount int) {
     b.PhysiologicalNeeds.Thirst -= amount
     if b.PhysiologicalNeeds.Thirst < 0 {
         b.PhysiologicalNeeds.Thirst = 0
@@ -182,17 +157,17 @@ func (b *Brain) DecreaseThirstLevel(amount int) {
 }
 
 // FoodHandler is a function that handles the food level of the person
-func (b *Brain) FoodHandler() {
+func (b *HumanBrain) FoodHandler() {
     b.IncreaseHungerLevel()
 }
 
 // ThirstHandler is a function that handles the thirst level of the person
-func (b *Brain) ThirstHandler() {
+func (b *HumanBrain) ThirstHandler() {
     b.IncreaseThirstLevel()
 }
 
 // IsUnderAttackHandler is a function that handles the person being under attack
-func (b *Brain) IsUnderAttackHandler() {
+func (b *HumanBrain) IsUnderAttackHandler() {
     if b.IsUnderAttack.Active && !b.IsUnderAttack.From.Brain.IsConscious {
         b.IsUnderAttack = IsUnderAttack{false, b.IsUnderAttack.From, "", ""}
         fmt.Println(b.Owner.FullName + " is no longer under attack because attacker is unconscious.")

@@ -23,7 +23,6 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 		Initials:         string(FirstName[0]) + string(FamilyName[0]),
 		IsChild:          Age < 18,
 		Gender:           Gender,
-		Description:      "",
 		Occupation:       Unemployed,
 		IsMoving:         TargetedAction{},
 		IsTalking:        TargetedAction{},
@@ -45,7 +44,7 @@ func NewPerson(worldAccessor WorldAccessor, x, y int) *Person {
 		Location:         Location{X: x, Y: y},
 		WorldProvider:    worldAccessor,
 		Body:			  Body,
-		Brain:            NewBrain(),
+		Brain:            NewHumanBrain(),
 
 		Strength:         1,
 		Agility:          1,
@@ -116,20 +115,20 @@ func (p *Person) DropLeft(item string) {
 }
 
 // Drink - Consume a liquid
-func (p *Person) Drink(liquid Liquid) {
+func (b *HumanBrain) Drink(liquid Liquid) {
     switch liquid.Name {
     case "Water":
         fmt.Println("Drinking water") 
-        p.Brain.DecreaseThirstLevel(50)
+        b.DecreaseThirstLevel(50)
     }
 }
 
 // Eat - Consume food
-func (p *Person) Eat(food Food) {
+func (b *HumanBrain) Eat(food Food) {
 	switch food.GetName() {
 	case "Apple":
 		fmt.Println("Eating an apple")
-		p.Brain.DecreaseHungerLevel(food.GetNutritionalValue())
+		b.DecreaseHungerLevel(food.GetNutritionalValue())
 	}
 }
 

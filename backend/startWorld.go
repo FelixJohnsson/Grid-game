@@ -110,7 +110,6 @@ func InitializeWorld() *World {
 	world.SetTileType(1, 3, 1)
 
 	newPerson1.Brain.turnOn()
-	wolf.Brain.turnOn()
 
 	return world
 }

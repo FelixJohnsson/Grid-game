@@ -67,7 +67,6 @@ type Person struct {
 	Initials         string
 	IsChild          bool
 	Gender           string
-	Description      string
 	Occupation       Jobs
 	SkinColor        string
 	Personality 	 string
@@ -89,7 +88,7 @@ type Person struct {
 	FeelingScared	 int
 
 	Body 		     *HumanBody
-	Brain 		     *Brain
+	Brain 		     *HumanBrain
 
 	Strength         int
 	Agility          int
@@ -164,6 +163,8 @@ type PhysiologicalNeeds struct {
 }
 
 type Brain struct {
+	Owner *Entity
+
     Active bool
     Ctx    context.Context
     Cancel context.CancelFunc
@@ -181,9 +182,20 @@ type Brain struct {
 	MotorCortexCurrentTask MotorCortexAction
 
 	PhysiologicalNeeds PhysiologicalNeeds
+}
+	
 
+type HumanBrain struct {
+	Brain
 	Owner *Person
 }
+
+type AnimalBrain struct {
+	Brain
+	Owner *Animal
+}
+
+
 type Vision struct {
 	Plants    []*Plant            `json:"Plants"`
 	Persons   []PersonInVision    `json:"Persons"`
@@ -278,13 +290,23 @@ type Arm struct {
 	Hand *LimbThatCanGrab
 }
 
-type HumanBody struct {
+type BipedalBody struct {
 	Head *Head
 	Torso *LimbStatus
 	RightArm *Arm
 	LeftArm *Arm
 	RightLeg *Leg
 	LeftLeg *Leg
+}
+
+type BipedalWithTailBody struct {
+	Head *Head
+	Torso *LimbStatus
+	RightArm *Arm
+	LeftArm *Arm
+	RightLeg *Leg
+	LeftLeg *Leg
+	Tail *LimbThatCanMove
 }
 
 // ----------------- Animals -----------------
@@ -312,7 +334,7 @@ type Animal struct {
 	FeelingScared	 int
 
 	Body 		     *AnimalBody
-	Brain 		     *Brain
+	Brain 		     *AnimalBrain
 
 	Strength         int
 	Agility          int
