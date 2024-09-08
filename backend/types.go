@@ -13,7 +13,7 @@ type Location struct {
 
 type WorldState struct {
 	Map 	 	[][]string;
-  	Persons	 	[]Person;
+  	Entities	[]Entity;
 }
 
 type TileType int
@@ -25,13 +25,14 @@ const (
 )
 type Tile struct {
 	Type     TileType     `json:"Type"`
-	Person   *Person      `json:"Person,omitempty"`
+	Entity   *Entity      `json:"Ent,omitempty"`
 	Items    []*Item      `json:"Items,omitempty"`
 	Plant    *Plant       `json:"Plant,omitempty"`
 	NutritionalValue int  `json:"NutritionalValue,omitempty"`
 	Shelter  *Shelter     `json:"Shelter,omitempty"`
 	Location Location     `json:"Location"`
-	Animal   *Animal      `json:"Animal,omitempty"`
+	BipedalAnimal   *BipedalAnimal      `json:"BipedalAnimal,omitempty"`
+	QuadrupedalAnimal   *QuadrupedalAnimal      `json:"QuadrupedalAnimal,omitempty"`
 }
 type World struct {
 	Tiles [][]Tile `json:"tiles"`
@@ -53,12 +54,34 @@ const (
 	Unemployed Jobs = "Unemployed"
 )
 type Relationship struct {
-	WithPerson string
+	WithEntity string
 	Relationship string
 	Intensity int
 }
 
-type Person struct {
+type Brain struct {
+        Active  bool
+        Ctx     context.Context
+        Cancel  context.CancelFunc
+        ActionList []TargetedAction
+        CurrentTask  TargetedAction
+        IsConscious bool
+        OxygenLevel int
+        PainLevel  int
+        PainTolerance int
+        IsAlive bool
+		CanBreath bool
+        BrainDamage int
+        IsUnderAttack IsUnderAttack
+        Memories   Memories
+        MotorCortexCurrentTask   MotorCortexAction
+
+        PhysiologicalNeeds  PhysiologicalNeeds
+
+		Owner *Entity
+}
+
+type Entity struct {
 	Age              int
 	Title 		     string
 	FirstName        string
@@ -69,32 +92,35 @@ type Person struct {
 	Gender           string
 	Occupation       Jobs
 	SkinColor        string
-	Personality 	 string
+	Entityality 	 string
 	Genes            []string
 	Species          string
 
 	OwnedItems	     []*Item
-	OwnedAnimals	 []*Animal
+	OwnedBipedalAnimals	 []*BipedalAnimal
+	OwnedQuadrupedalAnimals	 []*QuadrupedalAnimal
 
 	IsMoving         TargetedAction
 	IsTalking        TargetedAction
 	IsSitting        TargetedAction
 	IsEating         TargetedAction
 	IsSleeping       TargetedAction
+	IsBleeding       bool
 
 	Thinking         string
 	WantsTo          []string
 	FeelingSafe 	 int
 	FeelingScared	 int
 
-	Body 		     *HumanBody
-	Brain 		     *HumanBrain
+	Body 		     *EntityBody
+	Brain 		     *Brain
 
 	Strength         int
 	Agility          int
 	Intelligence     int
 	Charisma         int
 	Stamina          int
+	Curiosity        int
 
 	CombatExperience int
 	CombatSkill      int
@@ -127,7 +153,7 @@ type MotorCortexAction struct {
 }
 type IsUnderAttack struct {
 	Active bool
-	From *Person
+	From *Entity
 	Target BodyPartType
 	ByLimb BodyPartType
 }
@@ -143,7 +169,7 @@ type Memories struct {
 }
 type RequestedAction struct {
 	TargetedAction
-	From *Person
+	From *Entity
 }
 
 type PhysiologicalNeeds struct {
@@ -162,43 +188,9 @@ type PhysiologicalNeeds struct {
 	IsCapableOfDefendingSelf bool
 }
 
-type Brain struct {
-	Owner *Entity
-
-    Active bool
-    Ctx    context.Context
-    Cancel context.CancelFunc
-	ActionList []TargetedAction
-	CurrentTask TargetedAction
-    IsConscious bool
-	CanBreath bool
-	OxygenLevel int
-	PainLevel int
-	PainTolerance int
-    IsAlive bool
-    BrainDamage int
-	IsUnderAttack IsUnderAttack
-	Memories Memories
-	MotorCortexCurrentTask MotorCortexAction
-
-	PhysiologicalNeeds PhysiologicalNeeds
-}
-	
-
-type HumanBrain struct {
-	Brain
-	Owner *Person
-}
-
-type AnimalBrain struct {
-	Brain
-	Owner *Animal
-}
-
-
 type Vision struct {
 	Plants    []*Plant            `json:"Plants"`
-	Persons   []PersonInVision    `json:"Persons"`
+	Entities  []EntityInVision    `json:"Entities"`
 	Tiles     []Tile              `json:"Tile"`
 }
 
@@ -258,14 +250,6 @@ type Head struct {
 	Mouth *BodyPart
 }
 
-type AnimalHead struct {
-	LimbStatus
-	Eyes *BodyPart
-	Ears *BodyPart
-	Nose *BodyPart
-	Mouth *BodyPart
-}
-
 type LimbThatCanGrab struct {
 	LimbStatus
 	Items []*Item
@@ -290,34 +274,35 @@ type Arm struct {
 	Hand *LimbThatCanGrab
 }
 
-type BipedalBody struct {
-	Head *Head
-	Torso *LimbStatus
-	RightArm *Arm
-	LeftArm *Arm
-	RightLeg *Leg
-	LeftLeg *Leg
-}
+type EntityBody struct {
+	Head          *Head
+	Torso         *LimbStatus
 
-type BipedalWithTailBody struct {
-	Head *Head
-	Torso *LimbStatus
-	RightArm *Arm
-	LeftArm *Arm
-	RightLeg *Leg
-	LeftLeg *Leg
-	Tail *LimbThatCanMove
+	RightFrontLeg *Leg
+	LeftFrontLeg  *Leg
+	RightBackLeg  *Leg
+	LeftBackLeg   *Leg
+
+	RightArm      *Arm
+	LeftArm       *Arm
+
+	RightLeg      *Leg
+	LeftLeg       *Leg
+
+	Wings         *LimbThatCanMove
+	Tail          *LimbThatCanMove
+
 }
 
 // ----------------- Animals -----------------
-type Animal struct {
+type QuadrupedalAnimal struct {
 	Age              int
 	FullName 	     string
 	IsChild          bool
 	Gender           string
 	Description      string
 	Color            string
-	Personality 	 string
+	Entityality 	 string
 	Genes            []string
 	Species		     string
 	OwnedItems       []*Item
@@ -333,8 +318,8 @@ type Animal struct {
 	FeelingSafe 	 int
 	FeelingScared	 int
 
-	Body 		     *AnimalBody
-	Brain 		     *AnimalBrain
+	Body 		     *EntityBody
+	Brain 		     *Brain
 
 	Strength         int
 	Agility          int
@@ -353,27 +338,47 @@ type Animal struct {
 	Location         Location
 }
 
-// AnimalBody needs to be different kinds of bodies, for example quadrupedal and bipedal
-type AnimalBody struct {
-	Head  *Head
-	Torso *LimbStatus
+type BipedalAnimal struct {
+	Age              int
+	FullName 	     string
+	IsChild          bool
+	Gender           string
+	Description      string
+	Color            string
+	Entityality 	 string
+	Genes            []string
+	Species		     string
+	OwnedItems       []*Item
 
-	// Legs
-	RightFrontLeg *Leg
-	LeftFrontLeg  *Leg
-	RightBackLeg  *Leg
-	LeftBackLeg   *Leg
+	IsMoving         TargetedAction
+	IsTalking        TargetedAction
+	IsSitting        TargetedAction
+	IsEating         TargetedAction
+	IsSleeping       TargetedAction
 
-	// Arms
-	RightArm *Arm
-	RightLowerArm *Arm
+	Thinking         string
+	WantsTo          []string
+	FeelingSafe 	 int
+	FeelingScared	 int
 
-	LeftArm  *Arm
-	LeftLowerArm *Arm
+	Body 		     *EntityBody
+	Brain 		     *Brain
 
-	// Tail
-	Tail          *LimbThatCanMove
+	Strength         int
+	Agility          int
+	Intelligence     int
+	Charisma         int
+	Stamina          int
 
+	CombatExperience int
+	CombatSkill      int
+
+	Relationships    []Relationship
+
+	IsIncapacitated  bool
+	VisionRange 	 int
+	WorldProvider    WorldAccessor
+	Location         Location
 }
 
 // ----------------- Food -------------------
@@ -485,7 +490,7 @@ type Item struct {
 
 type CleanedTile struct {
     Type     TileType         `json:"Type"`
-    Person   *PersonCleaned   `json:"Person,omitempty"`
+    Entity   *EntityCleaned   `json:"Entity,omitempty"`
 	Items    []*Item          `json:"Items,omitempty"`
 	Plant    *PlantCleaned    `json:"Plant,omitempty"`
 	Animal   *AnimalCleaned   `json:"Animal,omitempty"`
@@ -543,7 +548,7 @@ type BuildingCleaned struct {
 	Location Location `json:"location"`
 }
 
-type PersonCleaned struct {
+type EntityCleaned struct {
 	FirstName    string       `json:"FirstName"`
 	FamilyName   string       `json:"FamilyName"`
 	FullName     string       `json:"FullName"`
@@ -579,7 +584,7 @@ type PersonCleaned struct {
 	CurrentTask TargetedAction `json:"CurrentTask"`
 }
 
-type PersonInVision struct {
+type EntityInVision struct {
 	FullName     string
 	FirstName    string 
 	FamilyName   string
@@ -587,5 +592,5 @@ type PersonInVision struct {
 	Age 		 int
 	Title 		 string
 	Location     Location
-	Body 		 *HumanBody
+	Body 		 *EntityBody
 }

@@ -8,14 +8,14 @@ import (
 // ---------------- Hostile actions ----------------
 
 // CalculateLegDamageGiven calculates the damage given by the leg
-func (p *Person) CalculateLegDamageGiven(target *Person, targetLimb BodyPartType, withLimb *Leg) Damage {
+func (e *Entity) CalculateLegDamageGiven(target *Entity, targetLimb BodyPartType, withLimb *Leg) Damage {
 	// Calculate the damage based on limb status, physical attributes and experience.
 	damage := Damage{}
 
 	if withLimb.IsBroken || withLimb == nil {
 		return damage
 	} else {
-		damage.AmountBluntDamage = 1 + p.Strength
+		damage.AmountBluntDamage = 1 + e.Strength
 	}
 
 	// Add a random factor to the damage
@@ -40,24 +40,24 @@ func (p *Person) CalculateLegDamageGiven(target *Person, targetLimb BodyPartType
 
 
 // CalculateArmDamageGiven calculates the damage given by the arm
-func (p *Person) CalculateArmDamageGiven(target *Person, targetLimb BodyPartType, withLimb *LimbThatCanGrab) Damage {
+func (e *Entity) CalculateArmDamageGiven(target *Entity, targetLimb BodyPartType, withLimb *LimbThatCanGrab) Damage {
 		// Calculate the damage based on limb status, item in hand, physical attributes and experience.
 		damage := Damage{}
 
 		if withLimb.IsBroken || withLimb == nil {
 			return damage
 		} else if withLimb.Items == nil {
-				damage.AmountBluntDamage = 1 + p.Strength
-				damage.AmountSharpDamage = 1 + p.Strength
+				damage.AmountBluntDamage = 1 + e.Strength
+				damage.AmountSharpDamage = 1 + e.Strength
 		} else {
 			damage.AmountBluntDamage = withLimb.Items[0].Bluntness
 			damage.AmountSharpDamage = withLimb.Items[0].Sharpness
 
-			damage.AmountBluntDamage += p.Strength
-			damage.AmountSharpDamage += p.Strength
+			damage.AmountBluntDamage += e.Strength
+			damage.AmountSharpDamage += e.Strength
 
-			damage.AmountBluntDamage += p.CombatSkill + p.CombatExperience
-			damage.AmountSharpDamage += p.CombatSkill + p.CombatExperience
+			damage.AmountBluntDamage += e.CombatSkill + e.CombatExperience
+			damage.AmountSharpDamage += e.CombatSkill + e.CombatExperience
 		}
 	// Add a random factor to the damage
 	damage.AmountBluntDamage += rand.Intn(3)
@@ -80,36 +80,36 @@ func (p *Person) CalculateArmDamageGiven(target *Person, targetLimb BodyPartType
 	return damage
 }
 
-func (p *Person) CalculateDefense(targetLimb BodyPartType) int {
+func (e *Entity) CalculateDefense(targetLimb BodyPartType) int {
 	// Calculate the defense based on limb status, item in hand, physical attributes and experience.
 	defense := 0
 
-	defense += p.Strength + p.Agility
-	defense += p.CombatSkill + p.CombatExperience
+	defense += e.Strength + e.Agility
+	defense += e.CombatSkill + e.CombatExperience
 
 	return defense
 }
 	
-// Flee is called when the person is feeling scared
-func (p *Person) Flee(attacker *Person) {
+// Flee is called when the Entity is feeling scared
+func (e *Entity) Flee(attacker *Entity) {
 	// Move away from the attacker
 	
 }
-// AttackWithLeg - target is the person being attacked, targetLimb is the limb being attacked, withLimb (probably leg) is the limb that is attacking
-func (p *Person) AttackWithLeg(target *Person, targetLimb BodyPartType, withLimb *Leg) Damage {
+// AttackWithLeg - target is the Entity being attacked, targetLimb is the limb being attacked, withLimb (probably leg) is the limb that is attacking
+func (e *Entity) AttackWithLeg(target *Entity, targetLimb BodyPartType, withLimb *Leg) Damage {
 	if target == nil {
 		fmt.Println("No target to attack")
 		return Damage{}
 	}
 
-	damage := p.CalculateLegDamageGiven(target, targetLimb, withLimb)
+	damage := e.CalculateLegDamageGiven(target, targetLimb, withLimb)
 	target.ReceivingApplyDamageTo(targetLimb, damage)
 
 	return damage
 }
 		
-// AttackWithArm - target is the person being attacked, targetLimb is the limb being attacked, withLimb (probably hand) is the limb that is attacking
-func (p *Person) AttackWithArm(target *Person, targetLimb BodyPartType, withLimb *LimbThatCanGrab) Damage {
+// AttackWithArm - target is the Entity being attacked, targetLimb is the limb being attacked, withLimb (probably hand) is the limb that is attacking
+func (e *Entity) AttackWithArm(target *Entity, targetLimb BodyPartType, withLimb *LimbThatCanGrab) Damage {
 	if target == nil {
 		fmt.Println("No target to attack")
 		return Damage{}
@@ -119,19 +119,19 @@ func (p *Person) AttackWithArm(target *Person, targetLimb BodyPartType, withLimb
 		return Damage{}
 	}
 
-	damage := p.CalculateArmDamageGiven(target, targetLimb, withLimb)
-	fmt.Println(p.FullName, "is attacking", target.FullName, "and causing", damage.AmountBluntDamage, "blunt damage and", damage.AmountSharpDamage, "sharp damage")
+	damage := e.CalculateArmDamageGiven(target, targetLimb, withLimb)
+	fmt.Println(e.FullName, "is attacking", target.FullName, "and causing", damage.AmountBluntDamage, "blunt damage and", damage.AmountSharpDamage, "sharp damage")
 	target.ReceivingApplyDamageTo(targetLimb, damage)
 
 	if target.Body.Head != nil {
-		target.Brain.IsUnderAttack = IsUnderAttack{true, p, targetLimb, "RightHand"}
+		target.Brain.IsUnderAttack = IsUnderAttack{true, e, targetLimb, "RightHand"}
 	}
 
 	return damage
 }
 
 // Logic for being attacked, if the hands are broken, drop the items in the hands
-func (p *Person) ReceivingApplyDamageTo(limb BodyPartType, damage Damage) {
+func (e *Entity) ReceivingApplyDamageTo(limb BodyPartType, damage Damage) {
 	// TODO: Check if the limb is covered with a wearable that can protect the limb from the damage
 
 	var bluntDamageUntilBroken = 50
@@ -144,165 +144,165 @@ func (p *Person) ReceivingApplyDamageTo(limb BodyPartType, damage Damage) {
 
 	// Add blood residue to the limb and item
 	bloodResidue := Residue{"Blood", 1}
-	p.AddResidue(limb, bloodResidue)
+	e.AddResidue(limb, bloodResidue)
 
 	switch limb {
 		case "Head":
-			if p.Body.Head == nil {
+			if e.Body.Head == nil {
 				fmt.Println("The target has no head to attack")
 				return
 			}
-		p.Body.Head.BluntDamage += damage.AmountBluntDamage
-		p.Body.Head.SharpDamage += damage.AmountSharpDamage
+		e.Body.Head.BluntDamage += damage.AmountBluntDamage
+		e.Body.Head.SharpDamage += damage.AmountSharpDamage
 
-		p.Brain.BrainDamage += damage.AmountBluntDamage
+		e.Brain.BrainDamage += damage.AmountBluntDamage
 
-		if p.Body.Head.SharpDamage > sharpDamageUntilSevered {
-			p.RemoveLimb("Head")
+		if e.Body.Head.SharpDamage > sharpDamageUntilSevered {
+			e.RemoveLimb("Head")
 			bloodResidue := Residue{"Blood", 10}
-			p.AddResidue("Torso", bloodResidue)
+			e.AddResidue("Torso", bloodResidue)
 			return
 		}
-		if p.Body.Head.BluntDamage > bluntDamageUntilBroken {
-			p.Body.Head.IsBroken = true
-			if p.Body.Head.BluntDamage > bluntDamageUntilUnconscious {
-				p.Brain.IsConscious = false
-				p.IsIncapacitated = true
+		if e.Body.Head.BluntDamage > bluntDamageUntilBroken {
+			e.Body.Head.IsBroken = true
+			if e.Body.Head.BluntDamage > bluntDamageUntilUnconscious {
+				e.Brain.IsConscious = false
+				e.IsIncapacitated = true
 			}
-			if p.Body.Head.BluntDamage >= brainDamageUntilDead && p.Brain.Active {
-				p.Brain.turnOff()
+			if e.Body.Head.BluntDamage >= brainDamageUntilDead && e.Brain.Active {
+				e.Brain.turnOff()
 			}
 		}
-		if p.Body.Head.SharpDamage > sharpDamageUntilBleeding {
-			p.Body.Head.IsBleeding = true
+		if e.Body.Head.SharpDamage > sharpDamageUntilBleeding {
+			e.Body.Head.IsBleeding = true
 		}
 		return
 	case "LeftFoot":
-		if p.Body.LeftLeg.Foot == nil {
+		if e.Body.LeftLeg.Foot == nil {
 			fmt.Println("The target has no left foot to attack")
 			return
 		}
-		p.Body.LeftLeg.Foot.BluntDamage += damage.AmountBluntDamage
-		p.Body.LeftLeg.Foot.SharpDamage += damage.AmountSharpDamage
+		e.Body.LeftLeg.Foot.BluntDamage += damage.AmountBluntDamage
+		e.Body.LeftLeg.Foot.SharpDamage += damage.AmountSharpDamage
 
-		if p.Body.LeftLeg.Foot.BluntDamage > bluntDamageUntilBroken {
-			p.Body.LeftLeg.Foot.IsBroken = true
-			p.IsIncapacitated = true
+		if e.Body.LeftLeg.Foot.BluntDamage > bluntDamageUntilBroken {
+			e.Body.LeftLeg.Foot.IsBroken = true
+			e.IsIncapacitated = true
 		} 
-		if p.Body.LeftLeg.Foot.SharpDamage > sharpDamageUntilBleeding {
-			p.Body.LeftLeg.Foot.IsBleeding = true
+		if e.Body.LeftLeg.Foot.SharpDamage > sharpDamageUntilBleeding {
+			e.Body.LeftLeg.Foot.IsBleeding = true
 		}
-		if p.Body.LeftLeg.Foot.SharpDamage > sharpDamageUntilSevered {
-			p.RemoveLimb("LeftFoot")
+		if e.Body.LeftLeg.Foot.SharpDamage > sharpDamageUntilSevered {
+			e.RemoveLimb("LeftFoot")
 		}
 		return
 	case "RightFoot":
-		if p.Body.RightLeg.Foot == nil {
+		if e.Body.RightLeg.Foot == nil {
 			fmt.Println("The target has no right foot to attack")
 			return
 		}
-		p.Body.RightLeg.Foot.BluntDamage += damage.AmountBluntDamage
-		p.Body.RightLeg.Foot.SharpDamage += damage.AmountSharpDamage
+		e.Body.RightLeg.Foot.BluntDamage += damage.AmountBluntDamage
+		e.Body.RightLeg.Foot.SharpDamage += damage.AmountSharpDamage
 
-		if p.Body.RightLeg.Foot.BluntDamage > bluntDamageUntilBroken {
-			p.Body.RightLeg.Foot.IsBroken = true
-			p.IsIncapacitated = true
+		if e.Body.RightLeg.Foot.BluntDamage > bluntDamageUntilBroken {
+			e.Body.RightLeg.Foot.IsBroken = true
+			e.IsIncapacitated = true
 		}
-		if p.Body.RightLeg.Foot.SharpDamage > sharpDamageUntilBleeding {
-			p.Body.RightLeg.Foot.IsBleeding = true
+		if e.Body.RightLeg.Foot.SharpDamage > sharpDamageUntilBleeding {
+			e.Body.RightLeg.Foot.IsBleeding = true
 		}
-		if p.Body.RightLeg.Foot.SharpDamage > sharpDamageUntilSevered {
-			p.RemoveLimb("RightFoot")
+		if e.Body.RightLeg.Foot.SharpDamage > sharpDamageUntilSevered {
+			e.RemoveLimb("RightFoot")
 		}
 		return
 	case "Torso":
-		p.Body.Torso.BluntDamage += damage.AmountBluntDamage
-		p.Body.Torso.SharpDamage += damage.AmountSharpDamage
+		e.Body.Torso.BluntDamage += damage.AmountBluntDamage
+		e.Body.Torso.SharpDamage += damage.AmountSharpDamage
 
-		if p.Body.Torso.BluntDamage > bluntDamageUntilBroken {
-			p.Body.Torso.IsBroken = true
-			if p.Body.Torso.BluntDamage > bluntDamageUntilTorsoIncapacitated {
-				p.IsIncapacitated = true
+		if e.Body.Torso.BluntDamage > bluntDamageUntilBroken {
+			e.Body.Torso.IsBroken = true
+			if e.Body.Torso.BluntDamage > bluntDamageUntilTorsoIncapacitated {
+				e.IsIncapacitated = true
 			}
 		}
-		if p.Body.Torso.SharpDamage > sharpDamageUntilBleeding {
-			p.Body.Torso.IsBleeding = true
+		if e.Body.Torso.SharpDamage > sharpDamageUntilBleeding {
+			e.Body.Torso.IsBleeding = true
 		}
 		return
 	case "RightLeg":
-		if p.Body.RightLeg == nil {
+		if e.Body.RightLeg == nil {
 			fmt.Println("The target has no right leg to attack")
 			return
 		}
-		p.Body.RightLeg.Foot.BluntDamage += damage.AmountBluntDamage
-		p.Body.RightLeg.Foot.SharpDamage += damage.AmountSharpDamage
+		e.Body.RightLeg.Foot.BluntDamage += damage.AmountBluntDamage
+		e.Body.RightLeg.Foot.SharpDamage += damage.AmountSharpDamage
 
-		if p.Body.RightLeg.Foot.BluntDamage > bluntDamageUntilBroken {
-			p.Body.RightLeg.Foot.IsBroken = true
-			p.IsIncapacitated = true
+		if e.Body.RightLeg.Foot.BluntDamage > bluntDamageUntilBroken {
+			e.Body.RightLeg.Foot.IsBroken = true
+			e.IsIncapacitated = true
 		}
-		if p.Body.RightLeg.Foot.SharpDamage > sharpDamageUntilBleeding {
-			p.Body.RightLeg.Foot.IsBleeding = true
+		if e.Body.RightLeg.Foot.SharpDamage > sharpDamageUntilBleeding {
+			e.Body.RightLeg.Foot.IsBleeding = true
 		}
-		if p.Body.RightLeg.Foot.SharpDamage > sharpDamageUntilSevered {
-			p.RemoveLimb("RightLeg")
+		if e.Body.RightLeg.Foot.SharpDamage > sharpDamageUntilSevered {
+			e.RemoveLimb("RightLeg")
 		}
 		return 
 	case "LeftLeg":
-		if p.Body.LeftLeg == nil {
+		if e.Body.LeftLeg == nil {
 			fmt.Println("The target has no left leg to attack")
 			return
 		}
-		p.Body.LeftLeg.Foot.BluntDamage += damage.AmountBluntDamage
-		p.Body.LeftLeg.Foot.SharpDamage += damage.AmountSharpDamage
+		e.Body.LeftLeg.Foot.BluntDamage += damage.AmountBluntDamage
+		e.Body.LeftLeg.Foot.SharpDamage += damage.AmountSharpDamage
 
-		if p.Body.LeftLeg.Foot.BluntDamage > bluntDamageUntilBroken {
-			p.Body.LeftLeg.Foot.IsBroken = true
-			p.IsIncapacitated = true
+		if e.Body.LeftLeg.Foot.BluntDamage > bluntDamageUntilBroken {
+			e.Body.LeftLeg.Foot.IsBroken = true
+			e.IsIncapacitated = true
 		}
-		if p.Body.LeftLeg.Foot.SharpDamage > sharpDamageUntilBleeding {
-			p.Body.LeftLeg.Foot.IsBleeding = true
+		if e.Body.LeftLeg.Foot.SharpDamage > sharpDamageUntilBleeding {
+			e.Body.LeftLeg.Foot.IsBleeding = true
 		}
-		if p.Body.LeftLeg.SharpDamage > sharpDamageUntilSevered {
-			p.RemoveLimb("LeftLeg")
+		if e.Body.LeftLeg.SharpDamage > sharpDamageUntilSevered {
+			e.RemoveLimb("LeftLeg")
 		}
 		return 
 	case "RightHand":
-		if p.Body.RightArm.Hand == nil {
+		if e.Body.RightArm.Hand == nil {
 			fmt.Println("The target has no right hand to attack")
 			return
 		}
-		p.Body.RightArm.Hand.BluntDamage += damage.AmountBluntDamage
-		p.Body.RightArm.Hand.SharpDamage += damage.AmountSharpDamage
+		e.Body.RightArm.Hand.BluntDamage += damage.AmountBluntDamage
+		e.Body.RightArm.Hand.SharpDamage += damage.AmountSharpDamage
 
-		if p.Body.RightArm.Hand.BluntDamage > bluntDamageUntilBroken {
-			p.Body.RightArm.Hand.IsBroken = true
-			p.Body.RightArm.Hand.Items = nil
+		if e.Body.RightArm.Hand.BluntDamage > bluntDamageUntilBroken {
+			e.Body.RightArm.Hand.IsBroken = true
+			e.Body.RightArm.Hand.Items = nil
 		}
-		if p.Body.RightArm.Hand.SharpDamage > sharpDamageUntilBleeding {
-			p.Body.RightArm.Hand.IsBleeding = true
+		if e.Body.RightArm.Hand.SharpDamage > sharpDamageUntilBleeding {
+			e.Body.RightArm.Hand.IsBleeding = true
 		}
-		if p.Body.RightArm.Hand.SharpDamage > sharpDamageUntilSevered {
-			p.RemoveLimb("RightHand")
+		if e.Body.RightArm.Hand.SharpDamage > sharpDamageUntilSevered {
+			e.RemoveLimb("RightHand")
 		}
 		return 
 	case "LeftHand":
-		if p.Body.LeftArm.Hand == nil {
+		if e.Body.LeftArm.Hand == nil {
 			fmt.Println("The target has no left hand to attack")
 			return
 		}
-		p.Body.LeftArm.Hand.BluntDamage += damage.AmountBluntDamage
-		p.Body.LeftArm.Hand.SharpDamage += damage.AmountSharpDamage
+		e.Body.LeftArm.Hand.BluntDamage += damage.AmountBluntDamage
+		e.Body.LeftArm.Hand.SharpDamage += damage.AmountSharpDamage
 
-		if p.Body.LeftArm.Hand.BluntDamage > bluntDamageUntilBroken {
-			p.Body.LeftArm.Hand.IsBroken = true
-			p.Body.LeftArm.Hand.Items = nil
+		if e.Body.LeftArm.Hand.BluntDamage > bluntDamageUntilBroken {
+			e.Body.LeftArm.Hand.IsBroken = true
+			e.Body.LeftArm.Hand.Items = nil
 		}
-		if p.Body.LeftArm.Hand.SharpDamage > sharpDamageUntilBleeding {
-			p.Body.LeftArm.Hand.IsBleeding = true
+		if e.Body.LeftArm.Hand.SharpDamage > sharpDamageUntilBleeding {
+			e.Body.LeftArm.Hand.IsBleeding = true
 		}
-		if p.Body.LeftArm.Hand.SharpDamage > sharpDamageUntilSevered {
-			p.RemoveLimb("LeftHand")
+		if e.Body.LeftArm.Hand.SharpDamage > sharpDamageUntilSevered {
+			e.RemoveLimb("LeftHand")
 		}
 	}
 		

@@ -3,11 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"time"
 )
 
 // NewBrain creates a new Brain and assigns an owner to it.
-func NewBrain() *Brain {
+func NewBrain(Owner *Entity) *Brain {
     ctx, cancel := context.WithCancel(context.Background())
     return &Brain{
         Active:  false,
@@ -22,97 +21,20 @@ func NewBrain() *Brain {
         PainLevel: 0,
         PainTolerance: 100,
         IsAlive:    true,
+        CanBreath: true,
         BrainDamage: 0,
         IsUnderAttack: IsUnderAttack{false, nil, "", ""}, 
         Memories: Memories{make([]Memory, 0), make([]Memory, 0)},
         MotorCortexCurrentTask : MotorCortexAction{"None", "Idle", Location{0, 0}, false, false},
 
         PhysiologicalNeeds: PhysiologicalNeeds{0, 0, false, false, false, true, false, true, 100, false, false, true, false},
-    }
-}
 
-func NewHumanBrain() *HumanBrain {
-    return &HumanBrain{
-        Brain: *NewBrain(),
-        Owner: nil,
-    }
-}
-
-func NewAnimalBrain() *AnimalBrain {
-    return &AnimalBrain{
-        Brain: *NewBrain(),
-        Owner: nil,
-    }
-}
-
-// MotorCortex is a function that handles the motor cortex of the brain
-func (b *HumanBrain) MotorCortex() {
-    if b.MotorCortexCurrentTask.ActionType == "Idle" {
-        return
-    } 
-    fmt.Println(b.Owner.FullName + "'s motor cortex is executing the task.")
-
-    switch b.MotorCortexCurrentTask.ActionType {
-    case "Walk":
-        success := b.WalkOverPath(b.MotorCortexCurrentTask.TargetLocation.X, b.MotorCortexCurrentTask.TargetLocation.Y)
-        if !success {
-            fmt.Println(b.Owner.FullName + " is unable to walk to the location.")
-        } else {
-            fmt.Println(b.Owner.FullName + " has arrived at the location.")
-            b.MotorCortexCurrentTask = MotorCortexAction{"Drink water", "Walk", Location{b.Owner.Location.X, b.Owner.Location.Y}, false, true}
-        }
-    case "Run":
-        //b.RunOverPath(closestWater.Location.X, closestWater.Location.Y)
-    }
-}
-
-// SensoryCortex is a function that handles the sensory cortex of the brain
-func (b *HumanBrain) SensoryCortex() {
-    
-}
-
-// MainLoop is the main loop of the brain that handles the person's actions
-func (b *HumanBrain) MainLoop() {
-    for {
-        select {
-        case <-b.Ctx.Done():
-            b.Active = false
-            return
-        default:
-            if !b.Active {
-                return
-            }
-
-            if !b.IsConscious {
-                fmt.Println(b.Owner.FullName + "'s brain is not conscious but still alive.")
-                return
-            }
-
-            if b.IsUnderAttack.Active {
-                b.IsUnderAttackHandler()
-            }
-
-            b.OxygenHandler()
-
-            b.PainHandler()
-            b.FoodHandler()
-            b.ThirstHandler()
-
-            b.ClearWants()
-            b.HomoSapiensCalculateWant()
-            b.TranslateWantToTaskList()
-
-            b.performActions()
-            go b.MotorCortex()
-
-            // Sleep for 2 seconds
-            time.Sleep(2000 * time.Millisecond)
-        }
+        Owner: Owner,
     }
 }
 
 // OxygenHandler is a function that handles the oxygen level of the person
-func (b *HumanBrain) OxygenHandler() {
+func (b *Brain) OxygenHandler() {
     if b.CheckIfCanBreath() {
         b.Breath()
     } else {
@@ -129,12 +51,12 @@ func (b *HumanBrain) OxygenHandler() {
 }
 
 // IncreaseHungerLevel is a function that increases the hunger level of the person
-func (b *HumanBrain) IncreaseHungerLevel() {
+func (b *Brain) IncreaseHungerLevel() {
     b.PhysiologicalNeeds.Hunger += 1
 }
 
 //DecreaseHungerLevel is a function that decreases the hunger level of the person
-func (b *HumanBrain) DecreaseHungerLevel(amount int) {
+func (b *Brain) DecreaseHungerLevel(amount int) {
     b.PhysiologicalNeeds.Hunger -= amount
     if b.PhysiologicalNeeds.Hunger < 0 {
         b.PhysiologicalNeeds.Hunger = 0
@@ -143,12 +65,12 @@ func (b *HumanBrain) DecreaseHungerLevel(amount int) {
 }
 
 //IncreaseThirstLevel is a function that increases the thirst level of the person
-func (b *HumanBrain) IncreaseThirstLevel() {
+func (b *Brain) IncreaseThirstLevel() {
     b.PhysiologicalNeeds.Thirst += 1
 }
 
 //DecreaseThirstLevel is a function that decreases the thirst level of the person
-func (b *HumanBrain) DecreaseThirstLevel(amount int) {
+func (b *Brain) DecreaseThirstLevel(amount int) {
     b.PhysiologicalNeeds.Thirst -= amount
     if b.PhysiologicalNeeds.Thirst < 0 {
         b.PhysiologicalNeeds.Thirst = 0
@@ -157,17 +79,17 @@ func (b *HumanBrain) DecreaseThirstLevel(amount int) {
 }
 
 // FoodHandler is a function that handles the food level of the person
-func (b *HumanBrain) FoodHandler() {
+func (b *Brain) FoodHandler() {
     b.IncreaseHungerLevel()
 }
 
 // ThirstHandler is a function that handles the thirst level of the person
-func (b *HumanBrain) ThirstHandler() {
+func (b *Brain) ThirstHandler() {
     b.IncreaseThirstLevel()
 }
 
 // IsUnderAttackHandler is a function that handles the person being under attack
-func (b *HumanBrain) IsUnderAttackHandler() {
+func (b *Brain) IsUnderAttackHandler() {
     if b.IsUnderAttack.Active && !b.IsUnderAttack.From.Brain.IsConscious {
         b.IsUnderAttack = IsUnderAttack{false, b.IsUnderAttack.From, "", ""}
         fmt.Println(b.Owner.FullName + " is no longer under attack because attacker is unconscious.")
@@ -178,15 +100,4 @@ func (b *HumanBrain) IsUnderAttackHandler() {
         b.AddMemoryToShortTerm("Under attack", b.IsUnderAttack.From.FullName, b.IsUnderAttack.From.Location)
         b.AddMemoryToLongTerm("Under attack", b.IsUnderAttack.From.FullName, b.IsUnderAttack.From.Location)
     }
-}
-
-
-// Helper function that goes through the observation list and returns a boolean if the person is there
-func (v Vision) HasPerson(fullName string) bool {
-    for _, person := range v.Persons {
-        if person.FullName == fullName {
-            return true
-        }
-    }
-    return false
 }

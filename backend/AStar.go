@@ -55,7 +55,7 @@ func heuristic(x1, y1, x2, y2 int) float64 {
 }
 
 // AStar performs the A* pathfinding algorithm.
-func (b *HumanBrain) AStar(startX, startY, goalX, goalY int) []*Node {
+func (b *Brain) AStar(startX, startY, goalX, goalY int) []*Node {
 	openList := &PriorityQueue{}
 	heap.Init(openList)
 
@@ -123,7 +123,7 @@ func reversePath(path []*Node) {
 }
 
 // getNeighbors returns the neighboring nodes for the current node.
-func (b *HumanBrain) getNeighbors(node *Node) []*Node {
+func (b *Brain) getNeighbors(node *Node) []*Node {
 	neighbors := []*Node{}
 	directions := [][2]int{{0, 1}, {1, 0}, {0, -1}, {-1, 0}}
 

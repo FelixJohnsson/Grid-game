@@ -2,52 +2,9 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 )
 
 // ---------------- Actions ----------------
-
-// ClearAirway - Clear the airway of the person - Nose or Mouth
-func (e *Entity) ClearAirway(action TargetedAction) {
-    randomNumber := rand.Intn(100)
-	fmt.Println("Trying to clear airway of the mouth")
-
-    if action.Target == "Mouth" && randomNumber < 20 {
-        e.Body.Head.Mouth.IsObstructed = false
-        e.RemoveActionFromActionList(action)
-        fmt.Println(e.Owner.FullName + " cleared the airway of the mouth.")
-        return
-    }
-    if action.Target == "Nose" && randomNumber < 20 {
-        e.Owner.Body.Head.Nose.IsObstructed = false
-        e.RemoveActionFromActionList(action)
-        fmt.Println(e.Owner.FullName + " cleared the airway of the nose.")
-        return
-    }
-}
-
-// FixNose - Fix the nose of the person
-func (e *Entity) FixBrokenNose(action TargetedAction) {
-    randomNumber := rand.Intn(100)
-	fmt.Println("Trying to fix the nose")
-
-    if randomNumber < 20 {
-        e.Owner.Body.Head.Nose.IsBroken = false
-        e.RemoveActionFromActionList(action)
-        fmt.Println(e.Owner.FullName + " fixed the nose.")
-        e.ApplyPain(101)
-    }
-}
-
-// FindWaterSupply - Find a water supply
-func (e *Entity) FindWaterSupply(action TargetedAction) {
-    fmt.Println("Looking for water supply")
-    success := e.FindAndNote("Clean water")
-    if success {
-        e.RemoveActionFromActionList(action)
-    }
-
-}
 
 // MotorCortexFindDrinkWater - Drink water
 func (e *Entity) MotorCortexFindDrinkWater() {
@@ -67,15 +24,7 @@ func (e *Entity) MotorCortexFindDrinkWater() {
     }
 }
 
-// FindFoodSupply - Find a food supply
-func (e *Entity) FindFoodSupply(action TargetedAction) {
-    fmt.Println("Looking for food supply")
 
-    success := e.FindAndNote("Food supply")
-    if success {
-        e.RemoveActionFromActionList(action)
-    }
-}
 
 // HasFruitsThatAreEdible checks the plant produces fruit and theyre ripe and edible
 func (e *Entity) HasFruitsThatAreEdible(plant *Plant) bool {
@@ -258,7 +207,7 @@ func (e *Entity) MakeShelter(action TargetedAction) {
 // ImproveDefense - Improve defense
 func (e *Entity) ImproveDefense() bool {
     // Check the tile it's standing on
-    isTileEmpty := e.Owner.IsTileEmpty(e.Owner.Location.X, e.Owner.Location.Y)
+    isTileEmpty := e.IsTileEmpty(e.Owner.Location.X, e.Owner.Location.Y)
 
     if isTileEmpty {
         e.Owner.CombatSkill += 1
@@ -280,38 +229,3 @@ func (e *Entity) ImproveDefense() bool {
     return true
 }
 
-// Find - Find a target
-func (e *Entity) FindAndNote(target string) bool {
-    // Find whatever the target is
-    // For example, find water, find food, find shelter, find a person, etc.
-
-    switch target {
-    case "Clean water":
-        fmt.Println("Check vision for water supply")
-        vision := e.Owner.WorldProvider.GetWaterInVision(e.Owner.Location.X, e.Owner.Location.Y, e.Owner.VisionRange)
-        for _, TileInVision := range vision {
-            if TileInVision.Type == 1 {
-                fmt.Println("Found water supply at", TileInVision.Location.X, TileInVision.Location.Y)
-                e.AddMemoryToLongTerm("Found water supply", "Water", TileInVision.Location)
-                e.PhysiologicalNeeds.WayOfGettingWater = true
-                return true
-            }
-        }
-    case "Food supply":
-        fmt.Println("Check vision for food supply")
-        vision := e.Owner.WorldProvider.GetPlantsInVision(e.Owner.Location.X, e.Owner.Location.Y, e.Owner.VisionRange)
-        for _, PlantInVision := range vision {
-            if PlantInVision.ProducesFruit {
-                if e.HasFruitsThatAreEdible(PlantInVision) {
-                    fmt.Println("Found food supply at", PlantInVision.Location.X, PlantInVision.Location.Y)
-                    e.AddMemoryToLongTerm("Found food supply", "Food", PlantInVision.Location)
-                    e.PhysiologicalNeeds.WayOfGettingFood = true
-                    return true
-                }
-            }
-        }
-    case "Shelter":
-        return false
-    }
-    return false
-}

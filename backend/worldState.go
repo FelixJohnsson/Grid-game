@@ -5,20 +5,21 @@ import (
 )
 
 type WorldAccessor interface {
-	GetPersonInVision(x, y, visionRange int) []PersonInVision
+	GetEntityInVision(x, y, visionRange int) []EntityInVision
 	GetWaterInVision(x, y, visionRange int) []Tile
 	// Returns a Tile slice of grass tiles in the vision of the person at the given location, up to the given range.
 	GetGrassInVision(x, y, visionRange int) []Tile
 	GetPlantsInVision(x, y, visionRange int) []*Plant
 	
-	GetPersonByFullName(FullName string) *Person
+	GetPersonByFullName(FullName string) *Entity
 	GetTileType(x, y int) TileType
 	GetTile(x, y int) Tile
+	IsTileEmpty(x, y int) bool
 	IsAdjacent(x1, y1, x2, y2 int) bool
 	CalculateDistance(x1, y1, x2, y2 int) int
 	CanWalk(x, y int) bool
 
-	MovePerson(person *Person, newX, newY int)
+	MoveEntity(entity *Entity, newX, newY int)
 
 	AddItem(x, y int, item *Item)
 	DestroyItem(item *Item)
@@ -70,14 +71,32 @@ func (w *World) GetTiles() [][]Tile {
 	return w.Tiles
 }
 
+// IsTileWater - Check if the person is standing on water
+func (w *World) IsTileWater(x, y int) bool {
+	tile := w.GetTile(x, y)
+	if tile.Type == Water {
+		return true
+	}
+	return false
+}
+
+// IsTileEmpty - Check if a tile is empty
+func (w *World) IsTileEmpty(x, y int) bool {
+	tile := w.GetTile(x, y)
+	if tile.Shelter == nil && tile.Plant == nil && tile.Entity == nil  {
+		return true
+	}
+	return false
+}
+
 // CanWalk returns true if the person can walk on the tile at the given location.
 func (w *World) CanWalk(x, y int) bool {
 	return w.Tiles[y][x].Type != Mountain
 }
 
-// GetPersonInVision returns the vision of the person at the given location, up to the given range.
-func (w *World) GetPersonInVision(x, y, visionRange int) []PersonInVision {
-	var persons []PersonInVision
+// GetEntityInVision returns the vision of the person at the given location, up to the given range.
+func (w *World) GetEntityInVision(x, y, visionRange int) []EntityInVision {
+	var persons []EntityInVision
 
 	for i := -visionRange; i <= visionRange; i++ {
 		for j := -visionRange; j <= visionRange; j++ {
@@ -85,14 +104,14 @@ func (w *World) GetPersonInVision(x, y, visionRange int) []PersonInVision {
 
 			if tx >= 0 && tx < len(w.Tiles[0]) && ty >= 0 && ty < len(w.Tiles) {
 				tile := w.Tiles[ty][tx]
-					cleanedPerson := PersonInVision{
-						FirstName:  tile.Person.FirstName,
-						FamilyName: tile.Person.FamilyName,
-						Gender:     tile.Person.Gender,
-						Age:        tile.Person.Age,
-						Title:      tile.Person.Title,
-						Location:   tile.Person.Location,
-						Body:       tile.Person.Body,
+					cleanedPerson := EntityInVision{
+						FirstName:  tile.Entity.FirstName,
+						FamilyName: tile.Entity.FamilyName,
+						Gender:     tile.Entity.Gender,
+						Age:        tile.Entity.Age,
+						Title:      tile.Entity.Title,
+						Location:   tile.Entity.Location,
+						Body:       tile.Entity.Body,
 					}
 
 					persons = append(persons, cleanedPerson)
@@ -185,21 +204,16 @@ func (w *World) IsAdjacent(x1, y1, x2, y2 int) bool {
 }
 
 // AddPerson adds a person to the tile at the given location.
-func (w *World) AddPerson(x, y int, person *Person) {
-	w.Tiles[y][x].Person = person
-}
-
-// AddAnimal adds an animal to the tile at the given location.
-func (w *World) AddAnimal(x, y int, animal *Animal) {
-	w.Tiles[y][x].Animal = animal
+func (w *World) AddPerson(x, y int, entity *Entity) {
+	w.Tiles[y][x].Entity = entity
 }
 
 // GetPersonByFullName returns the person with the given full name in the world.
-func (w *World) GetPersonByFullName(FullName string) *Person {
+func (w *World) GetPersonByFullName(FullName string) *Entity {
 	for _, row := range w.Tiles {
 		for _, tile := range row {
-			if tile.Person.FullName == FullName {
-				return tile.Person
+			if tile.Entity.FullName == FullName {
+				return tile.Entity
 			}
 		}
 	}
@@ -212,32 +226,32 @@ func (w *World) GetTileType(x, y int) TileType {
 }
 
 // GetPersons returns the persons at the given location.
-func (w *World) GetPersons(x, y int) *Person {
+func (w *World) GetPersons(x, y int) *Entity {
 	tile := w.Tiles[y][x]
 
-	return tile.Person
+	return tile.Entity
 }
 
 // GetAllPersons returns all the persons in the world.
-func (w *World) GetAllPersons() []*Person {
-	var persons []*Person
+func (w *World) GetAllPersons() []*Entity {
+	var persons []*Entity
 
 	for _, row := range w.Tiles {
 		for _, tile := range row {
-			persons = append(persons, tile.Person)
+			persons = append(persons, tile.Entity)
 		}
 	}
 
 	return persons
 }
 
-// RemovePerson removes the person with the given full name and coordinates from the world.
-func (w *World) RemovePerson(person *Person, x, y int) bool {
+// RemoveEntity removes the person with the given full name and coordinates from the world.
+func (w *World) RemoveEntity(entity *Entity, x, y int) bool {
 	tile := w.Tiles[y][x]
 
 	// Remove the person from the tile
-	if tile.Person == person {
-		tile.Person = nil
+	if tile.Entity == entity {
+		tile.Entity = nil
 		w.Tiles[y][x] = tile
 		return true
 	} else {
@@ -245,14 +259,14 @@ func (w *World) RemovePerson(person *Person, x, y int) bool {
 	}
 }
 
-// MovePerson moves the person with the given full name to the new location.
-func (w *World) MovePerson(person *Person, newX, newY int) {
-	oldX, oldY := person.Location.X, person.Location.Y
+// MoveEntity moves the person with the given full name to the new location.
+func (w *World) MoveEntity(entity *Entity, newX, newY int) {
+	oldX, oldY := entity.Location.X, entity.Location.Y
 
-	w.RemovePerson(person, oldX, oldY)
-	w.AddPerson(newX, newY, person)
+	w.RemoveEntity(entity, oldX, oldY)
+	w.AddPerson(newX, newY, entity)
 	
-	person.UpdateLocation(newX, newY)
+	entity.UpdateLocation(newX, newY)
 }
 
 // AddItem adds an item to the tile at the given location.

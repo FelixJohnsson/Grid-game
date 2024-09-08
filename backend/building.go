@@ -25,34 +25,22 @@ type Building struct {
 	Name      string
 	State     BuildingState
 	Location  Location
-	Workers   []*Person
+	Workers   []*Entity
 	Inventory []*Item
 }
 
 type Shelter struct {
 	OwnerName   string
 	Location    Location
-	Inhabitants []*Person
+	Inhabitants []*Entity
 	Inventory   []*Item
 }
 
-func NewBuilding(x, y int, buildingType BuildingType) *Building {
-	building := &Building{
-		Type:      buildingType,
-		Name:      string(buildingType),
-		State:     Idle,
-		Location:  Location{X: x, Y: y},
-		Workers:   []*Person{},
-		Inventory: []*Item{},
-	}
-	return building
-}
-
-func NewShelter(x, y int, owner *Person) *Shelter {
+func NewShelter(x, y int, owner *Entity) *Shelter {
 	shelter := &Shelter{
 		OwnerName:   owner.FullName,
 		Location:    Location{X: x, Y: y},
-		Inhabitants: []*Person{},
+		Inhabitants: []*Entity{},
 		Inventory:   []*Item{},
 	}
 	return shelter

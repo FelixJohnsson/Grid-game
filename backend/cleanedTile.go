@@ -1,64 +1,35 @@
 package main
 
-// CleanPerson is a function that cleans a Person struct
-func (w *World) CleanPerson(Person *Person) PersonCleaned {
-	return PersonCleaned{
-				FirstName:  Person.FirstName,
-				FamilyName: Person.FamilyName,
-				FullName:   Person.FullName,
-				Gender:     Person.Gender,
-				Age:        Person.Age,
-				Title:      Person.Title,
-				Location:   Person.Location,
-				Thinking:   Person.Thinking,
-				Head:       Person.Body.Head,
-				Torso:      Person.Body.Torso,
-				RightArm:   Person.Body.RightArm,
-				LeftArm:    Person.Body.LeftArm,
-				RightLeg:   Person.Body.RightLeg,
-				LeftLeg:    Person.Body.LeftLeg,
+// CleanEntity is a function that cleans a Person struct
+func (w *World) CleanEntity(Entity *Entity) EntityCleaned {
+	return EntityCleaned{
+				FirstName:  Entity.FirstName,
+				FamilyName: Entity.FamilyName,
+				FullName:   Entity.FullName,
+				Gender:     Entity.Gender,
+				Age:        Entity.Age,
+				Title:      Entity.Title,
+				Location:   Entity.Location,
+				Thinking:   Entity.Thinking,
+				Head:       Entity.Body.Head,
+				Torso:      Entity.Body.Torso,
+				RightArm:   Entity.Body.RightArm,
+				LeftArm:    Entity.Body.LeftArm,
+				RightLeg:   Entity.Body.RightLeg,
+				LeftLeg:    Entity.Body.LeftLeg,
 
-				Strength:         Person.Strength,
-				Agility:          Person.Agility,
-				Intelligence:     Person.Intelligence,
-				Charisma:         Person.Charisma,
-				Stamina:          Person.Stamina,
-				CombatExperience: Person.CombatExperience,
-				CombatSkill:      Person.CombatSkill,
-				CombatStyle:      Person.CombatStyle,
-				IsIncapacitated:  Person.IsIncapacitated,
-				Relationships:    Person.Relationships,
+				Strength:         Entity.Strength,
+				Agility:          Entity.Agility,
+				Intelligence:     Entity.Intelligence,
+				Charisma:         Entity.Charisma,
+				Stamina:          Entity.Stamina,
+				CombatExperience: Entity.CombatExperience,
+				CombatSkill:      Entity.CombatSkill,
+				CombatStyle:      Entity.CombatStyle,
+				IsIncapacitated:  Entity.IsIncapacitated,
+				Relationships:    Entity.Relationships,
 
-				CurrentTask:      Person.Brain.CurrentTask,
-			}
-}
-
-// CleanAnimal is a function that cleans a Person struct
-func (w *World) CleanAnimal(Animal *Animal) AnimalCleaned {
-	return AnimalCleaned{
-				FullName:   Animal.FullName,
-				Gender:     Animal.Gender,
-				Age:        Animal.Age,
-				Location:   Animal.Location,
-				Thinking:   Animal.Thinking,
-				Head:       Animal.Body.Head,
-				Torso:      Animal.Body.Torso,
-				RightFrontLeg:   Animal.Body.RightFrontLeg,
-				LeftFrontLeg:    Animal.Body.LeftFrontLeg,
-				RightBackLeg:   Animal.Body.RightBackLeg,
-				LeftBackLeg:    Animal.Body.LeftBackLeg,
-
-				Strength:         Animal.Strength,
-				Agility:          Animal.Agility,
-				Intelligence:     Animal.Intelligence,
-				Charisma:         Animal.Charisma,
-				Stamina:          Animal.Stamina,
-				CombatExperience: Animal.CombatExperience,
-				CombatSkill:      Animal.CombatSkill,
-				IsIncapacitated:  Animal.IsIncapacitated,
-				Relationships:    Animal.Relationships,
-
-				CurrentTask:      Animal.Brain.CurrentTask,
+				CurrentTask:      Entity.Brain.CurrentTask,
 			}
 }
 
@@ -83,13 +54,13 @@ func (w *World) CleanTiles() [][]CleanedTile {
 	for y, row := range tiles {
 		cleanedTiles[y] = make([]CleanedTile, len(row))
 		for x, tile := range row {
-			var cleanedPerson *PersonCleaned = nil
+			var cleanedEntity *EntityCleaned = nil
 			var cleanedPlant *PlantCleaned = nil
 			var shelter *Shelter = nil
 
-			if tile.Person != nil {
-				cleanedPersonVal := w.CleanPerson(tile.Person)
-				cleanedPerson = &cleanedPersonVal
+			if tile.Entity != nil {
+				cleanedEntityVal := w.CleanEntity(tile.Entity)
+				cleanedEntity = &cleanedEntityVal
 			}
 			if tile.Plant != nil {
 				cleanedPlantVal := w.CleanPlant(tile.Plant)
@@ -101,7 +72,7 @@ func (w *World) CleanTiles() [][]CleanedTile {
 
 			cleanedTiles[y][x] = CleanedTile{
 				Type:    tile.Type,
-				Person:  cleanedPerson,
+				Entity:  cleanedEntity,
 				Items:   tile.Items,
 				Plant:   cleanedPlant,
 				Shelter: shelter,

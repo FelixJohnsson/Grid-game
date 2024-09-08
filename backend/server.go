@@ -14,7 +14,7 @@ type DefaultResponse struct {
 	Status  int    `json:"status"`
 }
 type PersonResponse struct {
-	Message []*Person `json:"message"`
+	Message []*Entity `json:"message"`
 	Status  int      `json:"status"`
 }
 type BuildingResponse struct {
@@ -124,7 +124,7 @@ func (w *World) moveHandler(writer http.ResponseWriter, r *http.Request) {
 	}
 
 	// Move the person in the world
-	w.MovePerson(person, startingCoordinates.X, startingCoordinates.Y)
+	w.MoveEntity(person, startingCoordinates.X, startingCoordinates.Y)
 
 	response := WorldResponse{
 		Message: w.CleanTiles(),
@@ -163,7 +163,7 @@ func (w *World) grabHandler(writer http.ResponseWriter, r *http.Request) {
 		for _, item := range tile.Items {
 			if item.Name == grabRequest.ItemName {
 				// The item is found
-				person.GrabRight(item)
+				person.GrabWithRightHand(item)
 
 				// Remove the item from the tile
 				for i, tileItem := range tile.Items {

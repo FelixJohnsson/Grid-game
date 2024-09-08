@@ -8,8 +8,7 @@ import (
 
 // ----------------- Brain Functions -----------------
 
-// ----------------- Turn On and Off -----------------
-func (b *HumanBrain) turnOn() {
+func (b *Brain) turnOn() {
     if b.Active {
         fmt.Println("Brain is already active.")
         return
@@ -23,7 +22,7 @@ func (b *HumanBrain) turnOn() {
 
 }
 
-func (b *HumanBrain) turnOff() {
+func (b *Brain) turnOff() {
     if !b.Active {
         fmt.Println("Brain is already inactive.")
         return
@@ -36,7 +35,7 @@ func (b *HumanBrain) turnOff() {
 }
 
 // LooseConsciousness makes the person loose consciousness - duration is in seconds
-func (b *HumanBrain) LooseConsciousness(duration int) {
+func (b *Brain) LooseConsciousness(duration int) {
     b.IsConscious = false
     go func() {
         time.Sleep(time.Duration(duration) * time.Second)
@@ -48,13 +47,13 @@ func (b *HumanBrain) LooseConsciousness(duration int) {
 // ----------------- Memory Functions -----------------
 
 // AddMemoryToShortTerm adds a memory to the short term memory
-func (b *HumanBrain) AddMemoryToShortTerm(event string, details string, location Location) {
+func (b *Brain) AddMemoryToShortTerm(event string, details string, location Location) {
     memory := Memory{event, details, location}
     b.Memories.ShortTermMemory = append(b.Memories.ShortTermMemory, memory)
 }
 
 // AddMemoryToLongTerm adds a memory to the long term memory
-func (b *HumanBrain) AddMemoryToLongTerm(event string, details string, location Location) {
+func (b *Brain) AddMemoryToLongTerm(event string, details string, location Location) {
     memory := Memory{event, details, location}
     b.Memories.LongTermMemory = append(b.Memories.LongTermMemory, memory)
 }
@@ -63,7 +62,7 @@ func (b *HumanBrain) AddMemoryToLongTerm(event string, details string, location 
 // ----------------- Pain -----------------------------
 
 // PainHandler is a function that handles the pain level of the person
-func (b *HumanBrain) PainHandler() {
+func (b *Brain) PainHandler() {
     b.CalculatePainLevel()
 
     if b.PainLevel > b.PainTolerance {
@@ -76,12 +75,12 @@ func (b *HumanBrain) PainHandler() {
 }
 
 // ApplyPain - Apply pain to the person
-func (b *HumanBrain) ApplyPain(amount int) {
+func (b *Brain) ApplyPain(amount int) {
 	b.PainLevel += amount
 }
 
 // CalculatePainLevel - Calculate the pain level of the person
-func (b *HumanBrain) CalculatePainLevel() {
+func (b *Brain) CalculatePainLevel() {
     // We need to loop over the body parts and check if it's broken or bleeding
 
     if b.Owner.Body.Head != nil {
@@ -136,17 +135,17 @@ func (b *HumanBrain) CalculatePainLevel() {
 // ----------------- Oxygen levels -----------------
 
 // Breath 
-func (b *HumanBrain) Breath() {
+func (b *Brain) Breath() {
     b.OxygenLevel += 10
 }
 
 // ConsumeOxygen
-func (b *HumanBrain) ConsumeOxygen() {
+func (b *Brain) ConsumeOxygen() {
     b.OxygenLevel -= 10
 }
 
 // CheckIfCanBreah - Check if the person can breath
-func (b *HumanBrain) CheckIfCanBreath() bool {
+func (b *Brain) CheckIfCanBreath() bool {
     mouthCanBreath := b.Owner.Body.Head.Mouth != nil && !b.Owner.Body.Head.Mouth.IsObstructed
     noseCanBreath := b.Owner.Body.Head.Nose != nil && !b.Owner.Body.Head.Nose.IsObstructed && !b.Owner.Body.Head.Nose.IsBroken
 
@@ -154,7 +153,7 @@ func (b *HumanBrain) CheckIfCanBreath() bool {
 }
 
 // CheckIfWantIsAlreadyInList - Check if the want is already in the list
-func (b *HumanBrain) CheckIfWantIsAlreadyInList(want string) bool {
+func (b *Brain) CheckIfWantIsAlreadyInList(want string) bool {
     for _, w := range b.Owner.WantsTo {
         if w == want {
             return true
@@ -164,12 +163,12 @@ func (b *HumanBrain) CheckIfWantIsAlreadyInList(want string) bool {
 }
 
 // ClearWants - Clear the wants of the person
-func (b *HumanBrain) ClearWants() {
+func (b *Brain) ClearWants() {
     b.Owner.WantsTo = make([]string, 0)
 }
 
 // HomoSapiensCalculateWant - Calculate the want of the person
-func (b *HumanBrain) HomoSapiensCalculateWant() {
+func (b *Brain) HomoSapiensCalculateWant() {
     switch {
     case !b.CheckIfCanBreath() && !b.CheckIfWantIsAlreadyInList("Be able to breath"):
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Be able to breath")
@@ -199,7 +198,7 @@ func (b *HumanBrain) HomoSapiensCalculateWant() {
 }
 
 // IsTaskInActionList - Check if the task is already in the action list
-func (b *HumanBrain) IsTaskInActionList(task TargetedAction) bool {
+func (b *Brain) IsTaskInActionList(task TargetedAction) bool {
 	for _, action := range b.ActionList {
 		if action.Action == task.Action && action.Target == task.Target {
 			return true
@@ -209,7 +208,7 @@ func (b *HumanBrain) IsTaskInActionList(task TargetedAction) bool {
 }
 
 //RemoveActionFromActionList - Remove an action from the action list
-func (b *HumanBrain) RemoveActionFromActionList(action TargetedAction) {
+func (b *Brain) RemoveActionFromActionList(action TargetedAction) {
 	for i, a := range b.ActionList {
 		if a.Action == action.Action && a.Target == action.Target {
 			b.ActionList = append(b.ActionList[:i], b.ActionList[i+1:]...)
@@ -218,12 +217,12 @@ func (b *HumanBrain) RemoveActionFromActionList(action TargetedAction) {
 }
 
 // ClearCurrentTask - Clear the current task
-func (b *HumanBrain) ClearCurrentTask() {
+func (b *Brain) ClearCurrentTask() {
     b.CurrentTask = TargetedAction{"Idle", "Nothing", false, []BodyPartType{"Hands"}, 0}
 }
 
 // AddTaskToActionList - Add a task to the action list
-func (b *HumanBrain) AddTaskToActionList(task TargetedAction) {
+func (b *Brain) AddTaskToActionList(task TargetedAction) {
 	for i, action := range b.ActionList {
 		if action.Action == "Idle" {
 			b.ActionList = append(b.ActionList[:i], b.ActionList[i+1:]...)
@@ -233,12 +232,12 @@ func (b *HumanBrain) AddTaskToActionList(task TargetedAction) {
 }
 
 // ClearActionList - Clear the action list
-func (b *HumanBrain) ClearActionList() {
+func (b *Brain) ClearActionList() {
     b.ActionList = make([]TargetedAction, 0)
 }
 
 // Translate the want to a list of tasks with priorities
-func (b *HumanBrain) TranslateWantToTaskList() {
+func (b *Brain) TranslateWantToTaskList() {
     b.ClearActionList()
     if !b.CheckIfCanBreath() {
         if b.Owner.Body.Head.Mouth.IsObstructed {
@@ -340,7 +339,7 @@ func (b *HumanBrain) TranslateWantToTaskList() {
 // ----------------- Tasks ---------------------
 
 // Rank the tasks based on priority
-func (b *HumanBrain) RankTasks() TargetedAction {
+func (b *Brain) RankTasks() TargetedAction {
     highestPriority := 0
     highestPriorityAction := TargetedAction{"Idle", "Nothing", false, []BodyPartType{"Hands"}, 0}
 
@@ -354,7 +353,7 @@ func (b *HumanBrain) RankTasks() TargetedAction {
     return highestPriorityAction
 }
 
-func (b *HumanBrain) performActions() {
+func (b *Brain) PerformActions() {
     // Take the action with the highest priority
     action := b.RankTasks()
 
@@ -364,20 +363,8 @@ func (b *HumanBrain) performActions() {
     switch action.Action {
     case "Drink water":
         b.CurrentTask = action
-        if b.MotorCortexCurrentTask.ActionReason != "Drink water" && !b.MotorCortexCurrentTask.IsActive {
-            b.MotorCortexFindDrinkWater()
-            return
-        } else if b.MotorCortexCurrentTask.ActionReason == "Drink water" && !b.MotorCortexCurrentTask.Finished && b.MotorCortexCurrentTask.IsActive {
-            return
-        }
+        // Find water
 
-        if b.Owner.isStandingOnWater() && b.MotorCortexCurrentTask.ActionReason == "Drink water" && b.MotorCortexCurrentTask.Finished && !b.MotorCortexCurrentTask.IsActive {
-            water := Liquid{"Water"}
-            b.Drink(water)
-            b.AddMemoryToLongTerm("Found water supply", "Water", b.Owner.Location)
-            b.PhysiologicalNeeds.WayOfGettingWater = true
-            b.MotorCortexCurrentTask = MotorCortexAction{"None", "Idle", Location{0, 0}, false, false}
-        }
 
     case "Eat food":
         b.CurrentTask = action
@@ -385,12 +372,12 @@ func (b *HumanBrain) performActions() {
         b.ClearCurrentTask()
 	case "Clear airway":
         b.CurrentTask = action
-        b.ClearAirway(action)
+        b.Owner.ClearAirway(action)
         b.ClearCurrentTask()
 		return
     case "Fix nose":
         b.CurrentTask = action
-        b.FixBrokenNose(action)
+        b.Owner.FixBrokenNose(action)
         b.ClearCurrentTask()
 		return
 	case "Reduce pain":
@@ -400,13 +387,19 @@ func (b *HumanBrain) performActions() {
 		return
 	case "Find a water supply":
         b.CurrentTask = action
-		b.FindWaterSupply(action)
+		b.FindAndNoteWaterSupply()
         b.ClearCurrentTask()
 		return
 	case "Find a food supply":
         b.CurrentTask = action
-		b.FindFoodSupply(action)
-        b.ClearCurrentTask()
+		success := b.FindAndNoteFoodSupply()
+        
+        if success {
+            b.RemoveActionFromActionList(action)
+        } else {
+            b.CurrentTask = TargetedAction{"Find a food supply", "", true, []BodyPartType{"Legs"}, 90}
+            b.GoSearchFor("Food supply")
+        }
 		return
 	case "Have food for storage":
         b.CurrentTask = action
@@ -414,7 +407,7 @@ func (b *HumanBrain) performActions() {
         b.ClearCurrentTask()
     case "Find shelter":
         b.CurrentTask = action
-        b.FindAndNote("Shelter")
+
         b.ClearCurrentTask()
         return
     case "Make shelter":
@@ -435,9 +428,198 @@ func (b *HumanBrain) performActions() {
     }
 }
 
+// IsWaterInVision - Find a water supply in vision
+func (b *Brain) IsWaterInVision() bool {
+        vision := b.Owner.WorldProvider.GetWaterInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+        if len(vision) == 0 {
+            return false
+        }
+        return true
+}
+
+//IsWaterInMemory - Find a water supply in memory
+func (b *Brain) IsWaterInMemory() bool {
+    if len(b.Memories.LongTermMemory) == 0 && len(b.Memories.ShortTermMemory) == 0 {
+        return false
+    }
+    for _, memory := range b.Memories.LongTermMemory {
+        if memory.Event == "Found water supply" {
+            return true
+        }
+    }
+    for _, memory := range b.Memories.ShortTermMemory {
+        if memory.Event == "Found water supply" {
+            return true
+        }
+    }
+    return false
+}
+
+// FindAndNoteWaterSupply - Find a water supply and add it to the memory
+func (b *Brain) FindAndNoteWaterSupply() bool {
+        vision := b.Owner.WorldProvider.GetWaterInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+        if len(vision) == 0 {
+            return false
+        }
+        closestWater := b.FindClosestWaterSupply(vision)
+        b.AddMemoryToLongTerm("Found water supply", "Water", closestWater.Location)
+        b.PhysiologicalNeeds.WayOfGettingWater = true
+        return true
+}
+
+//FindClosestWater - Find the closest water from a list of water
+func (b *Brain) FindClosestWaterSupply(water []Tile) Tile {
+	closestWater := water[0]
+	for _, tile := range water {
+		if b.Owner.WorldProvider.CalculateDistance(b.Owner.Location.X, b.Owner.Location.Y, tile.Location.X, tile.Location.Y) < b.Owner.WorldProvider.CalculateDistance(b.Owner.Location.X, b.Owner.Location.Y, closestWater.Location.X, closestWater.Location.Y) {
+			closestWater = tile
+		}
+	}
+
+	return closestWater
+}
+
+// IsFoodInVision - Find a food supply in vision
+func (b *Brain) IsFoodInVision() bool {
+    vision := b.Owner.WorldProvider.GetPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+    if len(vision) == 0 {
+        return false
+    }
+    return true
+}
+
+// IsFoodInMemory - Find a food supply in memory
+func (b *Brain) IsFoodInMemory() bool {
+    if len(b.Memories.LongTermMemory) == 0 && len(b.Memories.ShortTermMemory) == 0 {
+        return false
+    }
+    for _, memory := range b.Memories.LongTermMemory {
+        if memory.Event == "Found food supply" {
+            return true
+        }
+    }
+    for _, memory := range b.Memories.ShortTermMemory {
+        if memory.Event == "Found food supply" {
+            return true
+        }
+    }
+    return false
+}
+
+// FindFoodSupply - Find a food supply
+func (b *Brain) FindAndNoteFoodSupply() bool {
+    vision := b.Owner.WorldProvider.GetPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+    if len(vision) == 0 {
+        return false
+    }
+    closestPlant := b.Owner.FindTheClosestPlant(vision)
+    if closestPlant != nil {
+        b.AddMemoryToLongTerm("Found food supply", "Food", closestPlant.Location)
+        b.PhysiologicalNeeds.WayOfGettingFood = true
+        return true
+    }
+    return false
+}
+
+// FindClosestFoodSupply - Find the closest food supply
+func (b *Brain) FindClosestFoodSupply(food []Tile) Tile {
+	closestFood := food[0]
+	for _, tile := range food {
+		if b.Owner.WorldProvider.CalculateDistance(b.Owner.Location.X, b.Owner.Location.Y, tile.Location.X, tile.Location.Y) < b.Owner.WorldProvider.CalculateDistance(b.Owner.Location.X, b.Owner.Location.Y, closestFood.Location.X, closestFood.Location.Y) {
+			closestFood = tile
+		}
+	}
+
+	return closestFood
+}
+
+// ----------------- Find ---------------------
+
+// GoSearchFor - Go search for something
+func (b *Brain) GoSearchFor(target string) {
+    switch target {
+    case "Water supply":
+        // Initialize the current task
+        b.CurrentTask = TargetedAction{"Searching for a water supply", "", true, []BodyPartType{"Legs"}, 90}
+        
+        // Get the entity's adventurousness (distance to travel)
+        distanceToTravel := b.Owner.Curiosity
+        
+        // Get the entity's current location
+        currentLocation := b.Owner.Location
+        
+        // The grid is 100x100, with the center at (50, 50)
+        xDistance := currentLocation.X - 50
+        yDistance := currentLocation.Y - 50
+        
+        // Initialize direction and new location variables
+        var direction string
+        newLocation := currentLocation
+        
+        // Calculate movement direction and update newLocation accordingly
+        if xDistance > 0 && yDistance > 0 {
+            direction = "Southwest" // Move to the left and downward
+            newLocation.X -= distanceToTravel
+            newLocation.Y += distanceToTravel
+        } else if xDistance > 0 && yDistance < 0 {
+            direction = "Northwest" // Move to the left and upward
+            newLocation.X -= distanceToTravel
+            newLocation.Y -= distanceToTravel
+        } else if xDistance < 0 && yDistance > 0 {
+            direction = "Southeast" // Move to the right and downward
+            newLocation.X += distanceToTravel
+            newLocation.Y += distanceToTravel
+        } else if xDistance < 0 && yDistance < 0 {
+            direction = "Northeast" // Move to the right and upward
+            newLocation.X += distanceToTravel
+            newLocation.Y -= distanceToTravel
+        } else if xDistance > 0 {
+            direction = "West" // Move directly to the left
+            newLocation.X -= distanceToTravel
+        } else if xDistance < 0 {
+            direction = "East" // Move directly to the right
+            newLocation.X += distanceToTravel
+        } else if yDistance > 0 {
+            direction = "South" // Move directly downward
+            newLocation.Y += distanceToTravel
+        } else if yDistance < 0 {
+            direction = "North" // Move directly upward
+            newLocation.Y -= distanceToTravel
+        } else {
+            direction = "At the center" // Already at the center
+        }
+        
+        // Ensure the new location stays within the grid (100x100 bounds)
+        if newLocation.X < 0 {
+            newLocation.X = 0
+        } else if newLocation.X > 100 {
+            newLocation.X = 100
+        }
+        
+        if newLocation.Y < 0 {
+            newLocation.Y = 0
+        } else if newLocation.Y > 100 {
+            newLocation.Y = 100
+        }
+        
+        // Log or assign the movement direction and new location
+        fmt.Printf("Moving %s to new location: (%d, %d)\n", direction, newLocation.X, newLocation.Y)
+        
+        // Optionally, update the owner's location
+        b.Owner.Location = newLocation
+
+    default:
+        // Handle other targets
+    }
+}
+
+
+
+
+// ----------------- Tash requests ------------
 
 // Receive a requested task from another person
-func (b *HumanBrain) ReceiveTaskRequest(requestedTask RequestedAction) bool {
+func (b *Brain) ReceiveTaskRequest(requestedTask RequestedAction) bool {
     fmt.Println(b.Owner.FullName + " received a task request from " + requestedTask.From.FullName)
     
     hasRelationship := b.Owner.hasRelationship(requestedTask.From.FullName)
@@ -461,7 +643,7 @@ func (b *HumanBrain) ReceiveTaskRequest(requestedTask RequestedAction) bool {
 }
 
 // Send a task request to another person
-func (b *HumanBrain) SendTaskRequest(to *Person, taskType string) {
+func (b *Brain) SendTaskRequest(to *Entity, taskType string) {
     if b.Owner.IsTalking.IsActive {
         fmt.Println(b.Owner.FullName + " is already talking to someone.")
         return 
@@ -481,7 +663,7 @@ func (b *HumanBrain) SendTaskRequest(to *Person, taskType string) {
 // ----------------- Safety ---------------------
 
 // UnderAttack is called when the person is being attacked
-func (b *HumanBrain) UnderAttack(attacker *Person, targettedLimb BodyPartType, attackersLimb BodyPartType) {
+func (b *Brain) UnderAttack(attacker *Entity, targettedLimb BodyPartType, attackersLimb BodyPartType) {
 	// Decide between fight or flight
 	if !b.Owner.Body.RightArm.IsBroken {
 		b.Owner.AttackWithArm(attacker, targettedLimb, b.Owner.Body.RightArm.Hand)
@@ -499,13 +681,13 @@ func (b *HumanBrain) UnderAttack(attacker *Person, targettedLimb BodyPartType, a
 // ----------------- Pathfinding ---------------------
 
 // Decide a path to the target location - Check first if it's physically possible to walk.
-func (b *HumanBrain) DecidePathTo(x, y int) []*Node {
+func (b *Brain) DecidePathTo(x, y int) []*Node {
     path := b.AStar(b.Owner.Location.X, b.Owner.Location.Y, x, y)
     return path
 }
 
 // WalkOverPath - Walk over the path that was decided
-func (b *HumanBrain) WalkOverPath(x, y int) bool {
+func (b *Brain) WalkOverPath(x, y int) bool {
     path := b.DecidePathTo(x, y)
     if path == nil {
         fmt.Println(b.Owner.FullName + " could not find a path to the location.")
@@ -524,7 +706,7 @@ func (b *HumanBrain) WalkOverPath(x, y int) bool {
 // ----------------- Items -------------------------
 
 // FindInOwnedItems - Find an item in the owned items
-func (b *HumanBrain) FindInOwnedItems(itemName string) *Item {
+func (b *Brain) FindInOwnedItems(itemName string) *Item {
     for _, item := range b.Owner.OwnedItems {
         if item.Name == itemName {
             return item
@@ -534,7 +716,7 @@ func (b *HumanBrain) FindInOwnedItems(itemName string) *Item {
 }
 
 // HasItemEquippedInRight - Check if the person has an item equipped in right hand
-func (b *HumanBrain) HasItemEquippedInRight(itemName string) bool {
+func (b *Brain) HasItemEquippedInRight(itemName string) bool {
     for _, item := range b.Owner.Body.RightArm.Hand.Items {
         if item.Name == itemName {
             return true
@@ -544,7 +726,7 @@ func (b *HumanBrain) HasItemEquippedInRight(itemName string) bool {
 }
 
 // HasItemEquippedInLeft - Check if the person has an item equipped in left hand
-func (b *HumanBrain) HasItemEquippedInLeft(itemName string) bool {
+func (b *Brain) HasItemEquippedInLeft(itemName string) bool {
     for _, item := range b.Owner.Body.LeftArm.Hand.Items {
         if item.Name == itemName {
             return true

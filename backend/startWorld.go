@@ -72,7 +72,7 @@ func InitializeWorld() *World {
 
 	// Create wolf
 	wolf := world.CreateNewAnimalByType("Wolf", 3, 3)
-	world.AddAnimal(3, 3, wolf)
+	world.AddEntity(3, 3, wolf)
 
 
 	stoneAxe := CreateNewItem("Stone Axe")
@@ -114,7 +114,7 @@ func InitializeWorld() *World {
 	return world
 }
 
-func TestAttack(w *World, person1 *Person, person2 *Person, d time.Duration) {
+func TestAttack(w *World, person1 *Entity, person2 *Entity, d time.Duration) {
 	damage := person1.AttackWithArm(person2, "Head", person1.Body.RightArm.Hand)
 			// This should probably return a result of the attack
 			if damage.AmountBluntDamage > 0 || damage.AmountSharpDamage > 0 {
