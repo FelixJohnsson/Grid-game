@@ -203,8 +203,8 @@ func (w *World) IsAdjacent(x1, y1, x2, y2 int) bool {
 	return (x1 == x2 && (y1 == y2+1 || y1 == y2-1)) || (y1 == y2 && (x1 == x2+1 || x1 == x2-1))
 }
 
-// AddPerson adds a person to the tile at the given location.
-func (w *World) AddPerson(x, y int, entity *Entity) {
+// AddEntity adds a person to the tile at the given location.
+func (w *World) AddEntity(x, y int, entity *Entity) {
 	w.Tiles[y][x].Entity = entity
 }
 
@@ -264,7 +264,7 @@ func (w *World) MoveEntity(entity *Entity, newX, newY int) {
 	oldX, oldY := entity.Location.X, entity.Location.Y
 
 	w.RemoveEntity(entity, oldX, oldY)
-	w.AddPerson(newX, newY, entity)
+	w.AddEntity(newX, newY, entity)
 	
 	entity.UpdateLocation(newX, newY)
 }

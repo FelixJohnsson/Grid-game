@@ -31,8 +31,8 @@ func (w *World) DisplayMap() {
 		fmt.Println()
 		for y := 0; y < w.Height; y++ {
 			for x := 0; x < w.Width; x++ {
-				if w.Tiles[x][y].Person != nil {
-					if w.Tiles[x][y].Person.Brain.IsAlive {
+				if w.Tiles[x][y].Entity != nil {
+					if w.Tiles[x][y].Entity.Brain.IsAlive {
 						fmt.Print(Red + "P" + Reset)
 					} else {
 						fmt.Print("X")
@@ -62,21 +62,16 @@ func InitializeWorld() *World {
 	world := NewWorld(100, 100)
 
 	// Create people
-	newPerson1 := world.createNewPerson(2, 2)
+	newPerson1 := world.CreateNewPerson(2, 2)
 	newPerson1.Title = "Leader"
 	newPerson1.Thinking = "I am the leader of this group."
 	newPerson1.Brain.PhysiologicalNeeds.Thirst = 70
 
-	world.AddPerson(2, 2, newPerson1)
-
-
 	// Create wolf
-	wolf := world.CreateNewAnimalByType("Wolf", 3, 3)
-	world.AddEntity(3, 3, wolf)
-
+	world.CreateNewAnimalEntity("Wolf", 3, 3)
 
 	stoneAxe := CreateNewItem("Stone Axe")
-	newPerson1.GrabRight(stoneAxe)
+	newPerson1.GrabWithRightHand(stoneAxe)
 
 
 	// Add a woven grass basket to the world

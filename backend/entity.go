@@ -6,7 +6,62 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 )
 
-func NewEntity(worldAccessor WorldAccessor, x, y int) *Entity {
+func NewAnimalEntity(worldAccessor WorldAccessor, species string, body *EntityBody, x, y int) *Entity {
+	Age := rand.Intn(10) + 2
+	FirstName := gofakeit.FirstName()
+	FamilyName := gofakeit.LastName()
+	Gender := gofakeit.Gender()
+
+	animal := &Entity{
+		Age:              Age,
+		Title:            "",
+		FirstName:        FirstName,
+		FamilyName:       FamilyName,
+		FullName:         FirstName + " " + FamilyName,
+		Initials:         string(FirstName[0]) + string(FamilyName[0]),
+		IsChild:          Age < 18,
+		Gender:           Gender,
+		Occupation:       Unemployed,
+		IsMoving:         TargetedAction{},
+		IsTalking:        TargetedAction{},
+		IsSitting:        TargetedAction{},
+		IsEating:         TargetedAction{},
+		IsSleeping:       TargetedAction{},
+		IsBleeding:       false,
+		Thinking:         "",
+		WantsTo:          make([]string, 0),
+		FeelingSafe: 	  0,
+		FeelingScared:    0,
+		Relationships:    []Relationship{},
+		Genes:            []string{},
+		Species:          species,
+
+		OwnedItems:       []*Item{},
+
+		VisionRange:      5,
+		Location:         Location{X: x, Y: y},
+		WorldProvider:    worldAccessor,
+		Body:			  body,
+		Brain:            nil,
+
+		Strength:         1,
+		Agility:          1,
+		Intelligence:     1,
+		Charisma:         1,
+		Stamina:          1,
+		Curiosity:        25,
+
+		CombatExperience: 1,
+		CombatSkill:      1,
+		CombatStyle:      "",
+	}
+
+	animal.Brain = NewBrain(animal)
+
+	return animal
+}
+
+func NewPersonEntity(worldAccessor WorldAccessor, x, y int) *Entity {
 	Age := rand.Intn(63) + 2
 	FirstName := gofakeit.FirstName()
 	FamilyName := gofakeit.LastName()
@@ -145,6 +200,19 @@ func (e *Entity) FindClosestEmptyGrass(grass []Tile) Tile {
 // ---------------- Create a new person ----------------
 
 func (w *World) CreateNewPerson(x, y int) *Entity {
-    person := NewEntity(w, x, y)
+    person := NewPersonEntity(w, x, y)
+
+	w.AddEntity(x, y, person)
+
     return person
+}
+
+func (w *World) CreateNewAnimalEntity(species string,x, y int) *Entity {
+	switch species {
+	case "Canis lupus":
+		wolf := NewAnimalEntity(w, species, CreateQuadrupedalBody(), x, y)
+		w.AddEntity(3, 3, wolf)
+	default:
+	}
+	return nil
 }

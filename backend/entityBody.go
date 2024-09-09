@@ -70,7 +70,7 @@ func CreateNewBodyPart(name string) *BodyPart {
 }
 
 func CreateNewHead() *Head {
-		limbStatus := CreateNewLimbStatus()
+	limbStatus := CreateNewLimbStatus()
 	head := Head{
 		LimbStatus: limbStatus,
 	}
@@ -112,7 +112,7 @@ func CreateBipedalBody() *EntityBody {
 		RightLeg: RightLeg,
 		LeftLeg:  LeftLeg,
 	}
-	return body // Return as Body interface
+	return body
 }
 
 func CreateBipedalWithTailBody() *EntityBody {
@@ -133,7 +133,7 @@ func CreateBipedalWithTailBody() *EntityBody {
 		LeftLeg:  LeftLeg,
 		Tail:     Tail,
 	}
-	return body // Return as Body interface
+	return body
 }
 
 // Create a new horse body and return as Body interface
@@ -155,5 +155,5 @@ func CreateQuadrupedalBody() *EntityBody {
 		LeftBackLeg:   LeftBackLeg,
 		Tail:          Tail,
 	}
-	return body // Return as Body interface
+	return body
 }
