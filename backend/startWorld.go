@@ -59,7 +59,7 @@ func (w *World) DisplayMap() {
 }
 
 func InitializeWorld() *World {
-	world := NewWorld(100, 100)
+	world := NewWorld(SIZE_OF_MAP, SIZE_OF_MAP)
 
 	// Create people
 	newPerson1 := world.CreateNewPersonEntity(2, 2, "Homo Sapiens")
@@ -98,11 +98,7 @@ func InitializeWorld() *World {
 	world.AddPlantToTheWorld(8, 8, "Oak Tree")
 
 	// Add water to the map to test the A* algorithm
-	world.SetTileType(0, 1, 1)
-	world.SetTileType(0, 2, 1)
-	world.SetTileType(0, 3, 1)
-	world.SetTileType(1, 2, 1)
-	world.SetTileType(1, 3, 1)
+	world.SetTileType(20, 2, 1)
 
 	newPerson1.Brain.turnOn()
 

@@ -4,6 +4,8 @@ import (
 	"math"
 )
 
+var SIZE_OF_MAP = 100
+
 type WorldAccessor interface {
 	GetEntityInVision(x, y, visionRange int) []EntityInVision
 	GetWaterInVision(x, y, visionRange int) []Tile
@@ -74,10 +76,7 @@ func (w *World) GetTiles() [][]Tile {
 // IsTileWater - Check if the person is standing on water
 func (w *World) IsTileWater(x, y int) bool {
 	tile := w.GetTile(x, y)
-	if tile.Type == Water {
-		return true
-	}
-	return false
+	return tile.Type == Water
 }
 
 // IsTileEmpty - Check if a tile is empty

@@ -137,7 +137,7 @@ type Entity struct {
 // ----------------- Brain ------------------
 
 type TargetedAction struct {
-	Action string
+	Action TaskType
 	Target string
 	IsActive bool
 	RequiresLimb []BodyPartType
