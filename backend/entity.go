@@ -61,7 +61,7 @@ func NewAnimalEntity(worldAccessor WorldAccessor, species string, body *EntityBo
 	return animal
 }
 
-func NewPersonEntity(worldAccessor WorldAccessor, x, y int) *Entity {
+func NewPersonEntity(worldAccessor WorldAccessor, x, y int, species string) *Entity {
 	Age := rand.Intn(63) + 2
 	FirstName := gofakeit.FirstName()
 	FamilyName := gofakeit.LastName()
@@ -90,7 +90,7 @@ func NewPersonEntity(worldAccessor WorldAccessor, x, y int) *Entity {
 		FeelingScared:    0,
 		Relationships:    []Relationship{},
 		Genes:            []string{},
-		Species:          "Homo Sapiens",
+		Species:          species,
 
 		OwnedItems:       []*Item{},
 
@@ -199,8 +199,8 @@ func (e *Entity) FindClosestEmptyGrass(grass []Tile) Tile {
 
 // ---------------- Create a new person ----------------
 
-func (w *World) CreateNewPerson(x, y int) *Entity {
-    person := NewPersonEntity(w, x, y)
+func (w *World) CreateNewPersonEntity(x, y int, species string) *Entity {
+    person := NewPersonEntity(w, x, y, species)
 
 	w.AddEntity(x, y, person)
 

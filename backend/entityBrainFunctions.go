@@ -14,12 +14,91 @@ func (b *Brain) turnOn() {
         return
     }
 
-    fmt.Println("Brain is turning on for", b.Owner.Species)
 
     b.IsConscious = true
     b.Active = true
+    go b.MotorCortex()
+    fmt.Println("Motor cortex is turning on for", b.Owner.Species)
     go b.MainLoop()
+    fmt.Println("Brain is turning on for", b.Owner.Species)
+}
 
+
+func (b *Brain) MainLoop() {
+    for {
+        select {
+        case <-b.Ctx.Done():
+            b.Active = false
+            return
+        default:
+            if !b.Active {
+                return
+            }
+
+            if !b.IsConscious {
+                fmt.Println(b.Owner.FullName + "'s brain is not conscious but still alive.")
+                return
+            }
+
+            if b.IsUnderAttack.Active {
+                b.IsUnderAttackHandler()
+            }
+
+            b.OxygenHandler()
+
+            b.PainHandler()
+            b.FoodHandler()
+            b.ThirstHandler()
+
+            b.ClearWants()
+            b.HomoSapiensCalculateWant()
+            b.TranslateWantToTaskList()
+
+            b.ActionHandler()
+
+            // Sleep for 2 seconds
+            time.Sleep(2000 * time.Millisecond)
+        }
+    }
+}
+// MotorCortex is handling all the task that require motor function, for example walking. This is it's own task list.
+func (b *Brain) MotorCortex() {
+    for {
+        select {
+        case <-b.Ctx.Done():
+            return
+        default:
+            if !b.Active {
+                return
+            }
+
+            if !b.IsConscious {
+                fmt.Println(b.Owner.FullName + "'s brain is not conscious but still alive.")
+                return
+            }
+
+            if b.MotorCortexCurrentTask.ActionType == "Walk" && !b.MotorCortexCurrentTask.Finished {
+                path := b.DecidePathTo(b.MotorCortexCurrentTask.TargetLocation.X, b.MotorCortexCurrentTask.TargetLocation.Y)
+                if path == nil {
+                    return 
+                } else {
+                    fmt.Println("The target location is", b.MotorCortexCurrentTask.TargetLocation.X, b.MotorCortexCurrentTask.TargetLocation.Y)
+                    fmt.Println("We're at: ", b.Owner.Location.X, b.Owner.Location.Y)
+                    b.TakeStepOverPath(b.MotorCortexCurrentTask)
+                    fmt.Println("We're NOW at: ", b.Owner.Location.X, b.Owner.Location.Y)
+
+                    if b.MotorCortexCurrentTask.TargetLocation.X == b.Owner.Location.X && b.MotorCortexCurrentTask.TargetLocation.Y == b.Owner.Location.Y {
+                        fmt.Println("The motor cortex thinks we've arrived at the target location.")
+                        b.MotorCortexCurrentTask.Finished = true
+                        b.MotorCortexCurrentTask.IsActive = false
+                    }
+                }
+            }
+
+            // Sleep for .5 seconds
+            time.Sleep(1000 * time.Millisecond)
+        }
+    }
 }
 
 func (b *Brain) turnOff() {
@@ -353,22 +432,35 @@ func (b *Brain) RankTasks() TargetedAction {
     return highestPriorityAction
 }
 
-func (b *Brain) PerformActions() {
+func (b *Brain) ActionHandler() {
     // Take the action with the highest priority
     action := b.RankTasks()
-
-    fmt.Println(b.Owner.FullName + " is performing the action: " + action.Action)
 
     // Perform the action
     switch action.Action {
     case "Drink water":
         b.CurrentTask = action
-        // Find water
 
+        if b.MotorCortexCurrentTask.ActionReason == "Drink water" && b.MotorCortexCurrentTask.Finished {
+            fmt.Println(b.Owner.FullName + " has arrived at the location.")
+            water := Liquid{"Water"}
+            b.Owner.Drink(water)
+            return
+        }
 
+        fmt.Println("Motor cortex task: ", b.MotorCortexCurrentTask)
+
+        success := b.FindAndNoteWaterSupply()
+
+        if success {
+            water := b.GetWaterInVision()
+            closestWater := b.FindClosestWaterSupply(water)
+            b.MotorCortexCurrentTask = MotorCortexAction{"Drink water", "Walk", Location{closestWater.Location.X, closestWater.Location.Y}, false, false}
+        } else {
+            fmt.Println(b.Owner.FullName + " is unable to find a water supply.")
+        }
     case "Eat food":
         b.CurrentTask = action
-        b.EatFruit()
         b.ClearCurrentTask()
 	case "Clear airway":
         b.CurrentTask = action
@@ -403,7 +495,6 @@ func (b *Brain) PerformActions() {
 		return
 	case "Have food for storage":
         b.CurrentTask = action
-		b.GetFoodForStorage(action)
         b.ClearCurrentTask()
     case "Find shelter":
         b.CurrentTask = action
@@ -413,13 +504,11 @@ func (b *Brain) PerformActions() {
     case "Make shelter":
         fmt.Println(b.Owner.FullName + " is making a shelter.")
         b.CurrentTask = action
-        b.MakeShelter(action)
         b.ClearCurrentTask()
         return
     case "Improve defense":
         fmt.Println(b.Owner.FullName + " is improving defense.")
         b.CurrentTask = action
-        b.ImproveDefense()
     case "Idle":
         b.CurrentTask = action
         fmt.Println(b.Owner.FullName + " is idle.")
@@ -431,10 +520,21 @@ func (b *Brain) PerformActions() {
 // IsWaterInVision - Find a water supply in vision
 func (b *Brain) IsWaterInVision() bool {
         vision := b.Owner.WorldProvider.GetWaterInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
-        if len(vision) == 0 {
-            return false
+        return len(vision) != 0
+}
+
+// GetWaterInVision - Find a water supply in vision
+func (b *Brain) GetWaterInVision() []Tile {
+    vision := b.Owner.WorldProvider.GetWaterInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+
+    water := make([]Tile, 0)
+
+    for _, tile := range vision {
+        if tile.Type == 1 {
+            water = append(water, tile)
         }
-        return true
+    }
+    return water
 }
 
 //IsWaterInMemory - Find a water supply in memory
@@ -482,10 +582,7 @@ func (b *Brain) FindClosestWaterSupply(water []Tile) Tile {
 // IsFoodInVision - Find a food supply in vision
 func (b *Brain) IsFoodInVision() bool {
     vision := b.Owner.WorldProvider.GetPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
-    if len(vision) == 0 {
-        return false
-    }
-    return true
+    return len(vision) != 0
 }
 
 // IsFoodInMemory - Find a food supply in memory
@@ -622,7 +719,7 @@ func (b *Brain) GoSearchFor(target string) {
 func (b *Brain) ReceiveTaskRequest(requestedTask RequestedAction) bool {
     fmt.Println(b.Owner.FullName + " received a task request from " + requestedTask.From.FullName)
     
-    hasRelationship := b.Owner.hasRelationship(requestedTask.From.FullName)
+    hasRelationship := b.Owner.HasRelationship(requestedTask.From.FullName)
 
     // For now we will just accept the task
     if hasRelationship {
@@ -686,20 +783,35 @@ func (b *Brain) DecidePathTo(x, y int) []*Node {
     return path
 }
 
-// WalkOverPath - Walk over the path that was decided
-func (b *Brain) WalkOverPath(x, y int) bool {
-    path := b.DecidePathTo(x, y)
+// TakeStepOverPath - Take a step over the path that was decided
+func (b *Brain) TakeStepOverPath(MotorCortexAction MotorCortexAction) bool {
+    path := b.DecidePathTo(MotorCortexAction.TargetLocation.X, MotorCortexAction.TargetLocation.Y)
     if path == nil {
         fmt.Println(b.Owner.FullName + " could not find a path to the location.")
         return false
     }
-    fmt.Println(b.Owner.FullName + " is walking to ", x, y)
-    for _, node := range path {
-		// Wait for a half second before walking to the next node
-		time.Sleep(500 * time.Millisecond)
-        b.Owner.WalkTo(node.X, node.Y)
+    fmt.Println(b.Owner.FullName + " took a step over the path.")
+    targetNode := path[1]
+    b.Owner.WalkStepTo(targetNode.X, targetNode.Y)
+
+    return true
+}
+
+// WalkOverPath - Walk over the path that was decided
+func (b *Brain) WalkOverPath(MotorCortexAction MotorCortexAction) bool {
+    path := b.DecidePathTo(MotorCortexAction.TargetLocation.X, MotorCortexAction.TargetLocation.Y)
+    if path == nil {
+        fmt.Println(b.Owner.FullName + " could not find a path to the location.")
+        return false
     }
-	b.MotorCortexCurrentTask = MotorCortexAction{"None", "Idle", Location{0, 0}, false, true}
+    fmt.Println(b.Owner.FullName + " is walking to ", MotorCortexAction.TargetLocation.X, MotorCortexAction.TargetLocation.Y)
+    for _, node := range path {
+        b.MotorCortexCurrentTask.IsActive = true
+		// Wait for a half second before walking to the next node
+        b.Owner.WalkStepTo(node.X, node.Y)
+    }
+	b.MotorCortexCurrentTask.Finished = true
+    b.MotorCortexCurrentTask.IsActive = false
     return true
 }
 
