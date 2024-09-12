@@ -66,3 +66,7 @@ if __name__ == "__main__":
 # 02/09/2024
 #Total files scanned: 28
 #Total lines of code: 3384
+
+# 12/09/2024 - The first big rewrite
+#Total files scanned: 34
+#Total lines of code: 3669

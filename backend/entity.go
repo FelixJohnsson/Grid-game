@@ -131,7 +131,6 @@ func (e *Entity) HasRelationship(fullName string) bool {
 		if relationship.WithEntity == fullName {
 			return true
 		}
-		return false
 	}
 	return false
 }

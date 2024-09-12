@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 )
 
 // UpdateLocation updates the internal location of the person
@@ -231,56 +230,6 @@ func (e *Entity) RemoveLimb(limb BodyPartType) {
 		e.IsIncapacitated = true
 		return
 	}
-}
-
-// ---------------- General actions ------------
-
-// ClearAirway - Clear the airway of the person - Nose or Mouth
-func (e *Entity) ClearAirway(action TargetedAction) {
-    randomNumber := rand.Intn(100)
-	fmt.Println("Trying to clear airway of the mouth")
-
-    if action.Target == "Mouth" && randomNumber < 20 {
-        e.Body.Head.Mouth.IsObstructed = false
-        e.Brain.RemoveActionFromActionList(action)
-        fmt.Println(e.FullName + " cleared the airway of the mouth.")
-        return
-    }
-    if action.Target == "Nose" && randomNumber < 20 {
-        e.Body.Head.Nose.IsObstructed = false
-        e.Brain.RemoveActionFromActionList(action)
-        fmt.Println(e.FullName + " cleared the airway of the nose.")
-        return
-    }
-}
-
-// FixNose - Fix the nose of the person
-func (e *Entity) FixBrokenNose(action TargetedAction) {
-    randomNumber := rand.Intn(100)
-	fmt.Println("Trying to fix the nose")
-
-    if randomNumber < 20 {
-        e.Body.Head.Nose.IsBroken = false
-        e.Brain.RemoveActionFromActionList(action)
-        fmt.Println(e.FullName + " fixed the nose.")
-        e.Brain.ApplyPain(101)
-    }
-}
-// Eat - Consume food
-func (e *Entity) Eat(food Food) {
-	switch food.GetName() {
-	case "Apple":
-		fmt.Println("Eating an apple")
-		e.Brain.DecreaseHungerLevel(food.GetNutritionalValue())
-	}
-}
-// Drink - Consume a liquid
-func (e *Entity) Drink(liquid Liquid) {
-    switch liquid.Name {
-    case "Water":
-        fmt.Println("Drinking water") 
-        e.Brain.DecreaseThirstLevel(50)
-    }
 }
 
 // ---------------- Traversing ----------------

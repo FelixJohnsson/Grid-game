@@ -98,7 +98,7 @@ func InitializeWorld() *World {
 	world.AddPlantToTheWorld(8, 8, "Oak Tree")
 
 	// Add water to the map to test the A* algorithm
-	world.SetTileType(20, 2, 1)
+	world.SetTileType(9, 10, 1)
 
 	newPerson1.Brain.turnOn()
 
