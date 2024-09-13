@@ -94,7 +94,7 @@ type Entity struct {
 	SkinColor        string
 	Entityality 	 string
 	Genes            []string
-	Species          string
+	Species          SpeciesType
 
 	OwnedItems	     []*Item
 	OwnedBipedalAnimals	 []*BipedalAnimal
@@ -437,7 +437,7 @@ const (
 	Fruiting
 )
 type Plant struct {
-	Name          string
+	Name          PlantType
 	Age           int
 	Health        int
 	IsAlive       bool
@@ -534,7 +534,7 @@ type AnimalCleaned struct {
 }
 
 type PlantCleaned struct {
-	Name      string `json:"Name"`
+	Name      PlantType `json:"Name"`
 	Age       int    `json:"Age"`
 	Health    int    `json:"Health"`
 	IsAlive   bool   `json:"IsAlive"`

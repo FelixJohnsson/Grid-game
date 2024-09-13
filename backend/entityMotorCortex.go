@@ -40,7 +40,7 @@ func (b *Brain) MotorCortex() {
             }
 
             // Sleep for 1 seconds
-            time.Sleep(1000 * time.Millisecond)
+            time.Sleep(500 * time.Millisecond)
         }
     }
 }

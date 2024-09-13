@@ -6,8 +6,19 @@ import (
 	"time"
 )
 
+type PlantType string
+
+// All kinda of available plant types
+const (
+    AppleTree PlantType = "Apple Tree"
+    OakTree PlantType = "Oak Tree"
+    HighGrass PlantType = "High Grass"
+    LowGrass PlantType = "Low Grass"
+    Flower PlantType = "Flower"
+)
+
 // NewPlant creates a new plant with the given name.
-func NewPlant(name string, tile *Tile, x, y int) *Plant {
+func NewPlant(name PlantType, tile *Tile, x, y int) *Plant {
 	plantLife := NewPlantLife(tile)
 
 	newPlant := &Plant{

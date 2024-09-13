@@ -1,12 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 
 	"github.com/brianvoe/gofakeit/v6"
 )
 
-func NewAnimalEntity(worldAccessor WorldAccessor, species string, body *EntityBody, x, y int) *Entity {
+func NewAnimalEntity(worldAccessor WorldAccessor, species SpeciesType, body *EntityBody, x, y int) *Entity {
 	Age := rand.Intn(10) + 2
 	FirstName := gofakeit.FirstName()
 	FamilyName := gofakeit.LastName()
@@ -61,7 +62,7 @@ func NewAnimalEntity(worldAccessor WorldAccessor, species string, body *EntityBo
 	return animal
 }
 
-func NewPersonEntity(worldAccessor WorldAccessor, x, y int, species string) *Entity {
+func NewPersonEntity(worldAccessor WorldAccessor, x, y int, species SpeciesType) *Entity {
 	Age := rand.Intn(63) + 2
 	FirstName := gofakeit.FirstName()
 	FamilyName := gofakeit.LastName()
@@ -122,7 +123,11 @@ func (e *Entity) GetPersonByFullName(FullName string) *Entity {
 	return e.WorldProvider.GetPersonByFullName(FullName)
 }
 
-func (e *Entity) AddRelationship(entity EntityInVision, relationship string, intensity int) {
+func (e *Entity) AddRelationship(entity *Entity, relationship string, intensity int) {
+	if entity == nil {
+		fmt.Println("Entity is nil")
+		return
+	}
 	e.Relationships = append(e.Relationships, Relationship{WithEntity: entity.FullName, Relationship: relationship, Intensity: intensity})
 }
 
@@ -193,24 +198,31 @@ func (e *Entity) FindClosestEmptyGrass(grass []Tile) Tile {
 	return closestGrass
 }
 
+type SpeciesType string
 
+const (
+	Wolf SpeciesType = "Canis lupus"
+	Dog SpeciesType = "Dog"
+
+	Human SpeciesType = "Homo sapiens"
+)
 
 
 // ---------------- Create a new person ----------------
 
-func (w *World) CreateNewPersonEntity(x, y int, species string) *Entity {
+func (w *World) CreateNewPersonEntity(x, y int, species SpeciesType) *Entity {
     person := NewPersonEntity(w, x, y, species)
-
 	w.AddEntity(x, y, person)
 
     return person
 }
 
-func (w *World) CreateNewAnimalEntity(species string,x, y int) *Entity {
+func (w *World) CreateNewAnimalEntity(species SpeciesType, x, y int) *Entity {
 	switch species {
-	case "Canis lupus":
+	case Wolf:
 		wolf := NewAnimalEntity(w, species, CreateQuadrupedalBody(), x, y)
-		w.AddEntity(3, 3, wolf)
+		w.AddEntity(x, y, wolf)
+		return wolf
 	default:
 	}
 	return nil

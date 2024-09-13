@@ -132,7 +132,7 @@ func (b *Brain) GetLumberInVision() []*Plant {
     plants := make([]*Plant, 0)
 
     for _, plant := range vision {
-        if plant.Name == "Oak Tree" {
+        if plant.Name == OakTree {
             plants = append(plants, plant)
         }
     }
@@ -141,13 +141,11 @@ func (b *Brain) GetLumberInVision() []*Plant {
 }
 
 func (b *Brain) FindAndNoteLumberTrees() bool {
-    vision := b.Owner.WorldProvider.GetPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+    vision := b.GetLumberInVision()
     lumberTrees := []*Plant{}
 
-    for _, PlantInVision := range vision {
-        if PlantInVision.Name == "Oak Tree" {
-            lumberTrees = append(lumberTrees, PlantInVision)
-        }
+    if len(vision) == 0 {
+        return false
     }
     closestLumberTree := b.Owner.FindTheClosestPlant(lumberTrees)
     if closestLumberTree != nil {
@@ -175,9 +173,6 @@ func (b *Brain) FindClosestPlant(plants []*Plant) *Plant {
 // ----------------- Find ---------------------
 
 func (b *Brain) DecideDirectionToSearch() Location {
-    // Size of the map (constant)
-    const SIZE_OF_MAP = 100
-
     // Current location and curiosity factor
     distanceToTravel := b.Owner.Curiosity
     currentLocation := b.Owner.Location
@@ -249,14 +244,5 @@ func (b *Brain) DecideDirectionToSearch() Location {
 func (b *Brain) GoSearchFor(target string) {
     targetLocation := b.DecideDirectionToSearch()   
 
-    switch target {
-    case "Water supply":
-        b.MotorCortexCurrentTask = MotorCortexAction{"Searching for a water supply", "Walk", targetLocation, false, false}
-    case "Food supply":
-        b.MotorCortexCurrentTask = MotorCortexAction{"Searching for a food supply", "Walk", targetLocation, false, false}
-    case "Lumber tree":
-        b.MotorCortexCurrentTask = MotorCortexAction{"Searching for a lumber tree", "Walk", targetLocation, false, false}
-    default:
-        // Handle other targets
-    }
+    b.MotorCortexCurrentTask = MotorCortexAction{"Searching for a " + target, "Walk", targetLocation, false, false}
 }
