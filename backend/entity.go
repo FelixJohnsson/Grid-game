@@ -176,7 +176,7 @@ func (e *Entity) FindLumberTrees() []*Plant {
 func (e *Entity) FindTheClosestPlant(plants []*Plant) *Plant {
 	closestPlant := plants[0]
 		for _, tree := range plants {
-			if e.WorldProvider.CalculateDistance(e.Location.X, e.Location.Y, tree.Location.X, tree.Location.Y) < e.WorldProvider.CalculateDistance(e.Location.X, e.Location.Y, closestPlant.Location.X, closestPlant.Location.Y) {
+			if e.WorldProvider.CalculateDistance(e.Location, tree.Location) < e.WorldProvider.CalculateDistance(e.Location, closestPlant.Location) {
 				closestPlant = tree
 			}
 		}
@@ -189,7 +189,7 @@ func (e *Entity) FindClosestEmptyGrass(grass []Tile) Tile {
 	closestGrass := grass[0]
 	for _, tile := range grass {
 		if e.WorldProvider.IsTileEmpty(tile.Location.X, tile.Location.Y) {
-			if e.WorldProvider.CalculateDistance(e.Location.X, e.Location.Y, tile.Location.X, tile.Location.Y) < e.WorldProvider.CalculateDistance(e.Location.X, e.Location.Y, closestGrass.Location.X, closestGrass.Location.Y) {
+			if e.WorldProvider.CalculateDistance(e.Location, tile.Location) < e.WorldProvider.CalculateDistance(e.Location, closestGrass.Location) {
 				closestGrass = tile
 			}
 		}

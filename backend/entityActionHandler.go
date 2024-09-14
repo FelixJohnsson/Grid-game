@@ -51,7 +51,7 @@ func (b *Brain) ActionHandler() {
 	// ----------------- Water ---------------
 	case FindWater:
 		b.CurrentTask = action
-		b.FindAndNoteWaterSupply()
+		b.FindWaterSupply()
 		return
 	case DrinkWater:
 		b.CurrentTask = action
@@ -59,7 +59,7 @@ func (b *Brain) ActionHandler() {
 		return
 	case HaveWater:
 		b.CurrentTask = action
-		b.GetWaterForStorage(action)
+		//b.GetWaterForStorage(action)
 		return
 	
 	// ----------------- Food -----------------
@@ -80,11 +80,11 @@ func (b *Brain) ActionHandler() {
 		return
 	case HaveLumber:
 		b.CurrentTask = action
-		b.GetLumberForStorage(action)
+		//b.GetLumberForStorage(action)
 		return
 	case ChopTree:
 		b.CurrentTask = action
-		b.ChopTree(action)
+		//b.ChopTree(action)
 		return
 
 	// ----------------- Stone ---------------
@@ -93,11 +93,11 @@ func (b *Brain) ActionHandler() {
 		return
 	case HaveStone:
 		b.CurrentTask = action
-		b.GetStoneForStorage(action)
+		//b.GetStoneForStorage(action)
 		return
 	case CraftStone:
 		b.CurrentTask = action
-		b.CraftStone(action)
+		//b.CraftStone(action)
 		return
 
 	// ----------------- Grass ---------------
@@ -106,11 +106,11 @@ func (b *Brain) ActionHandler() {
 		return
 	case HaveGrass:
 		b.CurrentTask = action
-		b.GetGrassForStorage(action)
+		//b.GetGrassForStorage(action)
 		return
 	case CutGrass:
 		b.CurrentTask = action
-		b.CutGrass(action)
+		//b.CutGrass(action)
 		return
 
 	// ----------------- Craft ---------------
@@ -131,13 +131,13 @@ func (b *Brain) ActionHandler() {
 		return
 	case ReducePain:
 		b.CurrentTask = action
-		b.ReducePain(action)
+		//b.ReducePain(action)
 		return
 
 	// ----------------- Shelter --------------
 	case FindShelter:
 		b.CurrentTask = action
-		b.FindShelter(action)
+		//b.FindShelter(action)
 		return
 	case MakeShelter:
 		fmt.Println(b.Owner.FullName + " is making a shelter.")
@@ -147,7 +147,7 @@ func (b *Brain) ActionHandler() {
 	// ----------------- Social ---------------
 	case Talk:
 		b.CurrentTask = action
-		b.Talk(action)
+		//b.Talk(action)
 		return
 
 	// ----------------- Improvements ---------
