@@ -5,24 +5,39 @@ import "fmt"
 type TaskType string
 
 const (
-	FindWater  TaskType = "Find water supply" // FindAndNoteWaterSupply
-	DrinkWater TaskType = "Drink water" // DrinKWaterTask
+	FindWater  TaskType = "Find water supply"
+	DrinkWater TaskType = "Drink water"
+	HaveWater  TaskType = "Get water for storage"
 
-	EatFood    TaskType = "Eat food"
-	ClearAirway TaskType = "Clear airway" // ClearAirway > BodyFunction
-	FixNose    TaskType = "Fix nose"	// FixNose > BodyFunction
+	FindFood   TaskType = "Find food"
+	EatFood    TaskType = "Eat food"	
+	HaveFood   TaskType = "Get food for storage"
+
+	FindLumber TaskType = "Find lumber tree"
+	HaveLumber TaskType = "Get lumber for storage"
+	ChopTree   TaskType = "Chop down tree"
+
+	FindStone TaskType = "Find stone"
+	HaveStone TaskType = "Get stone for storage"
+	CraftStone TaskType = "Get stone"
+
+	FindGrass TaskType = "Find grass"
+	HaveGrass TaskType = "Get grass for storage"
+	CutGrass TaskType = "Cut down grass"
+
+	CraftItem TaskType = "Craft item"
+
+	ClearAirway TaskType = "Clear airway"
+	FixNose    TaskType = "Fix nose"
 	ReducePain TaskType = "Reduce pain"
-	FindFood   TaskType = "Find food" // FindAndNoteFoodSupply
-	HaveFood   TaskType = "Have food for storage"
+
 	FindShelter TaskType = "Find shelter"
 	MakeShelter TaskType = "Make shelter"
 	ImproveDefense TaskType = "Improve defense"
-	Talk TaskType = "Talk"
-)
 
-func (b *Brain) CheckIfCurrentMotorTaskIsDone(MotorCortexAction MotorCortexAction, ActionReason string) bool {
-	return  b.MotorCortexCurrentTask.ActionReason == ActionReason && b.MotorCortexCurrentTask.Finished
-}
+	Talk TaskType = "Talk"
+	None TaskType = "Idle"
+)
 
 func (b *Brain) ActionHandler() {
 	// Take the action with the highest priority
@@ -33,62 +48,125 @@ func (b *Brain) ActionHandler() {
 
 	// Perform the action
 	switch action.Action {
-	case "Find a water supply":
+	// ----------------- Water ---------------
+	case FindWater:
 		b.CurrentTask = action
 		b.FindAndNoteWaterSupply()
 		return
-	case "Drink water":
+	case DrinkWater:
 		b.CurrentTask = action
 		b.DrinkWaterTask(action)
-	case "Eat food":
+		return
+	case HaveWater:
+		b.CurrentTask = action
+		b.GetWaterForStorage(action)
+		return
+	
+	// ----------------- Food -----------------
+	case FindFood:
+		b.CurrentTask = action
+		return
+	case EatFood:
 		b.CurrentTask = action
 		b.EatFoodTask(action)
-	case "Clear airway":
+	case HaveFood:
+		b.CurrentTask = action
+		b.GetFoodForStorage(action)
+		return
+
+	// ----------------- Lumber ---------------
+	case FindLumber:
+		b.CurrentTask = action
+		return
+	case HaveLumber:
+		b.CurrentTask = action
+		b.GetLumberForStorage(action)
+		return
+	case ChopTree:
+		b.CurrentTask = action
+		b.ChopTree(action)
+		return
+
+	// ----------------- Stone ---------------
+	case FindStone:
+		b.CurrentTask = action
+		return
+	case HaveStone:
+		b.CurrentTask = action
+		b.GetStoneForStorage(action)
+		return
+	case CraftStone:
+		b.CurrentTask = action
+		b.CraftStone(action)
+		return
+
+	// ----------------- Grass ---------------
+	case FindGrass:
+		b.CurrentTask = action
+		return
+	case HaveGrass:
+		b.CurrentTask = action
+		b.GetGrassForStorage(action)
+		return
+	case CutGrass:
+		b.CurrentTask = action
+		b.CutGrass(action)
+		return
+
+	// ----------------- Craft ---------------
+	case CraftItem:
+		b.CurrentTask = action
+		b.CraftItem(action)
+		return
+	
+
+	// ----------------- Physical -------------
+	case ClearAirway:
 		b.CurrentTask = action
 		b.Owner.ClearAirway(action)
 		return
-	case "Fix nose":
+	case FixNose:
 		b.CurrentTask = action
 		b.Owner.FixBrokenNose(action)
 		return
-	case "Reduce pain":
+	case ReducePain:
 		b.CurrentTask = action
-		//b.ReducePain()
+		b.ReducePain(action)
 		return
 
-	case "Find a food supply":
+	// ----------------- Shelter --------------
+	case FindShelter:
 		b.CurrentTask = action
-		success := b.FindAndNoteFoodSupply()
-
-		if success {
-			b.RemoveActionFromActionList(action)
-		} else {
-			b.CurrentTask = TargetedAction{"Find a food supply", "", true, []BodyPartType{"Legs"}, 90}
-			b.GoSearchFor("Food supply")
-		}
+		b.FindShelter(action)
 		return
-	case "Have food for storage":
-		b.CurrentTask = action
-		b.GetFoodForStorage(action)
-	case "Find shelter":
-		b.CurrentTask = action
-
-		return
-	case "Make shelter":
+	case MakeShelter:
 		fmt.Println(b.Owner.FullName + " is making a shelter.")
 		b.CurrentTask = action
 		return
-	case "Improve defense":
+
+	// ----------------- Social ---------------
+	case Talk:
+		b.CurrentTask = action
+		b.Talk(action)
+		return
+
+	// ----------------- Improvements ---------
+	case ImproveDefense:
 		fmt.Println(b.Owner.FullName + " is improving defense.")
 		b.CurrentTask = action
-	case "Idle":
+
+	
+	// ----------------- Misc -----------------
+	case None:
 		b.CurrentTask = action
 		fmt.Println(b.Owner.FullName + " is idle.")
 		return
-
 	}
 }
 
+func (b *Brain) CheckIfCurrentMotorTaskIsDone(MotorCortexAction MotorCortexAction, ActionReason string) bool {
+	return  b.MotorCortexCurrentTask.ActionReason == ActionReason && b.MotorCortexCurrentTask.Finished
+}
 
 // CheckIfWantIsAlreadyInList - Check if the want is already in the list
 func (b *Brain) CheckIfWantIsAlreadyInList(want string) bool {
@@ -223,16 +301,29 @@ func (b *Brain) TranslateWantToTaskList() {
 	}
 
 	if !b.PhysiologicalNeeds.WayOfGettingFood {
-		action := TargetedAction{"Find a food supply", "", false,[]BodyPartType{"Hands"}, 90}
+		action := TargetedAction{"Find a food supply", "", false, []BodyPartType{"Hands"}, 90}
 		if !b.IsTaskInActionList(action) {
 			b.AddTaskToActionList(action)
 		}
 	}
 	if !b.PhysiologicalNeeds.FoodSupply {
-		action := TargetedAction{"Have food for storage", "", false,[]BodyPartType{"Hands"}, 90}
-		if !b.IsTaskInActionList(action) {
-			b.AddTaskToActionList(action)
+		if b.FindInOwnedItems("Food Box") == nil && b.FindInOwnedItems("Wood log") == nil {
+			action := TargetedAction{"Get lumber", "", false, []BodyPartType{"Hands"}, 90}
+			if !b.IsTaskInActionList(action) {
+				b.AddTaskToActionList(action)
+			}
+		} else if b.FindInOwnedItems("Food Box") == nil && b.FindInOwnedItems("Wood log") != nil {
+			action := TargetedAction{"Craft food box", "", false, []BodyPartType{"Hands"}, 90}
+			if !b.IsTaskInActionList(action) {
+				b.AddTaskToActionList(action)
+			}
+		} else if b.FindInOwnedItems("Food Box") != nil {
+			action := TargetedAction{"Get food for storage", "", false, []BodyPartType{"Hands"}, 90}
+			if !b.IsTaskInActionList(action) {
+				b.AddTaskToActionList(action)
+			}
 		}
+
 	}
 
 	if !b.PhysiologicalNeeds.IsSufficientlyWarm {

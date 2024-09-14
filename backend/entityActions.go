@@ -42,31 +42,22 @@ func (e *Entity) FixBrokenNose(action TargetedAction) {
 }
 
 func (b *Brain) GetFoodForStorage(action TargetedAction) {
-    hasFoodStorage := b.FindInOwnedItems("Food Box")
 
-    if hasFoodStorage == nil {
-        fmt.Println("I need a food storage to store food.")
-		hasLumber := b.FindInOwnedItems("Wood log")
-		if hasLumber == nil {
-			if b.CheckIfCurrentMotorTaskIsDone(b.MotorCortexCurrentTask, "Get lumber"){
-				if b.MotorCortexCurrentTask.TargetLocation.X == b.Owner.Location.X && b.MotorCortexCurrentTask.TargetLocation.Y == b.Owner.Location.Y {
-					fmt.Println(Green + "I've arrived at the oak tree." + Reset)
+}
 
-					tile := b.Owner.WorldProvider.GetTile(b.MotorCortexCurrentTask.TargetLocation.X, b.MotorCortexCurrentTask.TargetLocation.Y)
 
-					if tile.Plant != nil && tile.Plant.Name == "Oak Tree" {
-						b.ChopDownTree(tile.Plant)
-					}
-				}
 
-			} else {
-				fmt.Println("I need a lumber tree to make a food box.")
-				b.GetLumberTask(action)
-			}
-		} else {
 
-		}
-	}
+func (b *Brain) Craft(item string) *Item {
+    switch item {
+    case "Stone Axe":
+            stoneAxe := Item{"Stone Axe", 1, 10, 5, []Material{materials[0]}, make([]Residue, 0), Location{b.Owner.Location.X, b.Owner.Location.Y}}
+        return &stoneAxe
+    case "Food Box":
+        foodBox := Item{"Food Box", 1, 1, 1, []Material{materials[0]}, make([]Residue, 0), Location{b.Owner.Location.X, b.Owner.Location.Y}}
+        return &foodBox
+    }
+    return nil
 }
 
 func (b *Brain) DrinkWaterTask(TargetedAction TargetedAction) {
@@ -76,7 +67,7 @@ func (b *Brain) DrinkWaterTask(TargetedAction TargetedAction) {
 		return
 	}
 
-	success := b.FindAndNoteWaterSupply()
+	success := b.FindWaterSupply()
 
 	if success {
 		water := b.GetWaterInVision()
@@ -94,7 +85,7 @@ func (b *Brain) EatFoodTask(TargetedAction TargetedAction) {
 		return
 	}
 
-	success := b.FindAndNoteFoodSupply()
+	success := b.FindFoodSupply()
 
 	if success {
 		plants := b.GetFoodInVision()
@@ -107,7 +98,7 @@ func (b *Brain) EatFoodTask(TargetedAction TargetedAction) {
 }
 
 func (b *Brain) GetLumberTask(TargetedAction TargetedAction) {
-	success := b.FindAndNoteLumberTrees()
+	success := b.FindLumberTrees()
 	fmt.Println(Red + "Get Lumber Task: " + Reset)
 	if success {
 		trees := b.GetLumberInVision()
@@ -126,6 +117,7 @@ func (b *Brain) ChopDownTree(tree *Plant) *Item {
         b.Owner.DropFromRightHand("Stone Axe")
         wood := CreateNewItem("Wood log")
         b.Owner.GrabWithRightHand(wood)
+		b.Owner.OwnedItems = append(b.Owner.OwnedItems, wood)
         fmt.Println("I chopped down the tree.")
         return wood
     } else if b.HasItemEquippedInLeft("Stone Axe") {
@@ -133,6 +125,7 @@ func (b *Brain) ChopDownTree(tree *Plant) *Item {
         b.Owner.DropFromLeftHand("Stone Axe")
         wood := CreateNewItem("Wood log")
         b.Owner.GrabWithLeftHand(wood)
+		b.Owner.OwnedItems = append(b.Owner.OwnedItems, wood)
         fmt.Println("I chopped down the tree.")
         return wood
     } else {

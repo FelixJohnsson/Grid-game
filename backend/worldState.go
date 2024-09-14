@@ -18,7 +18,7 @@ type WorldAccessor interface {
 	GetTile(x, y int) Tile
 	IsTileEmpty(x, y int) bool
 	IsAdjacent(x1, y1, x2, y2 int) bool
-	CalculateDistance(x1, y1, x2, y2 int) int
+	CalculateDistance(Location1, Location2 Location) int
 	CanWalk(x, y int) bool
 
 	MoveEntity(entity *Entity, newX, newY int)
@@ -188,8 +188,8 @@ func (w *World) GetPlantsInVision(x, y, visionRange int) []*Plant {
 
 
 // CalculateDistance calculates the distance between two locations.
-func (w *World) CalculateDistance(x1, y1, x2, y2 int) int {
-	return int(math.Abs(float64(x1-x2)) + math.Abs(float64(y1-y2)))
+func (w *World) CalculateDistance(Location1, Location2 Location) int {
+	return int(math.Abs(float64(Location1.X-Location2.X)) + math.Abs(float64(Location1.Y-Location2.Y)))
 }
 
 // AddBuilding adds a building to the tile at the given location.

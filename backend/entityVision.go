@@ -1,17 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 )
 
-// IsWaterInVision - Find a water supply in vision
-func (b *Brain) IsWaterInVision() bool {
-        vision := b.Owner.WorldProvider.GetWaterInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
-        return len(vision) != 0
-}
+// ----------------- Water -----------------
 
-// GetWaterInVision - Find a water supply in vision
 func (b *Brain) GetWaterInVision() []Tile {
     vision := b.Owner.WorldProvider.GetWaterInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
 
@@ -25,46 +19,27 @@ func (b *Brain) GetWaterInVision() []Tile {
     return water
 }
 
-//IsWaterInMemory - Find a water supply in memory
-func (b *Brain) IsWaterInMemory() bool {
+func (b *Brain) GetWaterSupplyInMemory() Memory {
     if len(b.Memories.LongTermMemory) == 0 && len(b.Memories.ShortTermMemory) == 0 {
-        return false
+        return Memory{}
     }
     for _, memory := range b.Memories.LongTermMemory {
         if memory.Event == "Found water supply" {
-            return true
+            return memory
         }
     }
     for _, memory := range b.Memories.ShortTermMemory {
         if memory.Event == "Found water supply" {
-            return true
+            return memory
         }
     }
-    return false
+    return Memory{}
 }
 
-// FindAndNoteWaterSupply - Find a water supply and add it to the memory
-func (b *Brain) FindAndNoteWaterSupply() bool {
-        vision := b.Owner.WorldProvider.GetWaterInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
-        if len(vision) == 0 {
-            b.GoSearchFor("Water supply")
-            return false
-        } else {
-            fmt.Println(Red + "Found water supply." + Reset)
-            closestWater := b.FindClosestWaterSupply(vision)
-            b.AddMemoryToLongTerm("Found water supply", "Water", closestWater.Location)
-            b.PhysiologicalNeeds.WayOfGettingWater = true
-            b.MotorCortexCurrentTask.Finished = true
-            b.MotorCortexCurrentTask.IsActive = false
-            return true
-        }
-}
-
-//FindClosestWater - Find the closest water from a list of water
 func (b *Brain) FindClosestWaterSupply(water []Tile) Tile {
 	closestWater := water[0]
 	for _, tile := range water {
-		if b.Owner.WorldProvider.CalculateDistance(b.Owner.Location.X, b.Owner.Location.Y, tile.Location.X, tile.Location.Y) < b.Owner.WorldProvider.CalculateDistance(b.Owner.Location.X, b.Owner.Location.Y, closestWater.Location.X, closestWater.Location.Y) {
+		if b.Owner.WorldProvider.CalculateDistance(b.Owner.Location, tile.Location) < b.Owner.WorldProvider.CalculateDistance(b.Owner.Location, closestWater.Location) {
 			closestWater = tile
 		}
 	}
@@ -72,15 +47,23 @@ func (b *Brain) FindClosestWaterSupply(water []Tile) Tile {
 	return closestWater
 }
 
-// IsFoodInVision - Find a food supply in vision
-func (b *Brain) IsFoodInVision() bool {
-    vision := b.Owner.WorldProvider.GetPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
-    return len(vision) != 0
+func (b *Brain) FindWaterSupply() bool {
+        vision := b.Owner.WorldProvider.GetWaterInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+        if len(vision) == 0 {
+            b.GoSearchFor("Water supply")
+            return false
+        } else {
+            closestWater := b.FindClosestWaterSupply(vision)
+            b.AddMemoryToLongTerm("Found water supply", "Water", closestWater.Location)
+            b.PhysiologicalNeeds.WayOfGettingWater = true
+            return true
+        }
 }
+
+// ----------------- Food -----------------
 
 func (b *Brain) GetFoodInVision() []*Plant {
     vision := b.Owner.WorldProvider.GetPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
-
     plants := make([]*Plant, 0)
 
     for _, plant := range vision {
@@ -92,39 +75,48 @@ func (b *Brain) GetFoodInVision() []*Plant {
     return plants
 }
 
-// IsFoodInMemory - Find a food supply in memory
-func (b *Brain) IsFoodInMemory() bool {
+func (b *Brain) GetFoodSupplyInMemory() Memory {
     if len(b.Memories.LongTermMemory) == 0 && len(b.Memories.ShortTermMemory) == 0 {
-        return false
+        return Memory{}
     }
     for _, memory := range b.Memories.LongTermMemory {
         if memory.Event == "Found food supply" {
-            return true
+            return memory
         }
     }
     for _, memory := range b.Memories.ShortTermMemory {
         if memory.Event == "Found food supply" {
-            return true
+            return memory
         }
     }
-    return false
+    return Memory{}
 }
 
-// FindFoodSupply - Find a food supply
-func (b *Brain) FindAndNoteFoodSupply() bool {
+func (b *Brain) FindFoodSupply() bool {
     vision := b.Owner.WorldProvider.GetPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
     if len(vision) == 0 {
+        b.GoSearchFor("Food supply")
         return false
-    }
-    fmt.Println(Red + "Found food supply." + Reset)
-    closestPlant := b.Owner.FindTheClosestPlant(vision)
-    if closestPlant != nil {
+    } else {
+        closestPlant := b.FindClosestPlant(vision)
         b.AddMemoryToLongTerm("Found food supply", "Food", closestPlant.Location)
         b.PhysiologicalNeeds.WayOfGettingFood = true
         return true
     }
-    return false
 }
+
+func (b *Brain) FindClosestPlant(plants []*Plant) *Plant {
+	closestFood := plants[0]
+	for _, plant := range plants {
+		if b.Owner.WorldProvider.CalculateDistance(b.Owner.Location, plant.Location) < b.Owner.WorldProvider.CalculateDistance(b.Owner.Location, closestFood.Location) {
+			closestFood = plant
+		}
+	}
+
+	return closestFood
+}
+
+// ----------------- Lumber -----------------
 
 func (b *Brain) GetLumberInVision() []*Plant {
     vision := b.Owner.WorldProvider.GetPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
@@ -140,34 +132,21 @@ func (b *Brain) GetLumberInVision() []*Plant {
     return plants
 }
 
-func (b *Brain) FindAndNoteLumberTrees() bool {
-    vision := b.GetLumberInVision()
-    lumberTrees := []*Plant{}
-
+func (b *Brain) FindLumberTrees() bool {
+    vision := b.Owner.WorldProvider.GetPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
     if len(vision) == 0 {
+        b.GoSearchFor("Lumber tree")
         return false
+    } else {
+        
     }
-    closestLumberTree := b.Owner.FindTheClosestPlant(lumberTrees)
-    if closestLumberTree != nil {
-        b.AddMemoryToLongTerm("Found lumber tree", "Lumber tree", closestLumberTree.Location)
-        return true
-    }
+
     return false
 }
 
 
 
-// FindClosestFoodSupply - Find the closest food supply
-func (b *Brain) FindClosestPlant(plants []*Plant) *Plant {
-	closestFood := plants[0]
-	for _, plant := range plants {
-		if b.Owner.WorldProvider.CalculateDistance(b.Owner.Location.X, b.Owner.Location.Y, plant.Location.X, plant.Location.Y) < b.Owner.WorldProvider.CalculateDistance(b.Owner.Location.X, b.Owner.Location.Y, closestFood.Location.X, closestFood.Location.Y) {
-			closestFood = plant
-		}
-	}
 
-	return closestFood
-}
 
 
 // ----------------- Find ---------------------
@@ -244,5 +223,5 @@ func (b *Brain) DecideDirectionToSearch() Location {
 func (b *Brain) GoSearchFor(target string) {
     targetLocation := b.DecideDirectionToSearch()   
 
-    b.MotorCortexCurrentTask = MotorCortexAction{"Searching for a " + target, "Walk", targetLocation, false, false}
+    b.MotorCortexCurrentTask = MotorCortexAction{"Searching for " + target, "Walk", targetLocation, false, false}
 }
