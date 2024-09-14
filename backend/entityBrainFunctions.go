@@ -57,7 +57,7 @@ func (b *Brain) MainLoop() {
             b.ActionHandler()
 
             // Sleep for 2 seconds
-            time.Sleep(1000 * time.Millisecond)
+            time.Sleep(500 * time.Millisecond)
         }
     }
 }

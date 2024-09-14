@@ -43,7 +43,7 @@ func (b *Brain) ActionHandler() {
 	// Take the action with the highest priority
 	action := b.RankTasks()
 
-	fmt.Println(Blue + "Action: ", action.Action)
+	fmt.Println(Blue + "Action:", action.Action)
 	fmt.Println(Reset)
 
 	// Perform the action
@@ -65,10 +65,11 @@ func (b *Brain) ActionHandler() {
 	// ----------------- Food -----------------
 	case FindFood:
 		b.CurrentTask = action
+		b.FindFoodSupply()
 		return
 	case EatFood:
 		b.CurrentTask = action
-		b.EatFoodTask(action)
+		b.EatFoodTask()
 	case HaveFood:
 		b.CurrentTask = action
 		b.GetFoodForStorage(action)
@@ -76,6 +77,7 @@ func (b *Brain) ActionHandler() {
 
 	// ----------------- Lumber ---------------
 	case FindLumber:
+		b.GetLumberTask()
 		b.CurrentTask = action
 		return
 	case HaveLumber:
@@ -257,58 +259,58 @@ func (b *Brain) TranslateWantToTaskList() {
     b.ClearActionList()
     if !b.CheckIfCanBreath() {
         if b.Owner.Body.Head.Mouth.IsObstructed {
-            action := TargetedAction{"Clear airway", "Mouth", false,[]BodyPartType{"Hands"}, 100}
+            action := TargetedAction{ClearAirway, "Mouth", false,[]BodyPartType{"Hands"}, 100}
 			if !b.IsTaskInActionList(action) {
 				b.AddTaskToActionList(action)
 			}
         }
         if b.Owner.Body.Head.Nose.IsObstructed {
-            action := TargetedAction{"Clear airway", "Nose", false,[]BodyPartType{"Hands"}, 100}
+            action := TargetedAction{ClearAirway, "Nose", false,[]BodyPartType{"Hands"}, 100}
 			if !b.IsTaskInActionList(action) {
 				b.AddTaskToActionList(action)
 			}
         }
         if b.Owner.Body.Head.Nose.IsBroken {
-            action := TargetedAction{"Fix nose", "Nose", false,[]BodyPartType{"Hands"}, 100}
+            action := TargetedAction{FixNose, "Nose", false,[]BodyPartType{"Hands"}, 100}
 			if !b.IsTaskInActionList(action) {
 				b.AddTaskToActionList(action)
 			}
         }
     }
 	if !b.PhysiologicalNeeds.WayOfGettingWater {
-		action := TargetedAction{"Find a water supply", "", false,[]BodyPartType{"Hands"}, 100}
+		action := TargetedAction{FindWater, "", false,[]BodyPartType{"Hands"}, 100}
 		if !b.IsTaskInActionList(action) {
 			b.AddTaskToActionList(action)
 		}
 	}
     if b.PhysiologicalNeeds.Thirst > 30 {
-		action := TargetedAction{"Drink water", "", false,[]BodyPartType{"Hands"}, 99}
+		action := TargetedAction{DrinkWater, "", false,[]BodyPartType{"Hands"}, 99}
 		if !b.IsTaskInActionList(action) {
 			b.AddTaskToActionList(action)
 		}
 	}
 	if b.PhysiologicalNeeds.Hunger > 30 {
-		action := TargetedAction{"Eat food", "", false,[]BodyPartType{"Hands"}, 98}
+		action := TargetedAction{EatFood, "", false,[]BodyPartType{"Hands"}, 98}
 		if !b.IsTaskInActionList(action) {
 			b.AddTaskToActionList(action)
 		}
 	}
 	if b.PhysiologicalNeeds.IsInPain {
-		action := TargetedAction{"Reduce pain", "", false,[]BodyPartType{"Hands"}, 95}
+		action := TargetedAction{ReducePain, "", false,[]BodyPartType{"Hands"}, 95}
 		if !b.IsTaskInActionList(action) {
 			b.AddTaskToActionList(action)
 		}	
 	}
 
 	if !b.PhysiologicalNeeds.WayOfGettingFood {
-		action := TargetedAction{"Find a food supply", "", false, []BodyPartType{"Hands"}, 90}
+		action := TargetedAction{FindFood, "", false, []BodyPartType{"Hands"}, 90}
 		if !b.IsTaskInActionList(action) {
 			b.AddTaskToActionList(action)
 		}
 	}
 	if !b.PhysiologicalNeeds.FoodSupply {
 		if b.FindInOwnedItems("Food Box") == nil && b.FindInOwnedItems("Wood log") == nil {
-			action := TargetedAction{"Get lumber", "", false, []BodyPartType{"Hands"}, 90}
+			action := TargetedAction{FindLumber, "", false, []BodyPartType{"Hands"}, 90}
 			if !b.IsTaskInActionList(action) {
 				b.AddTaskToActionList(action)
 			}

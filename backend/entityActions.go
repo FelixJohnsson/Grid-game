@@ -79,27 +79,37 @@ func (b *Brain) DrinkWaterTask(TargetedAction TargetedAction) {
 	}
 }
 
-func (b *Brain) EatFoodTask(TargetedAction TargetedAction) {
-		if b.CheckIfCurrentMotorTaskIsDone(b.MotorCortexCurrentTask, "Eat food") {
-		
-		return
+func (b *Brain) EatFoodTask() {
+    if b.CheckIfCurrentMotorTaskIsDone(b.MotorCortexCurrentTask, "Eat food") {
+        food := b.Owner.WorldProvider.GetTile(b.Owner.Location.X, b.Owner.Location.Y)
+        if food.Plant != nil {
+            food := food.Plant.Fruit[0]
+            b.Owner.Eat(food)
+        } else {
+            fmt.Println("I can't find food where I am, but the motor cortex thinks I've found food.")
+        }
 	}
 
-	success := b.FindFoodSupply()
+	memorySuccess := b.GetFoodSupplyInMemory() 
 
-	if success {
-		plants := b.GetFoodInVision()
-		closestFood := b.FindClosestPlant(plants)
-		b.MotorCortexCurrentTask = MotorCortexAction{"Eat food", "Walk", Location{closestFood.Location.X, closestFood.Location.Y}, false, false}
-	} else {
-		fmt.Println("I can't find a food supply.")
-		b.GoSearchFor("Food supply")
-	}
+    if memorySuccess.Event == "Found food supply" {
+        b.MotorCortexCurrentTask = MotorCortexAction{"Eat food", "Walk", Location{memorySuccess.Location.X, memorySuccess.Location.Y}, false, false}
+        return
+    }
+
+    visionSuccess := b.FindFoodSupply()
+
+    if visionSuccess {
+        plants := b.GetFoodInVision()
+        closestFood := b.FindClosestPlant(plants)
+        b.MotorCortexCurrentTask = MotorCortexAction{"Eat food", "Walk", Location{closestFood.Location.X, closestFood.Location.Y}, false, false}
+    } else {
+        b.GoSearchFor("Food supply")
+    }
 }
 
-func (b *Brain) GetLumberTask(TargetedAction TargetedAction) {
+func (b *Brain) GetLumberTask() {
 	success := b.FindLumberTrees()
-	fmt.Println(Red + "Get Lumber Task: " + Reset)
 	if success {
 		trees := b.GetLumberInVision()
 		closestTree := b.FindClosestPlant(trees)
@@ -138,11 +148,8 @@ func (b *Brain) ChopDownTree(tree *Plant) *Item {
 
 // Eat - Consume food
 func (e *Entity) Eat(food Food) {
-	switch food.GetName() {
-	case "Apple":
-		fmt.Println("Eating an apple")
-		e.Brain.DecreaseHungerLevel(food.GetNutritionalValue())
-	}
+    fmt.Println("Eating an apple")
+    e.Brain.DecreaseHungerLevel(food.GetNutritionalValue())
 }
 // Drink - Consume a liquid
 func (e *Entity) Drink(liquid Liquid) {

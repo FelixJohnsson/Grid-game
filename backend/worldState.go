@@ -9,9 +9,10 @@ var SIZE_OF_MAP = 100
 type WorldAccessor interface {
 	GetEntityInVision(x, y, visionRange int) []EntityInVision
 	GetWaterInVision(x, y, visionRange int) []Tile
-	// Returns a Tile slice of grass tiles in the vision of the person at the given location, up to the given range.
+
 	GetGrassInVision(x, y, visionRange int) []Tile
 	GetPlantsInVision(x, y, visionRange int) []*Plant
+	GetFruitingPlantsInVision(x, y, visionRange int) []*Plant
 	
 	GetPersonByFullName(FullName string) *Entity
 	GetTileType(x, y int) TileType
@@ -173,7 +174,6 @@ func (w *World) GetPlantsInVision(x, y, visionRange int) []*Plant {
 	for i := -visionRange; i <= visionRange; i++ {
 		for j := -visionRange; j <= visionRange; j++ {
 			tx, ty := x+i, y+j
-
 			if tx >= 0 && tx < len(w.Tiles[0]) && ty >= 0 && ty < len(w.Tiles) {
 				tile := w.Tiles[ty][tx]
 				if tile.Plant != nil {
@@ -183,6 +183,22 @@ func (w *World) GetPlantsInVision(x, y, visionRange int) []*Plant {
 		}
 	}
 
+	return plants
+}
+
+func (w *World) GetFruitingPlantsInVision(x, y, visionRange int) []*Plant {
+	var plants []*Plant
+	for i := -visionRange; i <= visionRange; i++ {
+		for j := -visionRange; j <= visionRange; j++ {
+			tx, ty := x+i, y+j
+			if tx >= 0 && tx < SIZE_OF_MAP && ty >= 0 && ty < SIZE_OF_MAP {
+				tile := w.Tiles[ty][tx]
+				if tile.Plant != nil && len(tile.Plant.Fruit) > 0 && tile.Plant.ProducesFruit {
+					plants = append(plants, tile.Plant)
+				}
+			}
+		}
+	}
 	return plants
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 )
 
@@ -93,16 +94,17 @@ func (b *Brain) GetFoodSupplyInMemory() Memory {
 }
 
 func (b *Brain) FindFoodSupply() bool {
-    vision := b.Owner.WorldProvider.GetPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
-    if len(vision) == 0 {
-        b.GoSearchFor("Food supply")
-        return false
-    } else {
-        closestPlant := b.FindClosestPlant(vision)
-        b.AddMemoryToLongTerm("Found food supply", "Food", closestPlant.Location)
-        b.PhysiologicalNeeds.WayOfGettingFood = true
-        return true
-    }
+        vision := b.Owner.WorldProvider.GetFruitingPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+        if len(vision) == 0 {
+            b.GoSearchFor("Food supply")
+            return false
+        } else {
+            fmt.Println("Found food supply at", vision[0].Location.X, vision[0].Location.Y, vision[0].Fruit)
+            closestPlant := b.FindClosestPlant(vision)
+            b.AddMemoryToLongTerm("Found food supply", "Food", closestPlant.Location)
+            b.PhysiologicalNeeds.WayOfGettingFood = true
+            return true
+        }
 }
 
 func (b *Brain) FindClosestPlant(plants []*Plant) *Plant {

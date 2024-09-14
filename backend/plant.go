@@ -33,8 +33,9 @@ func NewPlant(name PlantType, tile *Tile, x, y int) *Plant {
         Location:      Location{x, y},
 	}
 
-    if name == "Apple Tree" {
+    if name == AppleTree {
         newPlant.ProducesFruit = true
+        newPlant.Fruit = append(newPlant.Fruit, Fruit{"Apple", 5, true, 20})
     }
 
     return newPlant

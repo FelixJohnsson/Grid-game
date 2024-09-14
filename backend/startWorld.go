@@ -153,16 +153,6 @@ func InitializeWorld() *World {
 
 	newPerson1.OwnedItems = append(newPerson1.OwnedItems, &wovenGrassBasket)
 
-	// Add a plant
-	appleTree := world.AddPlantToTheWorld(5, 5, "Apple Tree")
-
-	// Add 10 fruits to the apple tree
-	apple := CreateNewFruit("Apple", 5, true, 20)
-
-	for i := 0; i < 10; i++ {
-		appleTree.Fruit = append(appleTree.Fruit, apple)
-	}
-
 	world.MakeLakeAroundLocation(20, 20, 5)
 	world.MakeLakeAroundLocation(30, 70, 20)
 	world.MakeLakeAroundLocation(50, 30, 10)
