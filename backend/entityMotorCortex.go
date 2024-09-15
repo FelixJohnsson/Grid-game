@@ -17,11 +17,9 @@ func (b *Brain) MotorCortex() {
             }
 
             if !b.IsConscious {
-                fmt.Println(b.Owner.FullName + "'s brain is not conscious but still alive.")
 				continue
             }
             if b.MotorCortexCurrentTask.ActionType == "Walk" && !b.MotorCortexCurrentTask.Finished {
-				fmt.Println(Yellow + "Motor cortex is executing the task: " + b.MotorCortexCurrentTask.ActionReason + Reset)
 
 				if b.MotorCortexCurrentTask.TargetLocation.X == b.Owner.Location.X && b.MotorCortexCurrentTask.TargetLocation.Y == b.Owner.Location.Y {
                         fmt.Println("The motor cortex thinks we've arrived at the target location.")
@@ -31,11 +29,9 @@ func (b *Brain) MotorCortex() {
 				}
                 path := b.DecidePathTo(b.MotorCortexCurrentTask.TargetLocation.X, b.MotorCortexCurrentTask.TargetLocation.Y)
                 if path == nil {
-                    fmt.Println("I can't find a path to the target location.")
 					continue
                 } else {
                     b.TakeStepOverPath(b.MotorCortexCurrentTask)
-                    fmt.Println("At: ", b.Owner.Location.X, b.Owner.Location.Y)
                 }
             }
 

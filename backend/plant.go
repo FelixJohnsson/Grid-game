@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"time"
 )
 
@@ -56,7 +55,6 @@ func NewPlantLife(tile *Tile) *PlantLife {
 
 func (l *PlantLife) turnOn() {
     if l.active {
-        fmt.Println("Plant life is already active.")
         return
     }
 
@@ -69,7 +67,6 @@ func (l *PlantLife) mainLoop() {
     for {
         select {
         case <-l.ctx.Done():
-            fmt.Println("Plant life is shutting down.")
             l.active = false
             return
         default:

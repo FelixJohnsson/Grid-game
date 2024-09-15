@@ -14,13 +14,10 @@ func (b *Brain) turnOn() {
         return
     }
 
-
     b.IsConscious = true
     b.Active = true
     go b.MotorCortex()
-    fmt.Println("Motor cortex is turning on for", b.Owner.Species)
     go b.MainLoop()
-    fmt.Println("Brain is turning on for", b.Owner.Species)
 }
 
 
@@ -36,7 +33,6 @@ func (b *Brain) MainLoop() {
             }
 
             if !b.IsConscious {
-                fmt.Println(b.Owner.FullName + "'s brain is not conscious but still alive.")
                 return
             }
 
@@ -54,6 +50,8 @@ func (b *Brain) MainLoop() {
             b.HomoSapiensCalculateWant()
             b.TranslateWantToTaskList()
 
+            obs := b.Owner.WorldProvider.GetVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+            b.CognitiveMapHandler(obs)
             b.ActionHandler()
 
             // Sleep for 2 seconds
@@ -68,7 +66,6 @@ func (b *Brain) turnOff() {
         return
     }
 
-    fmt.Println(b.Owner.FullName + "'s brain is shutting down")
 	b.Active = false
 	b.IsConscious = false
     b.Cancel()
@@ -79,11 +76,86 @@ func (b *Brain) LooseConsciousness(duration int) {
     b.IsConscious = false
     go func() {
         time.Sleep(time.Duration(duration) * time.Second)
-        fmt.Println(b.Owner.FullName + " regained consciousness.")
         b.IsConscious = true
     }()
 }
 
+
+// ----------------- Cognitive Map -----------------
+
+func (b *Brain) CognitiveMapHandler(obs []Tile) {
+    for _, tile := range obs {
+        cognitiveMapTile := CognitiveMapTile{
+            TileType: tile.Type,
+        }
+        if tile.Entity != nil && tile.Entity.FullName != b.Owner.FullName {
+            cognitiveMapTile.Entity = CognitiveMapEntity{
+                FullName: tile.Entity.FullName,
+                SpeciesType: tile.Entity.Species,
+                IsAlive: tile.Entity.Brain.IsAlive,
+            }
+        }
+        if tile.Plant != nil {
+            cognitiveMapTile.Plant = CognitiveMapPlant{
+                Name: tile.Plant.Name,
+                IsAlive: tile.Plant.IsAlive,
+                ProducesFruit: tile.Plant.ProducesFruit,
+                PlantStage: tile.Plant.PlantStage,
+            }
+        }
+        b.AddLocationToCognitiveMap(tile.Location, cognitiveMapTile)
+    }
+}
+
+func (b *Brain) AddLocationToCognitiveMap(location Location, tileInfo CognitiveMapTile) {
+    b.CognitiveMap.KnownTiles[location] = tileInfo
+}
+
+func (b *Brain) IsTileKnown(location Location) bool {
+    if _, ok := b.CognitiveMap.KnownTiles[location]; ok {
+        return true
+    } else {
+        return false
+    }
+}
+
+func (b *Brain) GetLocationFromCognitiveMap(location Location) CognitiveMapTile {
+    if _, ok := b.CognitiveMap.KnownTiles[location]; !ok {
+        return CognitiveMapTile{}
+    } else {
+        return b.CognitiveMap.KnownTiles[location]
+    }
+}
+
+func (b *Brain) GetAllWaterTilesFromCognitiveMap() []CognitiveMapTile {
+    var waterTiles []CognitiveMapTile
+    for _, tile := range b.CognitiveMap.KnownTiles {
+        if tile.TileType == 1 {
+            waterTiles = append(waterTiles, tile)
+        }
+    }
+    return waterTiles
+}
+
+func (b *Brain) GetAllPlantsFromCognitiveMap() []CognitiveMapTile {
+    var plants []CognitiveMapTile
+    for _, tile := range b.CognitiveMap.KnownTiles {
+        if tile.TileType == 2 {
+            plants = append(plants, tile)
+        }
+    }
+    return plants
+}
+
+func (b *Brain) GetAllFruitingPlantsFromCognitiveMap() []CognitiveMapTile {
+    var fruitingPlants []CognitiveMapTile
+    for _, tile := range b.CognitiveMap.KnownTiles {
+        if tile.Plant.ProducesFruit {
+            fruitingPlants = append(fruitingPlants, tile)
+        }
+    }
+    return fruitingPlants
+}
 
 // ----------------- Pain -----------------------------
 
@@ -96,7 +168,6 @@ func (b *Brain) PainHandler() {
         durationInSeconds := rand.Intn(60)
         
         b.LooseConsciousness(durationInSeconds)
-        fmt.Println(b.Owner.FullName + "'s brain lost consciousness due to pain." + " Duration: " + fmt.Sprint(durationInSeconds) + " seconds.")
     }
 }
 
@@ -132,29 +203,53 @@ func (b *Brain) CalculatePainLevel() {
     if b.Owner.Body.Torso.IsBleeding || b.Owner.Body.Torso.IsBroken {
         b.ApplyPain(5)
     }
-    if b.Owner.Body.RightArm != nil && b.Owner.Body.RightArm.IsBleeding || b.Owner.Body.RightArm.IsBroken {
-        b.ApplyPain(5)
+    if b.Owner.Body.RightArm != nil {
+        if  b.Owner.Body.RightArm.IsBleeding || b.Owner.Body.RightArm.IsBroken {
+            b.ApplyPain(5)
+        }
     }
-    if b.Owner.Body.LeftArm != nil && b.Owner.Body.LeftArm.IsBleeding || b.Owner.Body.LeftArm.IsBroken {
-        b.ApplyPain(5)
+    if b.Owner.Body.LeftArm != nil {
+        if  b.Owner.Body.LeftArm.IsBleeding || b.Owner.Body.LeftArm.IsBroken {
+            b.ApplyPain(5)
+        }
     }
-    if b.Owner.Body.RightLeg != nil && b.Owner.Body.RightLeg.IsBleeding || b.Owner.Body.RightLeg.IsBroken {
-        b.ApplyPain(5)
+    if b.Owner.Body.RightLeg != nil {
+        if b.Owner.Body.RightLeg.IsBleeding || b.Owner.Body.RightLeg.IsBroken {
+            b.ApplyPain(5)
+        }
     }
-    if b.Owner.Body.LeftLeg != nil && b.Owner.Body.LeftLeg.IsBleeding || b.Owner.Body.LeftLeg.IsBroken {
-        b.ApplyPain(5)
+    if b.Owner.Body.LeftLeg != nil {
+        if b.Owner.Body.LeftLeg.IsBleeding || b.Owner.Body.LeftLeg.IsBroken {
+            b.ApplyPain(5)  
+        }
     }
-    if b.Owner.Body.RightArm != nil && b.Owner.Body.RightArm.Hand != nil && b.Owner.Body.RightArm.Hand.IsBleeding || b.Owner.Body.RightArm.Hand.IsBroken {
-        b.ApplyPain(2)
+    if b.Owner.Body.RightArm != nil {
+        if b.Owner.Body.RightArm.Hand != nil {
+            if b.Owner.Body.RightArm.Hand.IsBleeding || b.Owner.Body.RightArm.Hand.IsBroken {
+                b.ApplyPain(2)
+            }
+        }
     }
-    if b.Owner.Body.LeftArm != nil && b.Owner.Body.LeftArm.Hand != nil && b.Owner.Body.LeftArm.Hand.IsBleeding || b.Owner.Body.LeftArm.Hand.IsBroken {
-        b.ApplyPain(2)
+    if b.Owner.Body.LeftArm != nil {
+        if  b.Owner.Body.LeftArm.Hand != nil {
+            if  b.Owner.Body.LeftArm.Hand.IsBleeding || b.Owner.Body.LeftArm.Hand.IsBroken {
+                b.ApplyPain(2)
+            }
+        }
     }
-    if b.Owner.Body.RightLeg != nil && b.Owner.Body.RightLeg.Foot != nil && b.Owner.Body.RightLeg.Foot.IsBleeding || b.Owner.Body.RightLeg.Foot.IsBroken {
-        b.ApplyPain(2)
+    if b.Owner.Body.RightLeg != nil {
+        if b.Owner.Body.RightLeg.Foot != nil {
+            if b.Owner.Body.RightLeg.Foot.IsBleeding || b.Owner.Body.RightLeg.Foot.IsBroken {
+                b.ApplyPain(2)
+            }
+        }
     }
-    if b.Owner.Body.LeftLeg != nil && b.Owner.Body.LeftLeg.Foot != nil && b.Owner.Body.LeftLeg.Foot.IsBleeding || b.Owner.Body.LeftLeg.Foot.IsBroken {
-        b.ApplyPain(2)
+    if b.Owner.Body.LeftLeg != nil {
+        if b.Owner.Body.LeftLeg.Foot != nil {
+            if b.Owner.Body.LeftLeg.Foot.IsBleeding || b.Owner.Body.LeftLeg.Foot.IsBroken {
+                b.ApplyPain(2)
+            }
+        }
     }
 }
 
@@ -221,7 +316,6 @@ func (b *Brain) TakeStepOverPath(MotorCortexAction MotorCortexAction) bool {
 func (b *Brain) WalkOverPath(MotorCortexAction MotorCortexAction) bool {
     path := b.DecidePathTo(MotorCortexAction.TargetLocation.X, MotorCortexAction.TargetLocation.Y)
     if path == nil {
-        fmt.Println(b.Owner.FullName + " could not find a path to the location.")
         return false
     }
     fmt.Println(b.Owner.FullName + " is walking to ", MotorCortexAction.TargetLocation.X, MotorCortexAction.TargetLocation.Y)

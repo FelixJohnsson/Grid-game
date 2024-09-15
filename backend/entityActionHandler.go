@@ -142,7 +142,6 @@ func (b *Brain) ActionHandler() {
 		//b.FindShelter(action)
 		return
 	case MakeShelter:
-		fmt.Println(b.Owner.FullName + " is making a shelter.")
 		b.CurrentTask = action
 		return
 
@@ -154,14 +153,12 @@ func (b *Brain) ActionHandler() {
 
 	// ----------------- Improvements ---------
 	case ImproveDefense:
-		fmt.Println(b.Owner.FullName + " is improving defense.")
 		b.CurrentTask = action
 
 	
 	// ----------------- Misc -----------------
 	case None:
 		b.CurrentTask = action
-		fmt.Println(b.Owner.FullName + " is idle.")
 		return
 	}
 }
@@ -195,7 +192,6 @@ func (b *Brain) HomoSapiensCalculateWant() {
     case b.PhysiologicalNeeds.Thirst > 30 && !b.CheckIfWantIsAlreadyInList("Consume water"):
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Consume water")
     case b.PhysiologicalNeeds.Hunger > 30 && !b.CheckIfWantIsAlreadyInList("Consume food"):
-        fmt.Println(b.Owner.FullName + " wants to consume food.", b.PhysiologicalNeeds.Hunger)
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Consume food")
     case !b.PhysiologicalNeeds.IsSufficientlyWarm && !b.CheckIfWantIsAlreadyInList("Get warm"):
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Get warm")
@@ -388,23 +384,18 @@ func (b *Brain) RankTasks() TargetedAction {
 
 // Receive a requested task from another person
 func (b *Brain) ReceiveTaskRequest(requestedTask RequestedAction) bool {
-    fmt.Println(b.Owner.FullName + " received a task request from " + requestedTask.From.FullName)
     
     hasRelationship := b.Owner.HasRelationship(requestedTask.From.FullName)
 
     // For now we will just accept the task
     if hasRelationship {
         if requestedTask.Action == "Talk" && b.Owner.IsTalking.IsActive {
-            fmt.Println(b.Owner.FullName + " is already talking to someone.")
             return false
         } else if requestedTask.Action == "Talk" && !b.Owner.IsTalking.IsActive {
             b.Owner.IsTalking = TargetedAction{"Bla bla bla ...", requestedTask.From.FullName, true, make([]BodyPartType, 0), 10}
-            fmt.Println(b.Owner.FullName + " accepted the task request from " + requestedTask.From.FullName)
-            fmt.Println(b.Owner.FullName + " is talking to " + requestedTask.From.FullName)
             return true
         }
     } else {
-        fmt.Println(b.Owner.FullName + " denied the task request from " + requestedTask.From.FullName + " because they are strangers.")
         return false
     }
     return false
@@ -413,17 +404,12 @@ func (b *Brain) ReceiveTaskRequest(requestedTask RequestedAction) bool {
 // Send a task request to another person
 func (b *Brain) SendTaskRequest(to *Entity, taskType TaskType) {
     if b.Owner.IsTalking.IsActive {
-        fmt.Println(b.Owner.FullName + " is already talking to someone.")
         return 
     }
-    fmt.Println(b.Owner.FullName + " is sending a task request to " + to.FullName)
     task := RequestedAction{TargetedAction{taskType, to.FullName, true, make([]BodyPartType, 0), 10}, b.Owner}
     success := to.Brain.ReceiveTaskRequest(task)
     if success {
-        fmt.Println(to.FullName + " accepted the task request.")
         //b.Owner.IsTalking = TargetedAction{"Hello " + to.FullName + ", how are you doing?", to.FullName, true, make([]BodyPartType, 0), 10}
-        fmt.Println(b.Owner.FullName + " is talking to " + to.FullName)
     } else {
-        fmt.Println(to.FullName + " declined the task request.")
     }
 }

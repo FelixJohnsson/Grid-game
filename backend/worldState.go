@@ -7,9 +7,9 @@ import (
 var SIZE_OF_MAP = 100
 
 type WorldAccessor interface {
+	GetVision(x, y, visionRange int) []Tile
 	GetEntityInVision(x, y, visionRange int) []EntityInVision
 	GetWaterInVision(x, y, visionRange int) []Tile
-
 	GetGrassInVision(x, y, visionRange int) []Tile
 	GetPlantsInVision(x, y, visionRange int) []*Plant
 	GetFruitingPlantsInVision(x, y, visionRange int) []*Plant
@@ -29,8 +29,6 @@ type WorldAccessor interface {
 	RemovePlant(Plant *Plant) Tile
 
 	AddShelter(x, y int, shelter *Shelter)
-
-	DisplayMap()
 }
 
 // NewTile creates a new tile with the given type and updates it's location.
@@ -122,6 +120,23 @@ func (w *World) GetEntityInVision(x, y, visionRange int) []EntityInVision {
 	}
 	
 	return persons
+}
+
+func (w *World) GetVision(x, y, visionRange int) []Tile {
+	var vision []Tile
+
+	for i := -visionRange; i <= visionRange; i++ {
+		for j := -visionRange; j <= visionRange; j++ {
+			tx, ty := x+i, y+j
+
+			if tx >= 0 && tx < len(w.Tiles[0]) && ty >= 0 && ty < len(w.Tiles) {
+				tile := w.Tiles[ty][tx]
+				vision = append(vision, tile)
+			}
+		}
+	}
+
+	return vision
 }
 
 // GetWaterInVision returns the water in the vision of the person at the given location, up to the given range.

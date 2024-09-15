@@ -12,18 +12,15 @@ import (
 // ClearAirway - Clear the airway of the person - Nose or Mouth
 func (e *Entity) ClearAirway(action TargetedAction) {
     randomNumber := rand.Intn(100)
-	fmt.Println("Trying to clear airway of the mouth")
 
     if action.Target == "Mouth" && randomNumber < 20 {
         e.Body.Head.Mouth.IsObstructed = false
         e.Brain.RemoveActionFromActionList(action)
-        fmt.Println(e.FullName + " cleared the airway of the mouth.")
         return
     }
     if action.Target == "Nose" && randomNumber < 20 {
         e.Body.Head.Nose.IsObstructed = false
         e.Brain.RemoveActionFromActionList(action)
-        fmt.Println(e.FullName + " cleared the airway of the nose.")
         return
     }
 }
@@ -31,12 +28,10 @@ func (e *Entity) ClearAirway(action TargetedAction) {
 // FixNose - Fix the nose of the person
 func (e *Entity) FixBrokenNose(action TargetedAction) {
     randomNumber := rand.Intn(100)
-	fmt.Println("Trying to fix the nose")
 
     if randomNumber < 20 {
         e.Body.Head.Nose.IsBroken = false
         e.Brain.RemoveActionFromActionList(action)
-        fmt.Println(e.FullName + " fixed the nose.")
         e.Brain.ApplyPain(101)
     }
 }
@@ -74,7 +69,6 @@ func (b *Brain) DrinkWaterTask(TargetedAction TargetedAction) {
 		closestWater := b.FindClosestWaterSupply(water)
 		b.MotorCortexCurrentTask = MotorCortexAction{"Drink water", "Walk", Location{closestWater.Location.X, closestWater.Location.Y}, false, false}
 	} else {
-		fmt.Println("I can't find a water supply.")
 		b.GoSearchFor("Water supply")
 	}
 }
@@ -82,7 +76,7 @@ func (b *Brain) DrinkWaterTask(TargetedAction TargetedAction) {
 func (b *Brain) EatFoodTask() {
     if b.CheckIfCurrentMotorTaskIsDone(b.MotorCortexCurrentTask, "Eat food") {
         food := b.Owner.WorldProvider.GetTile(b.Owner.Location.X, b.Owner.Location.Y)
-        if food.Plant != nil {
+        if food.Plant != nil && len(food.Plant.Fruit) > 0 {
             food := food.Plant.Fruit[0]
             b.Owner.Eat(food)
         } else {
@@ -114,9 +108,7 @@ func (b *Brain) GetLumberTask() {
 		trees := b.GetLumberInVision()
 		closestTree := b.FindClosestPlant(trees)
 		b.MotorCortexCurrentTask = MotorCortexAction{"Get lumber", "Walk", Location{closestTree.Location.X, closestTree.Location.Y}, false, false}
-		fmt.Println(Green + "I can find a lumber tree." + Reset)
 	} else {
-		fmt.Println("I can't find a lumber tree.")
 		b.GoSearchFor("Lumber tree")
 	}
 }
@@ -128,7 +120,6 @@ func (b *Brain) ChopDownTree(tree *Plant) *Item {
         wood := CreateNewItem("Wood log")
         b.Owner.GrabWithRightHand(wood)
 		b.Owner.OwnedItems = append(b.Owner.OwnedItems, wood)
-        fmt.Println("I chopped down the tree.")
         return wood
     } else if b.HasItemEquippedInLeft("Stone Axe") {
         b.Owner.WorldProvider.RemovePlant(tree)
@@ -136,10 +127,8 @@ func (b *Brain) ChopDownTree(tree *Plant) *Item {
         wood := CreateNewItem("Wood log")
         b.Owner.GrabWithLeftHand(wood)
 		b.Owner.OwnedItems = append(b.Owner.OwnedItems, wood)
-        fmt.Println("I chopped down the tree.")
         return wood
     } else {
-        fmt.Println("I need a stone axe to chop down the tree.")
         return nil
     }
 }
@@ -148,14 +137,12 @@ func (b *Brain) ChopDownTree(tree *Plant) *Item {
 
 // Eat - Consume food
 func (e *Entity) Eat(food Food) {
-    fmt.Println("Eating an apple")
     e.Brain.DecreaseHungerLevel(food.GetNutritionalValue())
 }
 // Drink - Consume a liquid
 func (e *Entity) Drink(liquid Liquid) {
     switch liquid.Name {
     case "Water":
-        fmt.Println("Drinking water") 
         e.Brain.DecreaseThirstLevel(50)
     }
 }

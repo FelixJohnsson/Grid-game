@@ -11,11 +11,6 @@ type Location struct {
 	Y int `json:"Y"`
 }
 
-type WorldState struct {
-	Map 	 	[][]string;
-  	Entities	[]Entity;
-}
-
 type TileType int
 
 const (
@@ -59,6 +54,29 @@ type Relationship struct {
 	Intensity int
 }
 
+type CognitiveMapEntity struct {
+	FullName string
+	SpeciesType SpeciesType
+	IsAlive bool
+}
+
+type CognitiveMapPlant struct {
+	Name          PlantType
+	IsAlive       bool
+	ProducesFruit bool
+	PlantStage    PlantStage
+}
+
+type CognitiveMapTile struct {
+	TileType TileType 
+	Entity CognitiveMapEntity
+	Plant CognitiveMapPlant
+}
+
+type CognitiveMap struct {
+    KnownTiles map[Location]CognitiveMapTile
+}
+
 type Brain struct {
         Active  bool
         Ctx     context.Context
@@ -77,6 +95,7 @@ type Brain struct {
         MotorCortexCurrentTask   MotorCortexAction
 
         PhysiologicalNeeds  PhysiologicalNeeds
+		CognitiveMap     CognitiveMap
 
 		Owner *Entity
 }

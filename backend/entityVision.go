@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"sort"
 )
 
 // ----------------- Water -----------------
@@ -146,84 +147,93 @@ func (b *Brain) FindLumberTrees() bool {
     return false
 }
 
-
-
-
-
-
 // ----------------- Find ---------------------
 
-func (b *Brain) DecideDirectionToSearch() Location {
-    // Current location and curiosity factor
-    distanceToTravel := b.Owner.Curiosity
-    currentLocation := b.Owner.Location
-
-    // Coordinates relative to the center (50, 50)
-    relativeXPos := float64(currentLocation.X - SIZE_OF_MAP/2) / float64(SIZE_OF_MAP/2)
-    relativeYPos := float64(currentLocation.Y - SIZE_OF_MAP/2) / float64(SIZE_OF_MAP/2)
-
-    // Initialize probabilities for each direction (North, South, East, West)
-    probabilityNorth := 0.0
-    probabilitySouth := 0.0
-    probabilityEast := 0.0
-    probabilityWest := 0.0
-
-    // Calculate probabilities based on the current position
-    if relativeYPos < 0 { // Entity is in the northern part
-        probabilitySouth = -relativeYPos // More likely to go South
-    } else { // Entity is in the southern part
-        probabilityNorth = relativeYPos // More likely to go North
-    }
-
-    if relativeXPos < 0 { // Entity is in the western part
-        probabilityEast = -relativeXPos // More likely to go East
-    } else { // Entity is in the eastern part
-        probabilityWest = relativeXPos // More likely to go West
-    }
-
-    // Normalize the probabilities so they sum to 1
-    totalProbability := probabilityNorth + probabilitySouth + probabilityEast + probabilityWest
-
-    if totalProbability > 0 {
-        probabilityNorth /= totalProbability
-        probabilitySouth /= totalProbability
-        probabilityEast /= totalProbability
-        probabilityWest /= totalProbability
-    }
-
-    // Pick a direction based on the weighted probabilities
-    randValue := rand.Float64()
-    var direction string
-
-    if randValue < probabilityNorth {
-        direction = "North"
-    } else if randValue < probabilityNorth + probabilitySouth {
-        direction = "South"
-    } else if randValue < probabilityNorth + probabilitySouth + probabilityEast {
-        direction = "East"
-    } else {
-        direction = "West"
-    }
-
-    // Calculate the new location based on the chosen direction and distance to travel
-    newLocation := currentLocation
-    switch direction {
-    case "North":
-        newLocation.Y = max(0, currentLocation.Y-distanceToTravel)
-    case "South":
-        newLocation.Y = min(SIZE_OF_MAP, currentLocation.Y+distanceToTravel)
-    case "East":
-        newLocation.X = min(SIZE_OF_MAP, currentLocation.X+distanceToTravel)
-    case "West":
-        newLocation.X = max(0, currentLocation.X-distanceToTravel)
-    }
-
-    return newLocation
+type Direction struct {
+    DX, DY int
 }
 
-// GoSearchFor - Go search for something
+var directions = []Direction{
+    {DX: -1, DY: 0},  // Left
+    {DX: 1, DY: 0},   // Right
+    {DX: 0, DY: -1},  // Up
+    {DX: 0, DY: 1},   // Down
+}
+
+func (b *Brain) IsValidLocation(loc Location) bool {
+    return loc.X >= 0 && loc.X < SIZE_OF_MAP && loc.Y >= 0 && loc.Y < SIZE_OF_MAP
+}
+
+func (b *Brain) DecideLocationToSearch() Location {
+    currentLocation := b.Owner.Location
+    knownTiles := b.CognitiveMap.KnownTiles
+
+    // Map to keep track of potential locations to explore
+    frontier := make(map[Location]bool)
+
+    // For each known tile, check its adjacent tiles
+    for loc := range knownTiles {
+        for _, dir := range directions {
+            adjacentLoc := Location{X: loc.X + dir.DX, Y: loc.Y + dir.DY}
+            if b.IsValidLocation(adjacentLoc) {
+                // If the adjacent location is not known, add it to the frontier
+                if _, known := knownTiles[adjacentLoc]; !known {
+                    frontier[adjacentLoc] = true
+                }
+            }
+        }
+    }
+
+    // If there are frontier locations, choose one
+    if len(frontier) > 0 {
+        // Convert frontier map keys to a slice
+        frontierLocations := make([]Location, 0, len(frontier))
+        for loc := range frontier {
+            frontierLocations = append(frontierLocations, loc)
+        }
+
+        // Sort frontier locations by distance to current location
+        sort.Slice(frontierLocations, func(i, j int) bool {
+            return b.Distance(frontierLocations[i], currentLocation) < b.Distance(frontierLocations[j], currentLocation)
+        })
+
+        // Return the closest unexplored location
+        return frontierLocations[0]
+    }
+
+    // If no frontier locations, fallback to random movement or another strategy
+    return b.RandomUnvisitedLocation()
+}
+
+// Helper function to calculate Manhattan distance between two locations
+func (b *Brain) Distance(i, j Location) int {
+    return abs(i.X-j.X) + abs(i.Y-j.Y)
+}
+
+// Helper function to get a random unvisited location in the world
+func (b *Brain) RandomUnvisitedLocation() Location {
+    for {
+        randX := rand.Intn(SIZE_OF_MAP)
+        randY := rand.Intn(SIZE_OF_MAP)
+        loc := Location{X: randX, Y: randY}
+        if _, known := b.CognitiveMap.KnownTiles[loc]; !known {
+            return loc
+        }
+    }
+}
+
+// Utility function
+func abs(a int) int {
+    if a < 0 {
+        return -a
+    }
+    return a
+}
+
+
+// GoSearchFor - Go search for something - This assumes that the target isnt in memory or vision
 func (b *Brain) GoSearchFor(target string) {
-    targetLocation := b.DecideDirectionToSearch()   
+    targetLocation := b.DecideLocationToSearch()   
 
     b.MotorCortexCurrentTask = MotorCortexAction{"Searching for " + target, "Walk", targetLocation, false, false}
 }

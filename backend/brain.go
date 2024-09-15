@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 )
 
 // NewBrain creates a new Brain and assigns an owner to it.
@@ -28,6 +27,7 @@ func NewBrain(Owner *Entity) *Brain {
         MotorCortexCurrentTask : MotorCortexAction{"None", "Idle", Location{0, 0}, false, false},
 
         PhysiologicalNeeds: PhysiologicalNeeds{0, 0, false, false, false, true, false, true, 100, false, false, true, false},
+        CognitiveMap: CognitiveMap{make(map[Location]CognitiveMapTile)},
 
         Owner: Owner,
     }
@@ -38,14 +38,12 @@ func (b *Brain) OxygenHandler() {
     if b.CheckIfCanBreath() {
         b.Breath()
     } else {
-        fmt.Println(b.Owner.FullName + " is not able to breath.")
         b.CanBreath = false
     }
     b.ConsumeOxygen()
 
     if b.OxygenLevel <= 0 {
         b.turnOff()
-        fmt.Println(b.Owner.FullName + "'s brain is shutting down due to lack of oxygen.")
         return
     }
 }
@@ -61,7 +59,6 @@ func (b *Brain) DecreaseHungerLevel(amount int) {
     if b.PhysiologicalNeeds.Hunger < 0 {
         b.PhysiologicalNeeds.Hunger = 0
     }
-    fmt.Println("After eating, Current hunger level: ", b.PhysiologicalNeeds.Hunger)
 }
 
 //IncreaseThirstLevel is a function that increases the thirst level of the person
@@ -75,24 +72,35 @@ func (b *Brain) DecreaseThirstLevel(amount int) {
     if b.PhysiologicalNeeds.Thirst < 0 {
         b.PhysiologicalNeeds.Thirst = 0
     }
-    fmt.Println("After drinking water, Current thirst level: ", b.PhysiologicalNeeds.Thirst)
 }
 
 // FoodHandler is a function that handles the food level of the person
 func (b *Brain) FoodHandler() {
     b.IncreaseHungerLevel()
+
+    if b.PhysiologicalNeeds.Hunger >= 100 {
+        b.KillEntity()
+    }
 }
 
 // ThirstHandler is a function that handles the thirst level of the person
 func (b *Brain) ThirstHandler() {
     b.IncreaseThirstLevel()
+    if b.PhysiologicalNeeds.Thirst >= 100 {
+        b.KillEntity()
+    }
 }
+
+func (b *Brain) KillEntity(){
+    b.Owner.IsIncapacitated = true
+    b.Owner.Brain.turnOff()
+}
+
 
 // IsUnderAttackHandler is a function that handles the person being under attack
 func (b *Brain) IsUnderAttackHandler() {
     if b.IsUnderAttack.Active && !b.IsUnderAttack.From.Brain.IsConscious {
         b.IsUnderAttack = IsUnderAttack{false, b.IsUnderAttack.From, "", ""}
-        fmt.Println(b.Owner.FullName + " is no longer under attack because attacker is unconscious.")
         b.AddMemoryToShortTerm("Knocked out", b.IsUnderAttack.From.FullName, b.IsUnderAttack.From.Location)
     } else if b.IsUnderAttack.Active {
         b.UnderAttack(b.IsUnderAttack.From, b.IsUnderAttack.Target, b.IsUnderAttack.ByLimb)

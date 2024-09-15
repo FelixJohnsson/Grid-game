@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 // UpdateLocation updates the internal location of the person
 func (e *Entity) UpdateLocation(x, y int) {
 	e.Location.X = x
@@ -200,7 +196,6 @@ func (e *Entity) AddResidue(limb BodyPartType, residue Residue) {
 
 //RemoveLimb removes a limb from the entity
 func (e *Entity) RemoveLimb(limb BodyPartType) {
-	fmt.Println(limb, "has been SEVERED!!!")
 
 	switch limb {
 	case "Head":

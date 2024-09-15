@@ -70,3 +70,7 @@ if __name__ == "__main__":
 # 12/09/2024 - The first big rewrite
 #Total files scanned: 34
 #Total lines of code: 3669
+
+# 15/09/2024 - Milestone: 4 entities surviving by themselves
+#Total files scanned: 35
+#Total lines of code: 3965

@@ -21,7 +21,7 @@ var White = "\033[97m"
 func (w *World) AddPlantToTheWorld(x, y int, plant PlantType) *Plant {
 	newPlant := NewPlant(plant, &w.Tiles[x][y], x, y)
 	w.AddPlant(x, y, newPlant)
-	newPlant.PlantLife.turnOn()
+	//newPlant.PlantLife.turnOn()
 
 	return newPlant
 }
@@ -143,9 +143,12 @@ func InitializeWorld() *World {
 	wolf3.AddRelationship(wolf1, "Pack member", 100)
 	wolf3.AddRelationship(wolf2, "Pack member", 100)
 
+    wolf1.Brain.turnOn()
+    wolf2.Brain.turnOn()
+    wolf3.Brain.turnOn()
+
 	stoneAxe := CreateNewItem("Stone Axe")
 	newPerson1.GrabWithRightHand(stoneAxe)
-
 
 	// Add a woven grass basket to the world
 	wovenGrassBasket := items[6]
@@ -171,7 +174,7 @@ func InitializeWorld() *World {
 	end := time.Now()
 	fmt.Println("Time taken to initialize world: ", end.Sub(start))
 
-	world.LaunchGame()
+	world.LaunchGame(newPerson1)
 	
 	return world
 }

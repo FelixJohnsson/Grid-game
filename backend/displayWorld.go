@@ -46,7 +46,7 @@ func (w *World) DisplayMapInTerminal() {
 }
 
 // DisplayMap draws the game map to the screen using Raylib
-func (w *World) DisplayMap() {
+func (w *World) DisplayMap(player *Entity) {
 	var tileSize int32 = 10
 
 	for y := 0; y < w.Height; y++ {
@@ -98,7 +98,7 @@ func (w *World) DisplayMap() {
 	}
 }
 
-func (w *World) LaunchGame() {
+func (w *World) LaunchGame(player *Entity) {
 	// Initialize the Raylib window
 	rl.InitWindow(1000, 1000, "The game")
 	defer rl.CloseWindow()
@@ -121,7 +121,7 @@ func (w *World) LaunchGame() {
 			rl.ClearBackground(rl.RayWhite)
 			
 			// Call the DisplayMap function to draw the world map
-			w.DisplayMap()
+			w.DisplayMap(player)
 			
 			// You might want to display the time since last update
 			timeSinceUpdate := time.Since(lastUpdate)

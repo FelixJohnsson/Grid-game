@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -125,7 +124,6 @@ func (e *Entity) GetPersonByFullName(FullName string) *Entity {
 
 func (e *Entity) AddRelationship(entity *Entity, relationship string, intensity int) {
 	if entity == nil {
-		fmt.Println("Entity is nil")
 		return
 	}
 	e.Relationships = append(e.Relationships, Relationship{WithEntity: entity.FullName, Relationship: relationship, Intensity: intensity})
@@ -202,7 +200,6 @@ type SpeciesType string
 
 const (
 	Wolf SpeciesType = "Canis lupus"
-	Dog SpeciesType = "Dog"
 
 	Human SpeciesType = "Homo sapiens"
 )

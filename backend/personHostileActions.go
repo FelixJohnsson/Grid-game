@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 )
 
@@ -98,7 +97,6 @@ func (e *Entity) Flee(attacker *Entity) {
 // AttackWithLeg - target is the Entity being attacked, targetLimb is the limb being attacked, withLimb (probably leg) is the limb that is attacking
 func (e *Entity) AttackWithLeg(target *Entity, targetLimb BodyPartType, withLimb *Leg) Damage {
 	if target == nil {
-		fmt.Println("No target to attack")
 		return Damage{}
 	}
 
@@ -111,16 +109,13 @@ func (e *Entity) AttackWithLeg(target *Entity, targetLimb BodyPartType, withLimb
 // AttackWithArm - target is the Entity being attacked, targetLimb is the limb being attacked, withLimb (probably hand) is the limb that is attacking
 func (e *Entity) AttackWithArm(target *Entity, targetLimb BodyPartType, withLimb *LimbThatCanGrab) Damage {
 	if target == nil {
-		fmt.Println("No target to attack")
 		return Damage{}
 	} 
 	if !target.Brain.IsConscious {
-		fmt.Println("The target is unconscious, decide what to do next")
 		return Damage{}
 	}
 
 	damage := e.CalculateArmDamageGiven(target, targetLimb, withLimb)
-	fmt.Println(e.FullName, "is attacking", target.FullName, "and causing", damage.AmountBluntDamage, "blunt damage and", damage.AmountSharpDamage, "sharp damage")
 	target.ReceivingApplyDamageTo(targetLimb, damage)
 
 	if target.Body.Head != nil {
@@ -149,7 +144,6 @@ func (e *Entity) ReceivingApplyDamageTo(limb BodyPartType, damage Damage) {
 	switch limb {
 		case "Head":
 			if e.Body.Head == nil {
-				fmt.Println("The target has no head to attack")
 				return
 			}
 		e.Body.Head.BluntDamage += damage.AmountBluntDamage
@@ -179,7 +173,6 @@ func (e *Entity) ReceivingApplyDamageTo(limb BodyPartType, damage Damage) {
 		return
 	case "LeftFoot":
 		if e.Body.LeftLeg.Foot == nil {
-			fmt.Println("The target has no left foot to attack")
 			return
 		}
 		e.Body.LeftLeg.Foot.BluntDamage += damage.AmountBluntDamage
@@ -198,7 +191,6 @@ func (e *Entity) ReceivingApplyDamageTo(limb BodyPartType, damage Damage) {
 		return
 	case "RightFoot":
 		if e.Body.RightLeg.Foot == nil {
-			fmt.Println("The target has no right foot to attack")
 			return
 		}
 		e.Body.RightLeg.Foot.BluntDamage += damage.AmountBluntDamage
@@ -231,7 +223,6 @@ func (e *Entity) ReceivingApplyDamageTo(limb BodyPartType, damage Damage) {
 		return
 	case "RightLeg":
 		if e.Body.RightLeg == nil {
-			fmt.Println("The target has no right leg to attack")
 			return
 		}
 		e.Body.RightLeg.Foot.BluntDamage += damage.AmountBluntDamage
@@ -250,7 +241,6 @@ func (e *Entity) ReceivingApplyDamageTo(limb BodyPartType, damage Damage) {
 		return 
 	case "LeftLeg":
 		if e.Body.LeftLeg == nil {
-			fmt.Println("The target has no left leg to attack")
 			return
 		}
 		e.Body.LeftLeg.Foot.BluntDamage += damage.AmountBluntDamage
@@ -269,7 +259,6 @@ func (e *Entity) ReceivingApplyDamageTo(limb BodyPartType, damage Damage) {
 		return 
 	case "RightHand":
 		if e.Body.RightArm.Hand == nil {
-			fmt.Println("The target has no right hand to attack")
 			return
 		}
 		e.Body.RightArm.Hand.BluntDamage += damage.AmountBluntDamage
@@ -288,7 +277,6 @@ func (e *Entity) ReceivingApplyDamageTo(limb BodyPartType, damage Damage) {
 		return 
 	case "LeftHand":
 		if e.Body.LeftArm.Hand == nil {
-			fmt.Println("The target has no left hand to attack")
 			return
 		}
 		e.Body.LeftArm.Hand.BluntDamage += damage.AmountBluntDamage
