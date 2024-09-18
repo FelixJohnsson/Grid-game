@@ -1,26 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 	"time"
 )
 
-var SIZE_OF_MAP = 30
-var PLANT_SIMULATION_RATE time.Duration = 5
-
 type WorldAccessor interface {
-	GetVision(x, y, visionRange int) []Tile
+	GetVision(x, y, visionRange int) []*Tile
 	GetEntityInVision(x, y, visionRange int) []EntityInVision
-	GetWaterInVision(x, y, visionRange int) []Tile
-	GetGrassInVision(x, y, visionRange int) []Tile
+	GetWaterInVision(x, y, visionRange int) []*Tile
+	GetGrassInVision(x, y, visionRange int) []*Tile
 	GetPlantsInVision(x, y, visionRange int) []*Plant
 	GetFruitingPlantsInVision(x, y, visionRange int) []*Plant
 	
 	GetPersonByFullName(FullName string) *Entity
 	GetTileType(x, y int) TileType
-	GetTile(x, y int) Tile
+	GetTile(x, y int) *Tile
 	IsTileEmpty(x, y int) bool
 	IsAdjacent(x1, y1, x2, y2 int) bool
 	CalculateDistance(Location1, Location2 Location) int
@@ -30,16 +26,18 @@ type WorldAccessor interface {
 
 	AddItem(x, y int, item *Item)
 	DestroyItem(item *Item)
-	RemovePlant(Plant *Plant) Tile
+	RemovePlant(Plant *Plant) *Tile
 	AddPlant(x, y int, plant *Plant)
 	NewPlant(name PlantType, tile *Tile, x, y int) *Plant
 	PlantFruit(plant *Plant, motherX, motherY int) bool
+	TakeNutrientsFromTile(x, y int, amount int) int
+
 	AddShelter(x, y int, shelter *Shelter)
 }
 
 // NewTile creates a new tile with the given type and updates it's location.
-func NewTile(t TileType, x, y int) Tile {
-	return Tile{
+func NewTile(t TileType, x, y int) *Tile {
+	return &Tile{
 		Type:     t,
 		Location: Location{X: x, Y: y},
 		NutritionalValue: 1000,
@@ -49,13 +47,13 @@ func NewTile(t TileType, x, y int) Tile {
 // NewWorld creates a new world with the given dimensions.
 func NewWorld(width, height int) *World {
 	world := World{
-		Tiles: make([][]Tile, height),
+		Tiles: make([][]*Tile, height),
 		Width: width,
 		Height: height,
 	}
 
 	for i := range world.Tiles {
-		world.Tiles[i] = make([]Tile, width)
+		world.Tiles[i] = make([]*Tile, width)
 		for j := range world.Tiles[i] {
 			world.Tiles[i][j] = NewTile(Grass, j, i)
 		}
@@ -70,12 +68,12 @@ func (w *World) SetTileType(x, y int, t TileType) {
 }
 
 // GetTile returns the tile at the given location.
-func (w *World) GetTile(x, y int) Tile {
+func (w *World) GetTile(x, y int) *Tile {
 	return w.Tiles[y][x]
 }
 
 // GetTiles returns all the tiles in the world.
-func (w *World) GetTiles() [][]Tile {
+func (w *World) GetTiles() [][]*Tile {
 	return w.Tiles
 }
 
@@ -91,10 +89,60 @@ func (w *World) IsTileEmpty(x, y int) bool {
 		return false
 	}
 	tile := w.GetTile(x, y)
-	if tile.Shelter == nil && tile.Plant == nil && tile.Entity == nil  {
+	if tile.Shelter == nil && tile.Plant == nil && tile.Entity == nil && tile.Type == Grass {
 		return true
 	}
 	return false
+}
+
+func (w *World) IsAdjacentTileWater(x, y int) bool {
+	if x > 0 && x < SIZE_OF_MAP-1 && y > 0 && y < SIZE_OF_MAP-1 {
+		return w.IsTileWater(x-1, y) || w.IsTileWater(x+1, y) || w.IsTileWater(x, y-1) || w.IsTileWater(x, y+1) || w.IsTileWater(x-1, y-1) || w.IsTileWater(x+1, y+1) || w.IsTileWater(x-1, y+1) || w.IsTileWater(x+1, y-1)
+	} else {
+		return false
+	}
+}
+
+func (w *World) TileNutritionalValueTicker() {
+	for {
+		time.Sleep(SIMULATION_TIME)
+		for y := 0; y < SIZE_OF_MAP; y++ {
+			for x := 0; x < SIZE_OF_MAP; x++ {
+				tile := w.GetTile(x, y)
+				if tile.NutritionalValue > MAX_TILE_NUTRIENT{
+					continue
+				}
+				if w.IsAdjacentTileWater(x, y) {
+					total := TILE_NUTRIENT_NEXT_TO_WATER
+					if tile.Plant == nil {
+						total *= 5
+					}
+					tile.NutritionalValue += total
+				} else {
+					total := TILE_NUTRIENT_NEXT_TO_GRASS
+					if tile.Plant == nil {
+						total *= 3
+					}
+					tile.NutritionalValue += total
+				}
+			}
+		}
+	}
+}
+
+func (w *World) TakeNutrientsFromTile(x, y int, amount int) int {
+	tile := w.GetTile(x, y)
+
+	if tile.NutritionalValue > 0 {
+		takenAmount := amount
+		tile.NutritionalValue -= takenAmount
+
+		return takenAmount
+	} else if amount > tile.NutritionalValue {
+		return 0
+	} else {
+		return 0
+	}
 }
 
 // CanWalk returns true if the person can walk on the tile at the given location.
@@ -132,8 +180,8 @@ func (w *World) GetEntityInVision(x, y, visionRange int) []EntityInVision {
 	return persons
 }
 
-func (w *World) GetVision(x, y, visionRange int) []Tile {
-	var vision []Tile
+func (w *World) GetVision(x, y, visionRange int) []*Tile {
+	var vision []*Tile
 
 	for i := -visionRange; i <= visionRange; i++ {
 		for j := -visionRange; j <= visionRange; j++ {
@@ -150,8 +198,8 @@ func (w *World) GetVision(x, y, visionRange int) []Tile {
 }
 
 // GetWaterInVision returns the water in the vision of the person at the given location, up to the given range.
-func (w *World) GetWaterInVision(x, y, visionRange int) []Tile {
-	var water []Tile
+func (w *World) GetWaterInVision(x, y, visionRange int) []*Tile {
+	var water []*Tile
 
 	for i := -visionRange; i <= visionRange; i++ {
 		for j := -visionRange; j <= visionRange; j++ {
@@ -171,8 +219,8 @@ func (w *World) GetWaterInVision(x, y, visionRange int) []Tile {
 }
 
 // GetGrassInVision returns the grass in the vision of the person at the given location, up to the given range.
-func (w *World) GetGrassInVision(x, y, visionRange int) []Tile {
-	var grass []Tile
+func (w *World) GetGrassInVision(x, y, visionRange int) []*Tile {
+	var grass []*Tile
 
 	for i := -visionRange; i <= visionRange; i++ {
 		for j := -visionRange; j <= visionRange; j++ {
@@ -368,7 +416,7 @@ func (w *World) GetPlants(x, y int) *Plant {
 }
 
 // RemovePlant removes the plant from the tile at the given location.
-func (w *World) RemovePlant(Plant *Plant) Tile {
+func (w *World) RemovePlant(Plant *Plant) *Tile {
 	w.Tiles[Plant.Location.Y][Plant.Location.X].Plant = nil
 
 	return w.Tiles[Plant.Location.Y][Plant.Location.X]
@@ -422,42 +470,34 @@ func (w *World) PlantFruit(plant *Plant, motherX, motherY int) bool {
 
 	if direction == "North" {
 		w.AddPlantToTheWorld(motherX, motherY-1, AppleTree)
-		fmt.Println("Adding plant to the North")
 		return true
 	}
 	if direction == "South" {
 		w.AddPlantToTheWorld(motherX, motherY+1, AppleTree)
-		fmt.Println("Adding plant to the South")
 		return true
 	}
 	if direction == "East" {
 		w.AddPlantToTheWorld(motherX+1, motherY, AppleTree)
-		fmt.Println("Adding plant to the East")
 		return true
 	}
 	if direction == "West" {
 		w.AddPlantToTheWorld(motherX-1, motherY, AppleTree)
-		fmt.Println("Adding plant to the West")
 		return true
 	}
 	if direction == "North East" {
 		w.AddPlantToTheWorld(motherX+1, motherY-1, AppleTree)
-		fmt.Println("Adding plant to the North East")
 		return true
 	}
 	if direction == "North West" {
 		w.AddPlantToTheWorld(motherX-1, motherY-1, AppleTree)
-		fmt.Println("Adding plant to the North West")
 		return true
 	}
 	if direction == "South East" {
 		w.AddPlantToTheWorld(motherX+1, motherY+1,AppleTree)
-		fmt.Println("Adding plant to the South East")
 		return true
 	}
 	if direction == "South West" {
 		w.AddPlantToTheWorld(motherX-1, motherY+1, AppleTree)
-		fmt.Println("Adding plant to the South West")
 		return true
 	}
 

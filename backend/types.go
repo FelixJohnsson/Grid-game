@@ -30,7 +30,7 @@ type Tile struct {
 	QuadrupedalAnimal   *QuadrupedalAnimal      `json:"QuadrupedalAnimal,omitempty"`
 }
 type World struct {
-	Tiles [][]Tile `json:"tiles"`
+	Tiles [][]*Tile `json:"tiles"`
 	Width int      `json:"width"`
 	Height int     `json:"height"`
 }
@@ -214,7 +214,7 @@ type PhysiologicalNeeds struct {
 type Vision struct {
 	Plants    []*Plant            `json:"Plants"`
 	Entities  []EntityInVision    `json:"Entities"`
-	Tiles     []Tile              `json:"Tile"`
+	Tiles     []*Tile              `json:"Tile"`
 }
 
 // ----------------- Body -------------------

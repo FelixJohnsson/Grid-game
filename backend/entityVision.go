@@ -7,10 +7,10 @@ import (
 
 // ----------------- Water -----------------
 
-func (b *Brain) GetWaterInVision() []Tile {
+func (b *Brain) GetWaterInVision() []*Tile {
     vision := b.Owner.WorldProvider.GetWaterInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
 
-    water := make([]Tile, 0)
+    water := make([]*Tile, 0)
 
     for _, tile := range vision {
         if tile.Type == 1 {
@@ -37,7 +37,7 @@ func (b *Brain) GetWaterSupplyInMemory() Memory {
     return Memory{}
 }
 
-func (b *Brain) FindClosestWaterSupply(water []Tile) Tile {
+func (b *Brain) FindClosestWaterSupply(water []*Tile) *Tile {
 	closestWater := water[0]
 	for _, tile := range water {
 		if b.Owner.WorldProvider.CalculateDistance(b.Owner.Location, tile.Location) < b.Owner.WorldProvider.CalculateDistance(b.Owner.Location, closestWater.Location) {

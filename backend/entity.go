@@ -191,7 +191,7 @@ func (e *Entity) FindTheClosestPlant(plants []*Plant) *Plant {
 }
 
 // FindClosestGrass - Find the closest grass from a list
-func (e *Entity) FindClosestEmptyGrass(grass []Tile) Tile {
+func (e *Entity) FindClosestEmptyGrass(grass []*Tile) *Tile {
 	closestGrass := grass[0]
 	for _, tile := range grass {
 		if e.WorldProvider.IsTileEmpty(tile.Location.X, tile.Location.Y) {

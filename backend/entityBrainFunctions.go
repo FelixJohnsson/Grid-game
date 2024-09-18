@@ -83,7 +83,7 @@ func (b *Brain) LooseConsciousness(duration int) {
 
 // ----------------- Cognitive Map -----------------
 
-func (b *Brain) CognitiveMapHandler(obs []Tile) {
+func (b *Brain) CognitiveMapHandler(obs []*Tile) {
     for _, tile := range obs {
         cognitiveMapTile := CognitiveMapTile{
             TileType: tile.Type,

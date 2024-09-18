@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"math/rand"
 	"time"
 )
@@ -30,7 +29,7 @@ func (w *World) NewPlant(name PlantType, tile *Tile, x, y int) *Plant {
 		Fruit:         []Fruit{},
 		PlantLife:     nil,
         Location:      Location{x, y},
-        Nutrients: 0,
+        Nutrients: 100,
         Tile: tile,
 
         WorldProvider: w,
@@ -72,7 +71,6 @@ func (pl *PlantLife) turnOn() {
 }
 
 func (pl *PlantLife) turnOff() {
-    fmt.Println(Red, "Plant life is shutting down.", Reset)
     pl.active = false
     pl.cancel()
 }
@@ -84,7 +82,7 @@ func (pl *PlantLife) mainLoop() {
             pl.active = false
             return
         default:
-            time.Sleep(PLANT_SIMULATION_RATE * time.Millisecond)
+            time.Sleep(SIMULATION_TIME)
             pl.SustainVitals()
             if pl.Owner.Nutrients < -50 {
                 pl.Owner.WorldProvider.RemovePlant(pl.Owner)
@@ -120,7 +118,7 @@ func (pl *PlantLife) AddAction(action PlantAction) {
 }
 
 func (pl *PlantLife) SustainVitals() {
-    pl.Owner.Nutrients -= 1
+    pl.Owner.Nutrients -= SUSTAIN_COST
 }
 
 
@@ -129,20 +127,17 @@ func (pl *PlantLife) ActionDecider() {
         action := PlantAction{"Fruiting", pl.Owner.Tile, 3}
         pl.AddAction(action)
     }
-    if pl.Owner.Nutrients < 100 {
+    if pl.Owner.Nutrients < MINIMUM_NUTRIENT_STORAGE {
         action := PlantAction{"Gathering", pl.Owner.Tile, 2}
         pl.AddAction(action)
     }
-    if pl.Owner.Nutrients > 50 && pl.Owner.PlantStage <= 5 {
+    if pl.Owner.Nutrients > MINIMUM_NUTRIENT_STORAGE_FOR_GROWTH && pl.Owner.PlantStage <= GROW_UNTIL_STAGE {
         action := PlantAction{"Grow", pl.Owner.Tile, 1}
         pl.AddAction(action)
-    } 
+    }  
     if len(pl.Owner.Fruit) >= 10 && pl.Owner.PlantStage > 5 && pl.Owner.Nutrients > 50 {
         action := PlantAction{"Drop fruits", pl.Owner.Tile, 3}
         pl.AddAction(action)
-    }
-    if pl.Owner.Nutrients < 0 {
-        fmt.Println(Yellow, "Nutrients are running low.", pl.Owner.Tile.NutritionalValue, Reset)
     }
 }
 
@@ -158,24 +153,19 @@ func (pl *PlantLife) ActionHandler() {
         pl.GrowActionHandler()
     case "Drop fruits":
         pl.DropFruitsActionHandler()
-        fmt.Println(Blue, "Dropping fruits:", len(pl.Owner.Fruit), Reset)
     }
 }
 
 func (pl *PlantLife) GatheringActionHandler() {
-    nutrientsTaken := pl.Owner.Tile.NutritionalValue/100
-    if nutrientsTaken > 5 {
-        nutrientsTaken = 5
-    }
+    nutrientsTaken := pl.Owner.WorldProvider.TakeNutrientsFromTile(pl.Owner.Location.X, pl.Owner.Location.Y, NUTRIENTS_TAKEN)
     pl.Owner.Nutrients += nutrientsTaken
-    pl.Owner.Tile.NutritionalValue -= 1
 }
 
 func (pl *PlantLife) FruitingActionHandler() {
     if pl.Owner.Fruit != nil {
         newFruit := CreateNewFruit("Apple", 5, false, 10)
         pl.Owner.Fruit = append(pl.Owner.Fruit, newFruit)
-        pl.Owner.Nutrients -= 30
+        pl.Owner.Nutrients -= FRUITING_COST
     }
 }
 

@@ -19,7 +19,7 @@ var White = "\033[97m"
 
 // AddPlantToTheWorld adds a plant to the world at the given location.
 func (w *World) AddPlantToTheWorld(x, y int, plant PlantType) *Plant {
-	newPlant := w.NewPlant(plant, &w.Tiles[x][y], x, y)
+	newPlant := w.NewPlant(plant, w.Tiles[x][y], x, y)
 	w.AddPlant(x, y, newPlant)
 
 	return newPlant
@@ -116,7 +116,19 @@ func (w *World) MakePlantsAroundLocation(x, y, radius int, plantType PlantType) 
     }
 }
 
+func (w *World) MakeRiver() {
+    // Just a straight horizontal line for now, x is veritcal, y is horizontal
+    for x := 0; x < SIZE_OF_MAP; x++ {
+        if x < SIZE_OF_MAP {
+            w.SetTileType(20, x, 1)
+            w.SetTileType(21, x, 1)
+            w.SetTileType(22, x, 1)
+        }
+    }
+}
+
 func (w *World) PopulateWorld() {
+    w.MakeRiver()
     w.AddPlantToTheWorld(15, 15, AppleTree)
 }
 
@@ -129,17 +141,10 @@ func InitializeWorld() *World {
 	fmt.Println("Time taken to initialize world: ", end.Sub(start))
 
     world.PopulateWorld()
+
+    go world.TileNutritionalValueTicker()
+
 	world.LaunchGame()
 	
 	return world
-}
-
-func TestAttack(w *World, person1 *Entity, person2 *Entity, d time.Duration) {
-	damage := person1.AttackWithArm(person2, "Head", person1.Body.RightArm.Hand)
-		// This should probably return a result of the attack
-		if damage.AmountBluntDamage > 0 || damage.AmountSharpDamage > 0 {
-			bloodResidue := Residue{"Blood", 1}
-			person1.CombatExperience += 1
-			person1.AddResidue("RightHand", bloodResidue)
-		}
 }

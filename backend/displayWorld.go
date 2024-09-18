@@ -98,14 +98,11 @@ func (w *World) DisplayMap() {
 }
 
 func (w *World) LaunchGame() {
-	// Initialize the Raylib window
-	rl.InitWindow(300, 300, "The game")
+	rl.InitWindow(int32(SCREEN_SIZE), int32(SCREEN_SIZE), "The game")
 	defer rl.CloseWindow()
 
-	// Set the target FPS to 60
 	rl.SetTargetFPS(60)
 
-	// Create a ticker that ticks every 100ms
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 
@@ -113,11 +110,9 @@ func (w *World) LaunchGame() {
 	for !rl.WindowShouldClose() {
 		select {
 		case <-ticker.C:
-			// It's time to render a new frame
 			rl.BeginDrawing()
 			rl.ClearBackground(rl.RayWhite)
 			
-			// Call the DisplayMap function to draw the world map
 			w.DisplayMap()
 			
 			rl.EndDrawing()
