@@ -74,3 +74,7 @@ if __name__ == "__main__":
 # 15/09/2024 - Milestone: 4 entities surviving by themselves
 #Total files scanned: 35
 #Total lines of code: 3965
+
+# 18/09/2024 - Trees, nutrients and tile nutrient value
+#Total files scanned: 36
+#Total lines of code: 4171
