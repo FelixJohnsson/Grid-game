@@ -19,14 +19,11 @@ var White = "\033[97m"
 
 // AddPlantToTheWorld adds a plant to the world at the given location.
 func (w *World) AddPlantToTheWorld(x, y int, plant PlantType) *Plant {
-	newPlant := NewPlant(plant, &w.Tiles[x][y], x, y)
+	newPlant := w.NewPlant(plant, &w.Tiles[x][y], x, y)
 	w.AddPlant(x, y, newPlant)
-	//newPlant.PlantLife.turnOn()
 
 	return newPlant
 }
-
-
 
 func (w *World) MakeLakeAroundLocation(x, y, radius int) {
     xMin := x - radius
@@ -119,62 +116,20 @@ func (w *World) MakePlantsAroundLocation(x, y, radius int, plantType PlantType) 
     }
 }
 
+func (w *World) PopulateWorld() {
+    w.AddPlantToTheWorld(15, 15, AppleTree)
+}
+
 func InitializeWorld() *World {
 	world := NewWorld(SIZE_OF_MAP, SIZE_OF_MAP)
 	// Lets time how long this function takes to run
 	start := time.Now()
-	// Create people
-	newPerson1 := world.CreateNewPersonEntity(2, 2, Human)
-	newPerson1.Title = "Leader"
-	newPerson1.Thinking = "I am the leader of this group."
-	newPerson1.Brain.PhysiologicalNeeds.Thirst = 70
-	newPerson1.Brain.turnOn()
-
-	// Create wolf
-	wolf1 := world.CreateNewAnimalEntity(Wolf, 50, 10)
-	wolf2 := world.CreateNewAnimalEntity(Wolf, 50, 12)
-	wolf3 := world.CreateNewAnimalEntity(Wolf, 48, 10)
-
-	// Add relationships of the wolves to each other
-	wolf1.AddRelationship(wolf2, "Pack member", 100)
-	wolf1.AddRelationship(wolf3, "Pack member", 100)
-	wolf2.AddRelationship(wolf1, "Pack member", 100)
-	wolf2.AddRelationship(wolf3, "Pack member", 100)
-	wolf3.AddRelationship(wolf1, "Pack member", 100)
-	wolf3.AddRelationship(wolf2, "Pack member", 100)
-
-    wolf1.Brain.turnOn()
-    wolf2.Brain.turnOn()
-    wolf3.Brain.turnOn()
-
-	stoneAxe := CreateNewItem("Stone Axe")
-	newPerson1.GrabWithRightHand(stoneAxe)
-
-	// Add a woven grass basket to the world
-	wovenGrassBasket := items[6]
-	world.AddItem(1, 1, &wovenGrassBasket)
-
-	newPerson1.OwnedItems = append(newPerson1.OwnedItems, &wovenGrassBasket)
-
-	world.MakeLakeAroundLocation(20, 20, 5)
-	world.MakeLakeAroundLocation(30, 70, 20)
-	world.MakeLakeAroundLocation(50, 30, 10)
-	world.MakeLakeAroundLocation(80, 50, 15)
-
-	// Add some lumber trees
-    world.MakePlantsAroundLocation(10, 50, 20, OakTree)
-
-	// Add some apple trees
-	world.MakePlantsAroundLocation(30, 25, 5, AppleTree)
-
-	// Add some high grass
-	world.MakePlantsAroundLocation(10, 10, 10, HighGrass)
-	world.MakePlantsAroundLocation(20, 20, 30, HighGrass)
 
 	end := time.Now()
 	fmt.Println("Time taken to initialize world: ", end.Sub(start))
 
-	world.LaunchGame(newPerson1)
+    world.PopulateWorld()
+	world.LaunchGame()
 	
 	return world
 }

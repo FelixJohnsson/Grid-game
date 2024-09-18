@@ -65,11 +65,15 @@ func (b *Brain) ActionHandler() {
 	// ----------------- Food -----------------
 	case FindFood:
 		b.CurrentTask = action
-		b.FindFoodSupply()
+		if b.Owner.Herbivore {
+			b.HerbivoreFindFoodSupply()
+		} else {
+			b.PredatorFindFoodSupply()
+		}
 		return
 	case EatFood:
 		b.CurrentTask = action
-		b.EatFoodTask()
+		b.HerbivoreEatFoodTask()
 	case HaveFood:
 		b.CurrentTask = action
 		b.GetFoodForStorage(action)

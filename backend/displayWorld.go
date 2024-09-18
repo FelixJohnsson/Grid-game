@@ -46,7 +46,7 @@ func (w *World) DisplayMapInTerminal() {
 }
 
 // DisplayMap draws the game map to the screen using Raylib
-func (w *World) DisplayMap(player *Entity) {
+func (w *World) DisplayMap() {
 	var tileSize int32 = 10
 
 	for y := 0; y < w.Height; y++ {
@@ -72,7 +72,6 @@ func (w *World) DisplayMap(player *Entity) {
 				switch tile.Plant.Name {
 				case AppleTree:
 					rl.DrawRectangle(posX, posY, tileSize, tileSize, rl.Beige)
-					rl.DrawText("A", posX+5, posY+5, 10, rl.Black)
 				case OakTree:
 					rl.DrawRectangle(posX, posY, tileSize, tileSize, rl.Brown)
 					rl.DrawText("T", posX+5, posY+5, 10, rl.Black)
@@ -98,9 +97,9 @@ func (w *World) DisplayMap(player *Entity) {
 	}
 }
 
-func (w *World) LaunchGame(player *Entity) {
+func (w *World) LaunchGame() {
 	// Initialize the Raylib window
-	rl.InitWindow(1000, 1000, "The game")
+	rl.InitWindow(300, 300, "The game")
 	defer rl.CloseWindow()
 
 	// Set the target FPS to 60
@@ -109,8 +108,6 @@ func (w *World) LaunchGame(player *Entity) {
 	// Create a ticker that ticks every 100ms
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
-
-	lastUpdate := time.Now()
 
 	// Game loop
 	for !rl.WindowShouldClose() {
@@ -121,13 +118,7 @@ func (w *World) LaunchGame(player *Entity) {
 			rl.ClearBackground(rl.RayWhite)
 			
 			// Call the DisplayMap function to draw the world map
-			w.DisplayMap(player)
-			
-			// You might want to display the time since last update
-			timeSinceUpdate := time.Since(lastUpdate)
-			rl.DrawText(timeSinceUpdate.String(), 10, 10, 12, rl.Black)
-			
-			lastUpdate = time.Now()
+			w.DisplayMap()
 			
 			rl.EndDrawing()
 		default:

@@ -1,15 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 )
 
 // ---------------- Actions ----------------
 
-// ---------------- General actions ------------
-
-// ClearAirway - Clear the airway of the person - Nose or Mouth
 func (e *Entity) ClearAirway(action TargetedAction) {
     randomNumber := rand.Intn(100)
 
@@ -25,7 +21,6 @@ func (e *Entity) ClearAirway(action TargetedAction) {
     }
 }
 
-// FixNose - Fix the nose of the person
 func (e *Entity) FixBrokenNose(action TargetedAction) {
     randomNumber := rand.Intn(100)
 
@@ -39,9 +34,6 @@ func (e *Entity) FixBrokenNose(action TargetedAction) {
 func (b *Brain) GetFoodForStorage(action TargetedAction) {
 
 }
-
-
-
 
 func (b *Brain) Craft(item string) *Item {
     switch item {
@@ -73,33 +65,8 @@ func (b *Brain) DrinkWaterTask(TargetedAction TargetedAction) {
 	}
 }
 
-func (b *Brain) EatFoodTask() {
-    if b.CheckIfCurrentMotorTaskIsDone(b.MotorCortexCurrentTask, "Eat food") {
-        food := b.Owner.WorldProvider.GetTile(b.Owner.Location.X, b.Owner.Location.Y)
-        if food.Plant != nil && len(food.Plant.Fruit) > 0 {
-            food := food.Plant.Fruit[0]
-            b.Owner.Eat(food)
-        } else {
-            fmt.Println("I can't find food where I am, but the motor cortex thinks I've found food.")
-        }
-	}
+func (b *Brain) HerbivoreEatFoodTask() {
 
-	memorySuccess := b.GetFoodSupplyInMemory() 
-
-    if memorySuccess.Event == "Found food supply" {
-        b.MotorCortexCurrentTask = MotorCortexAction{"Eat food", "Walk", Location{memorySuccess.Location.X, memorySuccess.Location.Y}, false, false}
-        return
-    }
-
-    visionSuccess := b.FindFoodSupply()
-
-    if visionSuccess {
-        plants := b.GetFoodInVision()
-        closestFood := b.FindClosestPlant(plants)
-        b.MotorCortexCurrentTask = MotorCortexAction{"Eat food", "Walk", Location{closestFood.Location.X, closestFood.Location.Y}, false, false}
-    } else {
-        b.GoSearchFor("Food supply")
-    }
 }
 
 func (b *Brain) GetLumberTask() {

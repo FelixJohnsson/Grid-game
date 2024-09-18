@@ -68,6 +68,7 @@ type CognitiveMapPlant struct {
 }
 
 type CognitiveMapTile struct {
+	Location Location
 	TileType TileType 
 	Entity CognitiveMapEntity
 	Plant CognitiveMapPlant
@@ -111,7 +112,7 @@ type Entity struct {
 	Gender           string
 	Occupation       Jobs
 	SkinColor        string
-	Entityality 	 string
+	Personality 	 string
 	Genes            []string
 	Species          SpeciesType
 
@@ -144,6 +145,9 @@ type Entity struct {
 	CombatExperience int
 	CombatSkill      int
 	CombatStyle      string
+
+	Predator bool
+	Herbivore bool
 
 	Relationships    []Relationship
 
@@ -418,7 +422,9 @@ type PlantLife struct {
 	active bool
 	ctx    context.Context
 	cancel context.CancelFunc
+	currentAction PlantAction
 	actions []PlantAction
+	Owner *Plant
 }
 
 type Nutrients struct {
@@ -446,7 +452,7 @@ func (f Fruit) GetNutritionalValue() int {
 	return f.NutritionalValue
 }
 
-type PlantStage int
+type PlantStage float32
 
 const (
 	Seed PlantStage = iota
@@ -465,6 +471,10 @@ type Plant struct {
 	PlantStage    PlantStage
 	PlantLife     *PlantLife
 	Location	  Location
+	Nutrients     int
+	Tile          *Tile
+
+	WorldProvider    WorldAccessor
 }
 
 // ----------------- Liquid ------------------

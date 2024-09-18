@@ -58,6 +58,11 @@ func NewAnimalEntity(worldAccessor WorldAccessor, species SpeciesType, body *Ent
 
 	animal.Brain = NewBrain(animal)
 
+	if animal.Species == Wolf {
+		animal.Predator = true
+		animal.Herbivore = false
+	}
+
 	return animal
 }
 
@@ -110,6 +115,9 @@ func NewPersonEntity(worldAccessor WorldAccessor, x, y int, species SpeciesType)
 		CombatExperience: 1,
 		CombatSkill:      1,
 		CombatStyle:      "",
+
+		Predator: true,
+		Herbivore: true,
 	}
 
 	person.Brain = NewBrain(person)

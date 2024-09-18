@@ -1,10 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"math"
+	"math/rand"
+	"time"
 )
 
-var SIZE_OF_MAP = 100
+var SIZE_OF_MAP = 30
+var PLANT_SIMULATION_RATE time.Duration = 5
 
 type WorldAccessor interface {
 	GetVision(x, y, visionRange int) []Tile
@@ -27,7 +31,9 @@ type WorldAccessor interface {
 	AddItem(x, y int, item *Item)
 	DestroyItem(item *Item)
 	RemovePlant(Plant *Plant) Tile
-
+	AddPlant(x, y int, plant *Plant)
+	NewPlant(name PlantType, tile *Tile, x, y int) *Plant
+	PlantFruit(plant *Plant, motherX, motherY int) bool
 	AddShelter(x, y int, shelter *Shelter)
 }
 
@@ -36,6 +42,7 @@ func NewTile(t TileType, x, y int) Tile {
 	return Tile{
 		Type:     t,
 		Location: Location{X: x, Y: y},
+		NutritionalValue: 1000,
 	}
 }
 
@@ -80,6 +87,9 @@ func (w *World) IsTileWater(x, y int) bool {
 
 // IsTileEmpty - Check if a tile is empty
 func (w *World) IsTileEmpty(x, y int) bool {
+	if x < 0 || x >= SIZE_OF_MAP || y < 0 || y >= SIZE_OF_MAP {
+		return false
+	}
 	tile := w.GetTile(x, y)
 	if tile.Shelter == nil && tile.Plant == nil && tile.Entity == nil  {
 		return true
@@ -343,7 +353,11 @@ func (w *World) RemoveItem(Item *Item, x, y int) []*Item {
 
 // AddPlant adds a plant to the tile at the given location.
 func (w *World) AddPlant(x, y int, plant *Plant) {
+	if x < 0 || x >= SIZE_OF_MAP || y < 0 || y >= SIZE_OF_MAP {
+		return
+	}
 	w.Tiles[y][x].Plant = plant
+	plant.PlantLife.turnOn()
 }
 
 // GetPlants returns the plants at the given location.
@@ -358,4 +372,94 @@ func (w *World) RemovePlant(Plant *Plant) Tile {
 	w.Tiles[Plant.Location.Y][Plant.Location.X].Plant = nil
 
 	return w.Tiles[Plant.Location.Y][Plant.Location.X]
+}
+
+// Need to calculate which location to plant the fruit
+func (w *World) PlantFruit(plant *Plant, motherX, motherY int) bool {
+	north := w.IsTileEmpty(motherX, motherY-1) && motherY-1 > 0 && motherX > 0 && motherX < SIZE_OF_MAP && motherY -1 < SIZE_OF_MAP
+	south := w.IsTileEmpty(motherX, motherY+1) && motherY+1 > 0 && motherX > 0 && motherX < SIZE_OF_MAP && motherY +1 < SIZE_OF_MAP
+	east := w.IsTileEmpty(motherX+1, motherY) && motherY > 0 && motherX +1 > 0 && motherX +1 < SIZE_OF_MAP && motherY < SIZE_OF_MAP
+	west := w.IsTileEmpty(motherX-1, motherY) && motherY > 0 && motherX -1 > 0 && motherX -1 < SIZE_OF_MAP && motherY < SIZE_OF_MAP
+	northEast := w.IsTileEmpty(motherX+1, motherY-1) && motherY-1 > 0 && motherX +1 > 0 && motherX +1 < SIZE_OF_MAP && motherY -1 < SIZE_OF_MAP
+	northWest := w.IsTileEmpty(motherX-1, motherY-1) && motherY-1 > 0 && motherX -1 > 0 && motherX -1 < SIZE_OF_MAP && motherY -1 < SIZE_OF_MAP
+	southEast := w.IsTileEmpty(motherX+1, motherY+1) && motherY+1 > 0 && motherX +1 > 0 && motherX +1 < SIZE_OF_MAP && motherY +1 < SIZE_OF_MAP
+	southWest := w.IsTileEmpty(motherX-1, motherY+1) && motherY+1 > 0 && motherX -1 > 0 && motherX -1 < SIZE_OF_MAP && motherY +1 < SIZE_OF_MAP
+
+	    // Collect all the available directions
+    var availableDirections []string
+
+    if north {
+        availableDirections = append(availableDirections, "North")
+    }
+    if south {
+        availableDirections = append(availableDirections, "South")
+    }
+    if east {
+        availableDirections = append(availableDirections, "East")
+    }
+    if west {
+        availableDirections = append(availableDirections, "West")
+    }
+    if northEast {
+        availableDirections = append(availableDirections, "North East")
+    }
+    if northWest {
+        availableDirections = append(availableDirections, "North West")
+    }
+    if southEast {
+        availableDirections = append(availableDirections, "South East")
+    }
+    if southWest {
+        availableDirections = append(availableDirections, "South West")
+    }
+
+    if len(availableDirections) == 0 {
+        return false
+    }
+
+    randomIndex := rand.Intn(len(availableDirections))
+    direction := availableDirections[randomIndex]
+
+	if direction == "North" {
+		w.AddPlantToTheWorld(motherX, motherY-1, AppleTree)
+		fmt.Println("Adding plant to the North")
+		return true
+	}
+	if direction == "South" {
+		w.AddPlantToTheWorld(motherX, motherY+1, AppleTree)
+		fmt.Println("Adding plant to the South")
+		return true
+	}
+	if direction == "East" {
+		w.AddPlantToTheWorld(motherX+1, motherY, AppleTree)
+		fmt.Println("Adding plant to the East")
+		return true
+	}
+	if direction == "West" {
+		w.AddPlantToTheWorld(motherX-1, motherY, AppleTree)
+		fmt.Println("Adding plant to the West")
+		return true
+	}
+	if direction == "North East" {
+		w.AddPlantToTheWorld(motherX+1, motherY-1, AppleTree)
+		fmt.Println("Adding plant to the North East")
+		return true
+	}
+	if direction == "North West" {
+		w.AddPlantToTheWorld(motherX-1, motherY-1, AppleTree)
+		fmt.Println("Adding plant to the North West")
+		return true
+	}
+	if direction == "South East" {
+		w.AddPlantToTheWorld(motherX+1, motherY+1,AppleTree)
+		fmt.Println("Adding plant to the South East")
+		return true
+	}
+	if direction == "South West" {
+		w.AddPlantToTheWorld(motherX-1, motherY+1, AppleTree)
+		fmt.Println("Adding plant to the South West")
+		return true
+	}
+
+	return false
 }

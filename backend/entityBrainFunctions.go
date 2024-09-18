@@ -87,6 +87,7 @@ func (b *Brain) CognitiveMapHandler(obs []Tile) {
     for _, tile := range obs {
         cognitiveMapTile := CognitiveMapTile{
             TileType: tile.Type,
+            Location: tile.Location,
         }
         if tile.Entity != nil && tile.Entity.FullName != b.Owner.FullName {
             cognitiveMapTile.Entity = CognitiveMapEntity{
@@ -155,6 +156,18 @@ func (b *Brain) GetAllFruitingPlantsFromCognitiveMap() []CognitiveMapTile {
         }
     }
     return fruitingPlants
+}
+
+func (b *Brain) GetClosestFruitingPlantFromCognitiveMap() CognitiveMapTile {
+    var closestPlant CognitiveMapTile
+    for _, tile := range b.CognitiveMap.KnownTiles {
+        if tile.Plant.ProducesFruit {
+            if b.Owner.WorldProvider.CalculateDistance(b.Owner.Location, tile.Location) < b.Owner.WorldProvider.CalculateDistance(b.Owner.Location, closestPlant.Location) {
+                closestPlant = tile
+            }
+        }
+    } 
+    return closestPlant
 }
 
 // ----------------- Pain -----------------------------

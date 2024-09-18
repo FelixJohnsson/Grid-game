@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"sort"
 )
@@ -64,48 +63,38 @@ func (b *Brain) FindWaterSupply() bool {
 
 // ----------------- Food -----------------
 
-func (b *Brain) GetFoodInVision() []*Plant {
-    vision := b.Owner.WorldProvider.GetPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
-    plants := make([]*Plant, 0)
-
-    for _, plant := range vision {
-        if plant.Fruit != nil {
-            plants = append(plants, plant)
-        }
-    }
-
-    return plants
-}
-
-func (b *Brain) GetFoodSupplyInMemory() Memory {
-    if len(b.Memories.LongTermMemory) == 0 && len(b.Memories.ShortTermMemory) == 0 {
-        return Memory{}
-    }
-    for _, memory := range b.Memories.LongTermMemory {
-        if memory.Event == "Found food supply" {
-            return memory
-        }
-    }
-    for _, memory := range b.Memories.ShortTermMemory {
-        if memory.Event == "Found food supply" {
-            return memory
-        }
-    }
-    return Memory{}
-}
-
-func (b *Brain) FindFoodSupply() bool {
+func (b *Brain) HerbivoreFindFoodSupply() bool {
         vision := b.Owner.WorldProvider.GetFruitingPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
         if len(vision) == 0 {
             b.GoSearchFor("Food supply")
             return false
-        } else {
-            fmt.Println("Found food supply at", vision[0].Location.X, vision[0].Location.Y, vision[0].Fruit)
-            closestPlant := b.FindClosestPlant(vision)
-            b.AddMemoryToLongTerm("Found food supply", "Food", closestPlant.Location)
-            b.PhysiologicalNeeds.WayOfGettingFood = true
-            return true
         }
+        return false
+}
+
+func (b *Brain) PredatorFindFoodSupply() bool {
+    predatorVision := b.Owner.WorldProvider.GetEntityInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+
+    if len(predatorVision) == 0 {
+        b.GoSearchFor("Food supply")
+        return false
+    } else {
+        closestFood := b.FindClosestEntity(predatorVision)
+        b.AddMemoryToLongTerm("Found food supply", "Food", closestFood.Location)
+        b.PhysiologicalNeeds.WayOfGettingFood = true
+        return true
+    }
+}
+
+func (b *Brain) FindClosestEntity(entities []EntityInVision) EntityInVision {
+	closestEntity := entities[0]
+	for _, entity := range entities {
+		if b.Owner.WorldProvider.CalculateDistance(b.Owner.Location, entity.Location) < b.Owner.WorldProvider.CalculateDistance(b.Owner.Location, closestEntity.Location) {
+			closestEntity = entity
+		}
+	}
+	
+	return closestEntity
 }
 
 func (b *Brain) FindClosestPlant(plants []*Plant) *Plant {
