@@ -13,3 +13,4 @@ func (b *Brain) AddMemoryToLongTerm(event string, details string, location Locat
     memory := Memory{event, details, location}
     b.Memories.LongTermMemory = append(b.Memories.LongTermMemory, memory)
 }
+

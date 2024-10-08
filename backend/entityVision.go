@@ -55,8 +55,6 @@ func (b *Brain) FindWaterSupply() bool {
             b.GoSearchFor("Water supply")
             return false
         } else {
-            closestWater := b.FindClosestWaterSupply(vision)
-            b.AddMemoryToLongTerm("Found water supply", "Water", closestWater.Location)
             b.PhysiologicalNeeds.WayOfGettingWater = true
             return true
         }
@@ -101,11 +99,43 @@ func (b *Brain) FindFoodSupply() bool {
             return false
         } else {
             fmt.Println("Found food supply at", vision[0].Location.X, vision[0].Location.Y, vision[0].Fruit)
-            closestPlant := b.FindClosestPlant(vision)
-            b.AddMemoryToLongTerm("Found food supply", "Food", closestPlant.Location)
             b.PhysiologicalNeeds.WayOfGettingFood = true
             return true
         }
+}
+
+func (b *Brain) PredatorFindFood() bool {
+    vision := b.Owner.WorldProvider.GetEntitiesInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+
+    if len(vision) == 0 {
+        return false
+    } else {
+        closestEntity := b.FindClosestEntity(vision)
+        if closestEntity.Species == b.Owner.Species {
+            b.GoSearchFor("Food")
+            return false
+        } else {
+            fmt.Println("I found food at: ", closestEntity.Location.X, closestEntity.Location.Y)
+            b.AddMotorCortexTask("Hunt", "Walk", Location{closestEntity.Location.X, closestEntity.Location.Y})
+            return true
+        }
+    }
+}
+
+func (b *Brain) FindClosestEntity(entities []EntityInVision) EntityInVision {
+    fmt.Println(Blue + "I see the following entities:", Reset)
+    for _, entity := range entities {
+        if entity.FullName != b.Owner.FullName {
+            fmt.Println(entity.FirstName, entity.Species)
+        }
+    }
+    closestEntity := entities[0]
+    for _, entity := range entities {
+        if b.Owner.WorldProvider.CalculateDistance(b.Owner.Location, entity.Location) < b.Owner.WorldProvider.CalculateDistance(b.Owner.Location, closestEntity.Location) && entity.Species != b.Owner.Species {
+            closestEntity = entity
+        }
+    }
+    return closestEntity
 }
 
 func (b *Brain) FindClosestPlant(plants []*Plant) *Plant {
@@ -235,5 +265,5 @@ func abs(a int) int {
 func (b *Brain) GoSearchFor(target string) {
     targetLocation := b.DecideLocationToSearch()   
 
-    b.MotorCortexCurrentTask = MotorCortexAction{"Searching for " + target, "Walk", targetLocation, false, false}
+    b.AddMotorCortexTask("Searching for " + target, "Walk", targetLocation)
 }

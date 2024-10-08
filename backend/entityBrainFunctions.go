@@ -68,6 +68,7 @@ func (b *Brain) turnOff() {
 
 	b.Active = false
 	b.IsConscious = false
+    fmt.Println(b.Owner.FullName + " died")
     b.Cancel()
 }
 
@@ -87,6 +88,7 @@ func (b *Brain) CognitiveMapHandler(obs []Tile) {
     for _, tile := range obs {
         cognitiveMapTile := CognitiveMapTile{
             TileType: tile.Type,
+            Location : tile.Location,
         }
         if tile.Entity != nil && tile.Entity.FullName != b.Owner.FullName {
             cognitiveMapTile.Entity = CognitiveMapEntity{
@@ -135,6 +137,17 @@ func (b *Brain) GetAllWaterTilesFromCognitiveMap() []CognitiveMapTile {
         }
     }
     return waterTiles
+}
+
+func (b *Brain) GetClosestWaterTileFromCognitiveMap(waterTiles []CognitiveMapTile) CognitiveMapTile {
+    closestWater := waterTiles[0]
+    for _, tile := range waterTiles {
+        if b.Owner.WorldProvider.CalculateDistance(b.Owner.Location, tile.Location) < b.Owner.WorldProvider.CalculateDistance(b.Owner.Location, closestWater.Location) {
+            closestWater = tile
+        }
+    }
+
+    return closestWater
 }
 
 func (b *Brain) GetAllPlantsFromCognitiveMap() []CognitiveMapTile {
@@ -307,7 +320,12 @@ func (b *Brain) TakeStepOverPath(MotorCortexAction MotorCortexAction) bool {
         return false
     }
     targetNode := path[1]
-    b.Owner.WalkStepTo(targetNode.X, targetNode.Y)
+    possible := b.Owner.WorldProvider.CanWalk(targetNode.X, targetNode.Y)
+    if possible {
+        b.Owner.WalkStepTo(targetNode.X, targetNode.Y)
+    } else {
+        fmt.Println(b.Owner.FullName + " could not walk to the location.")
+    }
 
     return true
 }

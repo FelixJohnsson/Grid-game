@@ -19,24 +19,39 @@ func (b *Brain) MotorCortex() {
             if !b.IsConscious {
 				continue
             }
+            
             if b.MotorCortexCurrentTask.ActionType == "Walk" && !b.MotorCortexCurrentTask.Finished {
-
 				if b.MotorCortexCurrentTask.TargetLocation.X == b.Owner.Location.X && b.MotorCortexCurrentTask.TargetLocation.Y == b.Owner.Location.Y {
-                        fmt.Println("The motor cortex thinks we've arrived at the target location.")
-                        b.MotorCortexCurrentTask.Finished = true
-                        b.MotorCortexCurrentTask.IsActive = false
-						continue
+                        b.FinishMotorCortexTask()
+						return
 				}
                 path := b.DecidePathTo(b.MotorCortexCurrentTask.TargetLocation.X, b.MotorCortexCurrentTask.TargetLocation.Y)
                 if path == nil {
-					continue
+                    fmt.Println(Yellow + "Motor cortex: I can't find a path to the target location.", b.MotorCortexCurrentTask.TargetLocation.X, b.MotorCortexCurrentTask.TargetLocation.Y)
+                    fmt.Print(Reset)
+                    return
                 } else {
+                    fmt.Println(Yellow + "I will take a step over the path.", b.MotorCortexCurrentTask.TargetLocation.X, b.MotorCortexCurrentTask.TargetLocation.Y)
+                    fmt.Print(Reset)
                     b.TakeStepOverPath(b.MotorCortexCurrentTask)
                 }
+            } else {
+                fmt.Println("Action type: ", b.MotorCortexCurrentTask.ActionType, "Finished", b.MotorCortexCurrentTask.Finished)
             }
-
-            // Sleep for 1 seconds
-            time.Sleep(250 * time.Millisecond)
+            time.Sleep(500 * time.Millisecond)
         }
     }
+}
+
+func (b *Brain) AddMotorCortexTask(reason string, ActionType string, targetLocation Location) {
+    fmt.Println(Yellow + "Adding a motor cortex task: ", reason, ActionType, targetLocation)
+    fmt.Print(Reset)
+    b.MotorCortexCurrentTask = MotorCortexAction{reason, ActionType, targetLocation, false, false}
+}
+
+func (b *Brain) FinishMotorCortexTask() {
+    fmt.Println(Yellow + "Finishing motor cortex task.", b.MotorCortexCurrentTask.ActionType)
+    fmt.Print(Reset)
+    b.MotorCortexCurrentTask.Finished = true
+    b.MotorCortexCurrentTask.IsActive = false
 }

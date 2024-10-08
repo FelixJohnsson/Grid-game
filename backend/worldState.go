@@ -8,7 +8,7 @@ var SIZE_OF_MAP = 100
 
 type WorldAccessor interface {
 	GetVision(x, y, visionRange int) []Tile
-	GetEntityInVision(x, y, visionRange int) []EntityInVision
+	GetEntitiesInVision(x, y, visionRange int) []EntityInVision
 	GetWaterInVision(x, y, visionRange int) []Tile
 	GetGrassInVision(x, y, visionRange int) []Tile
 	GetPlantsInVision(x, y, visionRange int) []*Plant
@@ -89,12 +89,12 @@ func (w *World) IsTileEmpty(x, y int) bool {
 
 // CanWalk returns true if the person can walk on the tile at the given location.
 func (w *World) CanWalk(x, y int) bool {
-	return w.Tiles[y][x].Type != Mountain
+	return w.Tiles[y][x].Type != Mountain && w.Tiles[y][x].Entity == nil
 }
 
-// GetEntityInVision returns the vision of the person at the given location, up to the given range.
-func (w *World) GetEntityInVision(x, y, visionRange int) []EntityInVision {
-	var persons []EntityInVision
+// GetEntitiesInVision returns the vision of the person at the given location, up to the given range.
+func (w *World) GetEntitiesInVision(x, y, visionRange int) []EntityInVision {
+	var entities []EntityInVision
 
 	for i := -visionRange; i <= visionRange; i++ {
 		for j := -visionRange; j <= visionRange; j++ {
@@ -102,24 +102,24 @@ func (w *World) GetEntityInVision(x, y, visionRange int) []EntityInVision {
 
 			if tx >= 0 && tx < len(w.Tiles[0]) && ty >= 0 && ty < len(w.Tiles) {
 				tile := w.Tiles[ty][tx]
-					cleanedPerson := EntityInVision{
-						FirstName:  tile.Entity.FirstName,
-						FamilyName: tile.Entity.FamilyName,
-						Gender:     tile.Entity.Gender,
-						Age:        tile.Entity.Age,
-						Title:      tile.Entity.Title,
-						Location:   tile.Entity.Location,
-						Body:       tile.Entity.Body,
-					}
+					if tile.Entity != nil && !(tx == x && ty == y) {
+						cleanedEntities := EntityInVision{
+							FirstName:  tile.Entity.FirstName,
+							FamilyName: tile.Entity.FamilyName,
+							Gender:     tile.Entity.Gender,
+							Age:        tile.Entity.Age,
+							Title:      tile.Entity.Title,
+							Location:   tile.Entity.Location,
+							Body:       tile.Entity.Body,
+							Species:    tile.Entity.Species,
+						}
 
-					persons = append(persons, cleanedPerson)
-				
-				
+						entities = append(entities, cleanedEntities)
+					}
 			}
 		}
 	}
-	
-	return persons
+	return entities
 }
 
 func (w *World) GetVision(x, y, visionRange int) []Tile {

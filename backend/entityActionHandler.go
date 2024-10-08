@@ -12,6 +12,7 @@ const (
 	FindFood   TaskType = "Find food"
 	EatFood    TaskType = "Eat food"	
 	HaveFood   TaskType = "Get food for storage"
+	Hunt       TaskType = "Hunt"
 
 	FindLumber TaskType = "Find lumber tree"
 	HaveLumber TaskType = "Get lumber for storage"
@@ -43,7 +44,7 @@ func (b *Brain) ActionHandler() {
 	// Take the action with the highest priority
 	action := b.RankTasks()
 
-	fmt.Println(Blue + "Action:", action.Action)
+	fmt.Println(Blue + string(b.Owner.Species) + "- Action:", action.Action)
 	fmt.Println(Reset)
 
 	// Perform the action
@@ -65,11 +66,23 @@ func (b *Brain) ActionHandler() {
 	// ----------------- Food -----------------
 	case FindFood:
 		b.CurrentTask = action
-		b.FindFoodSupply()
+		if b.Owner.Predator && !b.Owner.Herbivore{
+			fmt.Println(Red + "I am a predator, so I will hunt food." + Reset)
+			b.PredatorFindFood()
+		} else {
+			fmt.Println(Green + "I will search for vegetables or fruits." + Reset)
+			b.FindFoodSupply()
+		}
 		return
 	case EatFood:
 		b.CurrentTask = action
-		b.EatFoodTask()
+		if b.Owner.Predator && !b.Owner.Herbivore{
+			fmt.Println(Red + "I am a predator, so I will hunt food." + Reset)
+			b.PredatorFindFood()
+		} else {
+			fmt.Println(Green + "I will search for vegetables or fruits." + Reset)
+			b.EatFoodTask()
+		}
 	case HaveFood:
 		b.CurrentTask = action
 		b.GetFoodForStorage(action)

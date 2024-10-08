@@ -56,46 +56,75 @@ func heuristic(x1, y1, x2, y2 int) float64 {
 
 // AStar performs the A* pathfinding algorithm.
 func (b *Brain) AStar(startX, startY, goalX, goalY int) []*Node {
-	openList := &PriorityQueue{}
-	heap.Init(openList)
+    goalWalkable := b.Owner.WorldProvider.CanWalk(goalX, goalY)
+    openList := &PriorityQueue{}
+    heap.Init(openList)
 
-	startNode := &Node{X: startX, Y: startY, G: 0, H: heuristic(startX, startY, goalX, goalY), F: 0}
-	heap.Push(openList, startNode)
-	closedList := make(map[int]bool)
+    startNode := &Node{X: startX, Y: startY, G: 0, H: heuristic(startX, startY, goalX, goalY), F: 0}
+    heap.Push(openList, startNode)
+    closedList := make(map[int]bool)
 
-	for openList.Len() > 0 {
-		current := heap.Pop(openList).(*Node)
+    closestNode := startNode
 
-		if current.X == goalX && current.Y == goalY {
-			return reconstructPath(current)
-		}
+    for openList.Len() > 0 {
+        current := heap.Pop(openList).(*Node)
 
-		closedList[current.X*1000+current.Y] = true
+        // If the current node is closer to the goal, update closestNode
+        if current.H < closestNode.H {
+            closestNode = current
+        }
 
-		for _, neighbor := range b.getNeighbors(current) {
-			if closedList[neighbor.X*1000+neighbor.Y] {
-				continue
-			}
+        if current.X == goalX && current.Y == goalY && goalWalkable {
+            return reconstructPath(current)
+        }
 
-			tentativeG := current.G + 1 // Assuming uniform cost for each move
+        closedList[current.X*1000+current.Y] = true
 
-			if tentativeG < neighbor.G {
-				neighbor.Parent = current
-				neighbor.G = tentativeG
-				neighbor.H = heuristic(neighbor.X, neighbor.Y, goalX, goalY)
-				neighbor.F = neighbor.G + neighbor.H
+        for _, neighbor := range b.getNeighbors(current, goalX, goalY) {
+            if closedList[neighbor.X*1000+neighbor.Y] {
+                continue
+            }
 
-				if !isInOpenList(neighbor, openList) {
-					heap.Push(openList, neighbor)
-				} else {
-					openList.update(neighbor, neighbor.G, neighbor.H, neighbor.F)
-				}
-			}
-		}
-	}
+            tentativeG := current.G + 1 // Assuming uniform cost
 
-	return nil // Path not found
+            if tentativeG < neighbor.G {
+                neighbor.Parent = current
+                neighbor.G = tentativeG
+                neighbor.H = heuristic(neighbor.X, neighbor.Y, goalX, goalY)
+                neighbor.F = neighbor.G + neighbor.H
+
+                if !isInOpenList(neighbor, openList) {
+                    heap.Push(openList, neighbor)
+                } else {
+                    openList.update(neighbor, neighbor.G, neighbor.H, neighbor.F)
+                }
+            }
+        }
+    }
+
+    if closestNode != nil && closestNode != startNode {
+        return reconstructPath(closestNode)
+    }
+    return nil
 }
+
+// Update getNeighbors to accept goalX and goalY
+func (b *Brain) getNeighbors(node *Node, goalX, goalY int) []*Node {
+    neighbors := []*Node{}
+    directions := [][2]int{{0, 1}, {1, 0}, {0, -1}, {-1, 0}}
+
+    for _, dir := range directions {
+        nx, ny := node.X+dir[0], node.Y+dir[1]
+        if nx >= 0 && ny >= 0 && nx < SIZE_OF_MAP && ny < SIZE_OF_MAP {
+            if b.Owner.WorldProvider.CanWalk(nx, ny) || (nx == goalX && ny == goalY) {
+                neighbors = append(neighbors, &Node{X: nx, Y: ny, G: math.MaxFloat64})
+            }
+        }
+    }
+
+    return neighbors
+}
+
 
 func isInOpenList(node *Node, openList *PriorityQueue) bool {
 	for _, n := range *openList {
@@ -122,18 +151,4 @@ func reversePath(path []*Node) {
 	}
 }
 
-// getNeighbors returns the neighboring nodes for the current node.
-func (b *Brain) getNeighbors(node *Node) []*Node {
-	neighbors := []*Node{}
-	directions := [][2]int{{0, 1}, {1, 0}, {0, -1}, {-1, 0}}
-
-	for _, dir := range directions {
-		nx, ny := node.X+dir[0], node.Y+dir[1]
-		if nx >= 0 && ny >= 0 && nx < SIZE_OF_MAP && ny < SIZE_OF_MAP && b.Owner.WorldProvider.CanWalk(nx, ny) {
-			neighbors = append(neighbors, &Node{X: nx, Y: ny, G: math.MaxFloat64})
-		}
-	}
-
-	return neighbors
-}
 

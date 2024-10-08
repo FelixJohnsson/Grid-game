@@ -124,16 +124,15 @@ func InitializeWorld() *World {
 	// Lets time how long this function takes to run
 	start := time.Now()
 	// Create people
-	newPerson1 := world.CreateNewPersonEntity(2, 2, Human)
+	newPerson1 := world.CreateNewPersonEntity(3, 2, Human)
 	newPerson1.Title = "Leader"
 	newPerson1.Thinking = "I am the leader of this group."
-	newPerson1.Brain.PhysiologicalNeeds.Thirst = 70
-	newPerson1.Brain.turnOn()
+	newPerson1.Brain.PhysiologicalNeeds.Thirst = 30
 
 	// Create wolf
-	wolf1 := world.CreateNewAnimalEntity(Wolf, 50, 10)
-	wolf2 := world.CreateNewAnimalEntity(Wolf, 50, 12)
-	wolf3 := world.CreateNewAnimalEntity(Wolf, 48, 10)
+	wolf1 := world.CreateNewAnimalEntity(Wolf, 3, 3)
+	wolf2 := world.CreateNewAnimalEntity(Wolf, 30, 20)
+	wolf3 := world.CreateNewAnimalEntity(Wolf, 98, 75)
 
 	// Add relationships of the wolves to each other
 	wolf1.AddRelationship(wolf2, "Pack member", 100)
@@ -143,9 +142,12 @@ func InitializeWorld() *World {
 	wolf3.AddRelationship(wolf1, "Pack member", 100)
 	wolf3.AddRelationship(wolf2, "Pack member", 100)
 
-    wolf1.Brain.turnOn()
-    wolf2.Brain.turnOn()
-    wolf3.Brain.turnOn()
+	wolf1.Brain.PhysiologicalNeeds.Hunger = 50
+    wolf1.FullName = "Wolfie"
+    //wolf1.Brain.turnOn()
+
+    newPerson1.Brain.turnOn()
+
 
 	stoneAxe := CreateNewItem("Stone Axe")
 	newPerson1.GrabWithRightHand(stoneAxe)

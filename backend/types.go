@@ -71,6 +71,7 @@ type CognitiveMapTile struct {
 	TileType TileType 
 	Entity CognitiveMapEntity
 	Plant CognitiveMapPlant
+	Location Location
 }
 
 type CognitiveMap struct {
@@ -140,6 +141,9 @@ type Entity struct {
 	Charisma         int
 	Stamina          int
 	Curiosity        int
+
+	Predator         bool
+	Herbivore        bool
 
 	CombatExperience int
 	CombatSkill      int
@@ -612,4 +616,5 @@ type EntityInVision struct {
 	Title 		 string
 	Location     Location
 	Body 		 *EntityBody
+	Species 	 SpeciesType
 }

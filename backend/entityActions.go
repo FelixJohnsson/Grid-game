@@ -61,16 +61,14 @@ func (b *Brain) DrinkWaterTask(TargetedAction TargetedAction) {
 		b.Owner.Drink(water)
 		return
 	}
+    water := b.GetAllWaterTilesFromCognitiveMap()
 
-	success := b.FindWaterSupply()
-
-	if success {
-		water := b.GetWaterInVision()
-		closestWater := b.FindClosestWaterSupply(water)
-		b.MotorCortexCurrentTask = MotorCortexAction{"Drink water", "Walk", Location{closestWater.Location.X, closestWater.Location.Y}, false, false}
-	} else {
-		b.GoSearchFor("Water supply")
-	}
+    if len(water) > 0 {
+        closestWater := b.GetClosestWaterTileFromCognitiveMap(water)
+        b.AddMotorCortexTask("Drink water", "Walk", Location{closestWater.Location.X, closestWater.Location.Y})
+    } else {
+        b.GoSearchFor("Water supply")
+    }
 }
 
 func (b *Brain) EatFoodTask() {
@@ -87,7 +85,7 @@ func (b *Brain) EatFoodTask() {
 	memorySuccess := b.GetFoodSupplyInMemory() 
 
     if memorySuccess.Event == "Found food supply" {
-        b.MotorCortexCurrentTask = MotorCortexAction{"Eat food", "Walk", Location{memorySuccess.Location.X, memorySuccess.Location.Y}, false, false}
+        b.AddMotorCortexTask("Eat food", "Walk", Location{memorySuccess.Location.X, memorySuccess.Location.Y})
         return
     }
 
@@ -96,7 +94,7 @@ func (b *Brain) EatFoodTask() {
     if visionSuccess {
         plants := b.GetFoodInVision()
         closestFood := b.FindClosestPlant(plants)
-        b.MotorCortexCurrentTask = MotorCortexAction{"Eat food", "Walk", Location{closestFood.Location.X, closestFood.Location.Y}, false, false}
+        b.AddMotorCortexTask("Eat food", "Walk", Location{closestFood.Location.X, closestFood.Location.Y})
     } else {
         b.GoSearchFor("Food supply")
     }
@@ -107,7 +105,7 @@ func (b *Brain) GetLumberTask() {
 	if success {
 		trees := b.GetLumberInVision()
 		closestTree := b.FindClosestPlant(trees)
-		b.MotorCortexCurrentTask = MotorCortexAction{"Get lumber", "Walk", Location{closestTree.Location.X, closestTree.Location.Y}, false, false}
+		b.AddMotorCortexTask("Get lumber", "Walk", Location{closestTree.Location.X, closestTree.Location.Y})
 	} else {
 		b.GoSearchFor("Lumber tree")
 	}

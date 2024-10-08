@@ -38,7 +38,7 @@ func NewAnimalEntity(worldAccessor WorldAccessor, species SpeciesType, body *Ent
 
 		OwnedItems:       []*Item{},
 
-		VisionRange:      5,
+		VisionRange:      10,
 		Location:         Location{X: x, Y: y},
 		WorldProvider:    worldAccessor,
 		Body:			  body,
@@ -57,6 +57,11 @@ func NewAnimalEntity(worldAccessor WorldAccessor, species SpeciesType, body *Ent
 	}
 
 	animal.Brain = NewBrain(animal)
+
+	if animal.Species == Wolf {
+		animal.Predator = true
+		animal.Herbivore = false
+	}
 
 	return animal
 }
@@ -106,6 +111,9 @@ func NewPersonEntity(worldAccessor WorldAccessor, x, y int, species SpeciesType)
 		Charisma:         1,
 		Stamina:          1,
 		Curiosity:        25,
+
+		Predator: true,
+		Herbivore: true,
 
 		CombatExperience: 1,
 		CombatSkill:      1,
