@@ -82,16 +82,58 @@ func CreateNewHead() *Head {
 	return &head
 }
 
-func CreateNewTorso() *LimbStatus {
-	torso := LimbStatus{
-		BluntDamage: 0,
-		SharpDamage: 0,
-		IsBleeding:  false,
-		IsBroken:    false,
-		Residues:    nil,
-		CoveredWith: nil,
-		IsAttached:  true,
+func CreateNewHeart() *Heart {
+	heart := Heart{
+		Vessel: 0,
+		IsPumping: false,
+		Oxygen: 0,
+		Glucose: 0,
+		Hormones: []Hormone{},
+		OxygenLevel: 0,
+		OxygenDemandAmount: 0,
 	}
+	return &heart
+}
+
+func CreateNewLungs() *Lungs {
+	lungs := Lungs{
+		Vessel: 0,
+		IsBreathing: false,
+		Oxygen: 0,
+	}
+	return &lungs
+}
+
+func CreateNewStomach() *Stomach {
+	stomach := Stomach{
+		Vessel: 0,
+		IsDigesting: false,
+		Glucose: 0,
+		Contains: []string{},
+	}
+	return &stomach
+}
+
+func CreateNewKidneys() *Kidneys {
+	kidneys := Kidneys{
+		Vessel: 0,
+		IsFiltering: false,
+		Glucose: 0,
+		Toxins: []string{},
+	}
+	return &kidneys
+}
+
+
+func CreateNewTorso() *Torso {
+	limbStatus := CreateNewLimbStatus()
+	torso := Torso{
+		LimbStatus: limbStatus,
+	}
+	torso.Heart = CreateNewHeart()
+	torso.Lungs = CreateNewLungs()
+	torso.Stomach = CreateNewStomach()
+	torso.Kidneys = CreateNewKidneys()
 	return &torso
 }
 

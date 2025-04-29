@@ -112,7 +112,7 @@ type Entity struct {
 	Occupation       Jobs
 	SkinColor        string
 	Entityality 	 string
-	Genes            []string
+	Genes            *DNA
 	Species          SpeciesType
 
 	OwnedItems	     []*Item
@@ -223,6 +223,7 @@ type LimbStatus struct {
 	Residues []Residue
 	CoveredWith []Wearable
 	IsAttached bool
+	Vessel int
 }
 
 type BodyPartType string
@@ -242,7 +243,6 @@ const (
 	RightLeg  BodyPartType = "RightLeg"
 	LeftLeg   BodyPartType = "LeftLeg"
 	TheHead   BodyPartType = "Head"
-	Torso     BodyPartType = "Torso"
 
 	Mouth    BodyPartType = "Mouth"
 	Nose     BodyPartType = "Nose"
@@ -293,9 +293,52 @@ type Arm struct {
 	Hand *LimbThatCanGrab
 }
 
+type Torso struct {
+	LimbStatus
+	Heart *Heart
+	Lungs *Lungs
+	Stomach *Stomach
+	Kidneys *Kidneys
+}
+
+type Hormone struct {
+	Name string
+	Amount int
+}
+
+type Heart struct {
+	Vessel int
+	IsPumping bool
+	Oxygen int
+	Glucose int
+	Hormones []Hormone
+	OxygenLevel int
+	OxygenDemandAmount int
+}
+
+type Lungs struct {
+	Vessel int
+	IsBreathing bool
+	Oxygen int
+}
+
+type Stomach struct {
+	Vessel int
+	IsDigesting bool
+	Glucose int
+	Contains []string
+}
+
+type Kidneys struct {
+	Vessel int
+	IsFiltering bool
+	Glucose int
+	Toxins []string
+}
+
 type EntityBody struct {
 	Head          *Head
-	Torso         *LimbStatus
+	Torso         *Torso
 
 	RightFrontLeg *Leg
 	LeftFrontLeg  *Leg

@@ -11,6 +11,7 @@ func NewAnimalEntity(worldAccessor WorldAccessor, species SpeciesType, body *Ent
 	FirstName := gofakeit.FirstName()
 	FamilyName := gofakeit.LastName()
 	Gender := gofakeit.Gender()
+	DNA := NewDNA()
 
 	animal := &Entity{
 		Age:              Age,
@@ -33,7 +34,7 @@ func NewAnimalEntity(worldAccessor WorldAccessor, species SpeciesType, body *Ent
 		FeelingSafe: 	  0,
 		FeelingScared:    0,
 		Relationships:    []Relationship{},
-		Genes:            []string{},
+		Genes:            DNA,
 		Species:          species,
 
 		OwnedItems:       []*Item{},
@@ -67,6 +68,7 @@ func NewPersonEntity(worldAccessor WorldAccessor, x, y int, species SpeciesType)
 	FamilyName := gofakeit.LastName()
 	Gender := gofakeit.Gender()
 	Body := CreateBipedalBody()
+	DNA := NewDNA()
 
 	person := &Entity{
 		Age:              Age,
@@ -89,7 +91,7 @@ func NewPersonEntity(worldAccessor WorldAccessor, x, y int, species SpeciesType)
 		FeelingSafe: 	  0,
 		FeelingScared:    0,
 		Relationships:    []Relationship{},
-		Genes:            []string{},
+		Genes:            DNA,
 		Species:          species,
 
 		OwnedItems:       []*Item{},

@@ -4,6 +4,33 @@ import (
 	"strconv"
 )
 
+// ---------------- Start organs -----------------
+
+func (e *Entity) StartOrgans() {
+	e.Body.Torso.Heart.IsPumping = true
+	e.Body.Torso.Lungs.IsBreathing = true
+	e.Body.Torso.Stomach.IsDigesting = true
+	e.Body.Torso.Kidneys.IsFiltering = true
+}
+
+func (e *Entity) StartHeart() {
+	e.Body.Torso.Heart.IsPumping = true
+
+	// Start pumping blood
+	e.Body.Torso.Heart.Oxygen = 100
+	e.Body.Torso.Heart.Glucose = 100
+	e.Body.Torso.Heart.Hormones = []Hormone{ // Initial hormone levels
+		{Name: "Adrenaline", Amount: 1},   // Very low
+		{Name: "Cortisol", Amount: 15},     // Moderate
+		{Name: "Dopamine", Amount: 25},     // Moderate
+		{Name: "Epinephrine", Amount: 1},   // Very low
+		{Name: "Endorphin", Amount: 10},    // Low-moderate
+		{Name: "Serotonin", Amount: 30},    // High
+	}
+}
+
+
+
 // UpdateLocation updates the internal location of the person
 func (e *Entity) UpdateLocation(x, y int) {
 	e.Location.X = x
