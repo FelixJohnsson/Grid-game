@@ -164,7 +164,7 @@ func (e *Entity) ReceivingApplyDamageTo(limb BodyPartType, damage Damage) {
 				e.IsIncapacitated = true
 			}
 			if e.Body.Head.BluntDamage >= brainDamageUntilDead && e.Brain.Active {
-				e.Brain.turnOff()
+				e.Brain.turnOff("Head was severed")
 			}
 		}
 		if e.Body.Head.SharpDamage > sharpDamageUntilBleeding {

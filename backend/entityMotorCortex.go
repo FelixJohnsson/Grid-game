@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -22,7 +21,6 @@ func (b *Brain) MotorCortex() {
             if b.MotorCortexCurrentTask.ActionType == "Walk" && !b.MotorCortexCurrentTask.Finished {
 
 				if b.MotorCortexCurrentTask.TargetLocation.X == b.Owner.Location.X && b.MotorCortexCurrentTask.TargetLocation.Y == b.Owner.Location.Y {
-                        fmt.Println("The motor cortex thinks we've arrived at the target location.")
                         b.MotorCortexCurrentTask.Finished = true
                         b.MotorCortexCurrentTask.IsActive = false
 						continue

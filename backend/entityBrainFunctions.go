@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+const LOGGER_MODE_ENABLED = false
+
 // ----------------- Brain Functions -----------------
 
 func (b *Brain) turnOn() {
@@ -54,18 +56,32 @@ func (b *Brain) MainLoop() {
             b.CognitiveMapHandler(obs)
             b.ActionHandler()
 
-            // Sleep for 2 seconds
-            time.Sleep(500 * time.Millisecond)
+            if LOGGER_MODE_ENABLED {
+                b.StatusLogger()
+            }
+
+            // Sleep for 1 seconds
+            time.Sleep(1000 * time.Millisecond)
         }
     }
 }
 
-func (b *Brain) turnOff() {
+func (b *Brain) turnOff(reason string) {
     if !b.Active {
         fmt.Println("Brain is already inactive.")
         return
     }
-
+    fmt.Println(Red + "Turning off brain for " + b.Owner.FullName + " because of " + reason + Reset)
+    
+    // Log to the InfoPanel
+    if GlobalInfoPanel != nil {
+        if reason == "death" || reason == "killed" {
+            LogDeath(fmt.Sprintf("%s has died: %s", b.Owner.FullName, reason), b.Owner.FullName)
+        } else {
+            LogError(fmt.Sprintf("Brain shutdown: %s", reason), b.Owner.FullName)
+        }
+    }
+    
 	b.Active = false
 	b.IsConscious = false
     b.Cancel()

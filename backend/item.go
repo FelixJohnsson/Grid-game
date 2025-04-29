@@ -4,6 +4,7 @@ package main
 var materials = []Material{
 	{"Grass", "Organic", 1, 1, 1, 10},
 	{"Wood", "Organic", 2, 1, 1, 3},
+	{"Sticks", "Organic", 1, 1, 1, 1},
 	{"Stone", "Inorganic", 5, 3, 4, 2},
 	{"Leather", "Organic", 1, 1, 1, 7},
 	{"Bone", "Organic", 3, 2, 2, 4},

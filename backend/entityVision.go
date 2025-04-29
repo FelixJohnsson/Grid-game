@@ -100,7 +100,7 @@ func (b *Brain) FindFoodSupply() bool {
             b.GoSearchFor("Food supply")
             return false
         } else {
-            fmt.Println("Found food supply at", vision[0].Location.X, vision[0].Location.Y, vision[0].Fruit)
+            LogInfo(fmt.Sprintf("Found food supply at %d, %d", vision[0].Location.X, vision[0].Location.Y), b.Owner.FullName)
             closestPlant := b.FindClosestPlant(vision)
             b.AddMemoryToLongTerm("Found food supply", "Food", closestPlant.Location)
             b.PhysiologicalNeeds.WayOfGettingFood = true
@@ -144,6 +144,17 @@ func (b *Brain) FindLumberTrees() bool {
         
     }
 
+    return false
+}
+
+func (b *Brain) FindSticks() bool {
+    vision := b.Owner.WorldProvider.GetPlantsInVision(b.Owner.Location.X, b.Owner.Location.Y, b.Owner.VisionRange)
+    if len(vision) == 0 {
+        b.GoSearchFor("Sticks")
+        return false
+    } else {
+
+    }
     return false
 }
 

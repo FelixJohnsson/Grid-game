@@ -1,5 +1,9 @@
 package main
 
+import (
+	"strconv"
+)
+
 // UpdateLocation updates the internal location of the person
 func (e *Entity) UpdateLocation(x, y int) {
 	e.Location.X = x
@@ -199,7 +203,7 @@ func (e *Entity) RemoveLimb(limb BodyPartType) {
 
 	switch limb {
 	case "Head":
-		e.Brain.turnOff()
+		e.Brain.turnOff("Head was removed")
 		e.Body.Head = nil
 		return
 	case "RightHand":
@@ -232,7 +236,7 @@ func (e *Entity) RemoveLimb(limb BodyPartType) {
 // WalkTo - Walk to a location - This assumes that the person can physically walk and that it's possible to walk to the location. This should be one tile away, so one stee.
 func (e *Entity) WalkStepTo(x, y int) {
 	requiredLimbs := []BodyPartType{"RightLeg", "LeftLeg"}
-	e.IsMoving = TargetedAction{"Walk", string(x) + ", " + string(y), true, requiredLimbs, 10}
+	e.IsMoving = TargetedAction{"Walk", strconv.Itoa(x) + ", " + strconv.Itoa(y), true, requiredLimbs, 10}
 	e.WorldProvider.MoveEntity(e, x, y)
 }
 

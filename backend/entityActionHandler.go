@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 type TaskType string
 
 const (
@@ -14,6 +12,7 @@ const (
 	HaveFood   TaskType = "Get food for storage"
 
 	FindLumber TaskType = "Find lumber tree"
+	FindSticks TaskType = "Find sticks"
 	HaveLumber TaskType = "Get lumber for storage"
 	ChopTree   TaskType = "Chop down tree"
 
@@ -34,6 +33,7 @@ const (
 	FindShelter TaskType = "Find shelter"
 	MakeShelter TaskType = "Make shelter"
 	ImproveDefense TaskType = "Improve defense"
+	BuildStorage TaskType = "Build storage"
 
 	Talk TaskType = "Talk"
 	None TaskType = "Idle"
@@ -43,18 +43,17 @@ func (b *Brain) ActionHandler() {
 	// Take the action with the highest priority
 	action := b.RankTasks()
 
-	fmt.Println(Blue + "Action:", action.Action)
-	fmt.Println(Reset)
-
 	// Perform the action
 	switch action.Action {
 	// ----------------- Water ---------------
 	case FindWater:
 		b.CurrentTask = action
+		b.CurrentTask.IsActive = true
 		b.FindWaterSupply()
 		return
 	case DrinkWater:
 		b.CurrentTask = action
+		b.CurrentTask.IsActive = true
 		b.DrinkWaterTask(action)
 		return
 	case HaveWater:
@@ -65,10 +64,12 @@ func (b *Brain) ActionHandler() {
 	// ----------------- Food -----------------
 	case FindFood:
 		b.CurrentTask = action
+		b.CurrentTask.IsActive = true
 		b.FindFoodSupply()
 		return
 	case EatFood:
 		b.CurrentTask = action
+		b.CurrentTask.IsActive = true
 		b.EatFoodTask()
 	case HaveFood:
 		b.CurrentTask = action
@@ -79,6 +80,7 @@ func (b *Brain) ActionHandler() {
 	case FindLumber:
 		b.GetLumberTask()
 		b.CurrentTask = action
+		b.CurrentTask.IsActive = true
 		return
 	case HaveLumber:
 		b.CurrentTask = action
@@ -115,6 +117,11 @@ func (b *Brain) ActionHandler() {
 		//b.CutGrass(action)
 		return
 
+	// ----------------- Sticks ---------------
+	case FindSticks:
+		b.CurrentTask = action
+		b.CurrentTask.IsActive = true
+		return
 	// ----------------- Craft ---------------
 	case CraftItem:
 		b.CurrentTask = action

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 )
 
 // NewBrain creates a new Brain and assigns an owner to it.
@@ -43,7 +44,7 @@ func (b *Brain) OxygenHandler() {
     b.ConsumeOxygen()
 
     if b.OxygenLevel <= 0 {
-        b.turnOff()
+        b.turnOff("Oxygen level is 0")
         return
     }
 }
@@ -76,24 +77,63 @@ func (b *Brain) DecreaseThirstLevel(amount int) {
 
 // FoodHandler is a function that handles the food level of the person
 func (b *Brain) FoodHandler() {
+    previousHunger := b.PhysiologicalNeeds.Hunger
     b.IncreaseHungerLevel()
+    currentHunger := b.PhysiologicalNeeds.Hunger
+
+    // Log messages at important thresholds
+    if GlobalInfoPanel != nil {
+        // Only log when crossing thresholds to avoid spam
+        if previousHunger < 30 && currentHunger >= 30 {
+            LogFood(fmt.Sprintf("%s is getting hungry (%d%%)", b.Owner.FullName, currentHunger), b.Owner.FullName)
+        } else if previousHunger < 50 && currentHunger >= 50 {
+            LogFood(fmt.Sprintf("%s is very hungry (%d%%)", b.Owner.FullName, currentHunger), b.Owner.FullName)
+        } else if previousHunger < 70 && currentHunger >= 70 {
+            LogFood(fmt.Sprintf("%s is starving (%d%%)", b.Owner.FullName, currentHunger), b.Owner.FullName)
+        } else if previousHunger < 90 && currentHunger >= 90 {
+            LogFood(fmt.Sprintf("%s is near death from starvation (%d%%)", b.Owner.FullName, currentHunger), b.Owner.FullName)
+        }
+    }
 
     if b.PhysiologicalNeeds.Hunger >= 100 {
-        b.KillEntity()
+        if GlobalInfoPanel != nil {
+            LogDeath(fmt.Sprintf("%s has died from starvation", b.Owner.FullName), b.Owner.FullName)
+        }
+        b.KillEntity("Starved")
     }
 }
 
 // ThirstHandler is a function that handles the thirst level of the person
 func (b *Brain) ThirstHandler() {
+    previousThirst := b.PhysiologicalNeeds.Thirst
     b.IncreaseThirstLevel()
+    currentThirst := b.PhysiologicalNeeds.Thirst
+    
+    // Log messages at important thresholds
+    if GlobalInfoPanel != nil {
+        // Only log when crossing thresholds to avoid spam
+        if previousThirst < 30 && currentThirst >= 30 {
+            LogWater(fmt.Sprintf("%s is getting thirsty (%d%%)", b.Owner.FullName, currentThirst), b.Owner.FullName)
+        } else if previousThirst < 50 && currentThirst >= 50 {
+            LogWater(fmt.Sprintf("%s is very thirsty (%d%%)", b.Owner.FullName, currentThirst), b.Owner.FullName)
+        } else if previousThirst < 70 && currentThirst >= 70 {
+            LogWater(fmt.Sprintf("%s is dehydrated (%d%%)", b.Owner.FullName, currentThirst), b.Owner.FullName)
+        } else if previousThirst < 90 && currentThirst >= 90 {
+            LogWater(fmt.Sprintf("%s is near death from dehydration (%d%%)", b.Owner.FullName, currentThirst), b.Owner.FullName)
+        }
+    }
+    
     if b.PhysiologicalNeeds.Thirst >= 100 {
-        b.KillEntity()
+        if GlobalInfoPanel != nil {
+            LogDeath(fmt.Sprintf("%s has died from dehydration", b.Owner.FullName), b.Owner.FullName)
+        }
+        b.KillEntity("Dehydrated")
     }
 }
 
-func (b *Brain) KillEntity(){
+func (b *Brain) KillEntity(reason string){
     b.Owner.IsIncapacitated = true
-    b.Owner.Brain.turnOff()
+    b.Owner.Brain.turnOff(reason)
 }
 
 

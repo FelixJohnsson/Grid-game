@@ -34,10 +34,17 @@ func NewPlant(name PlantType, tile *Tile, x, y int) *Plant {
 
     if name == AppleTree {
         newPlant.ProducesFruit = true
-        newPlant.Fruit = append(newPlant.Fruit, Fruit{"Apple", 5, true, 20})
+        AddFruitToPlant(newPlant, Fruit{"Apple", 5, true, 20})
     }
 
     return newPlant
+}
+func AddFruitToPlant(plant *Plant, fruit Fruit) {
+    plant.Fruit = append(plant.Fruit, fruit)
+}
+
+func RemoveFruitFromPlant(plant *Plant, number int) {
+    plant.Fruit = plant.Fruit[:len(plant.Fruit)-number]
 }
 
 // NewPlantLife creates a new plant life and assigns an owner to it.

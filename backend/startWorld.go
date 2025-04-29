@@ -143,9 +143,9 @@ func InitializeWorld() *World {
 	wolf3.AddRelationship(wolf1, "Pack member", 100)
 	wolf3.AddRelationship(wolf2, "Pack member", 100)
 
-    wolf1.Brain.turnOn()
-    wolf2.Brain.turnOn()
-    wolf3.Brain.turnOn()
+    //wolf1.Brain.turnOn()
+    //wolf2.Brain.turnOn()
+    //wolf3.Brain.turnOn()
 
 	stoneAxe := CreateNewItem("Stone Axe")
 	newPerson1.GrabWithRightHand(stoneAxe)
