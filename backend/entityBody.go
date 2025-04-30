@@ -86,11 +86,6 @@ func CreateNewHeart() *Heart {
 	heart := Heart{
 		Vessel: 0,
 		IsPumping: false,
-		Oxygen: 0,
-		Glucose: 0,
-		Hormones: []Hormone{},
-		OxygenLevel: 0,
-		OxygenDemandAmount: 0,
 	}
 	return &heart
 }
@@ -108,8 +103,7 @@ func CreateNewStomach() *Stomach {
 	stomach := Stomach{
 		Vessel: 0,
 		IsDigesting: false,
-		Glucose: 0,
-		Contains: []string{},
+		Contains: []Food{},
 	}
 	return &stomach
 }
@@ -118,7 +112,6 @@ func CreateNewKidneys() *Kidneys {
 	kidneys := Kidneys{
 		Vessel: 0,
 		IsFiltering: false,
-		Glucose: 0,
 		Toxins: []string{},
 	}
 	return &kidneys
@@ -153,6 +146,22 @@ func CreateBipedalBody() *EntityBody {
 		LeftArm:  LeftArm,
 		RightLeg: RightLeg,
 		LeftLeg:  LeftLeg,
+		Blood: Blood{
+			Oxygen: 100,
+			Glucose: 100,
+			Toxins: 0,
+			Water: 100,
+			Type: "O-negative",
+			Hormones: Hormones{
+				Adrenaline: 1,   // Very low
+				Cortisol: 15,     // Moderate
+				Dopamine: 25,     // Moderate
+				Epinephrine: 1,   // Very low
+				Endorphin: 10,    // Low-moderate
+				Serotonin: 30,    // High
+			},
+			Amount: 100,
+		},
 	}
 	return body
 }
@@ -174,6 +183,22 @@ func CreateBipedalWithTailBody() *EntityBody {
 		RightLeg: RightLeg,
 		LeftLeg:  LeftLeg,
 		Tail:     Tail,
+		Blood: Blood{
+			Oxygen: 100,
+			Glucose: 100,
+			Toxins: 0,
+			Water: 100,
+			Type: "O-negative",
+			Hormones: Hormones{
+				Adrenaline: 1,   // Very low
+				Cortisol: 15,     // Moderate
+				Dopamine: 25,     // Moderate
+				Epinephrine: 1,   // Very low
+				Endorphin: 10,    // Low-moderate
+				Serotonin: 30,    // High
+			},
+			Amount: 100,
+		},
 	}
 	return body
 }

@@ -15,9 +15,11 @@ func (b *Brain) turnOn() {
         fmt.Println("Brain is already active.")
         return
     }
-
+    fmt.Println(Green + "Turning on brain for " + b.Owner.FullName + Reset)
     b.IsConscious = true
     b.Active = true
+
+    b.Owner.StartOrgans()
     go b.MotorCortex()
     go b.MainLoop()
 }
@@ -42,12 +44,20 @@ func (b *Brain) MainLoop() {
                 b.IsUnderAttackHandler()
             }
 
-            b.OxygenHandler()
+            // Check the blood status - Hormones and min/max values
+            b.BloodStatus()
 
+            // Organs 
+            b.HeartHandler()
+            b.LungsHandler()
+            b.StomachHandler()
+            b.KidneysHandler()
+            b.HormonesHandler()
+
+            // Pain
             b.PainHandler()
-            b.FoodHandler()
-            b.ThirstHandler()
 
+            // Wants
             b.ClearWants()
             b.HomoSapiensCalculateWant()
             b.TranslateWantToTaskList()
@@ -95,8 +105,107 @@ func (b *Brain) LooseConsciousness(duration int) {
         b.IsConscious = true
     }()
 }
+type BloodThresholdsType struct {
+    MinOxygen   float64
+    MinGlucose  float64
+    MinWater    float64
+    MaxToxins   float64
+    MinVolume   float64
+}
 
+type BloodCheckFunc func(b *Brain, blood *Blood, thresholds BloodThresholdsType)
 
+func CheckBloodOxygen(b *Brain, blood *Blood, t BloodThresholdsType) {
+    if blood.Oxygen <= t.MinOxygen {
+        b.AddHormone("Cortisol", 70) 
+    }
+    if blood.Oxygen <= t.MinOxygen*0.5 {
+        b.Owner.StopHeart()
+    }
+}
+
+func CheckBloodGlucose(b *Brain, blood *Blood, t BloodThresholdsType) {
+    if blood.Glucose <= t.MinGlucose {
+        b.AddHormone("Cortisol", 60)
+    }
+    if blood.Glucose == 0 {
+        b.Owner.StopHeart()
+    }
+}
+
+func CheckBloodWater(b *Brain, blood *Blood, t BloodThresholdsType) {
+    if blood.Water <= t.MinWater {
+        b.AddHormone("Cortisol", 50)
+    }
+    if blood.Water <= t.MinWater*0.4 {
+        b.Owner.StopHeart()
+    }
+}
+
+func CheckBloodToxins(b *Brain, blood *Blood, t BloodThresholdsType) {
+    if blood.Toxins >= t.MaxToxins {
+        b.AddHormone("Cortisol", 70)
+    }
+    if blood.Toxins >= t.MaxToxins*1.5 {
+        b.Owner.StopHeart()
+    }
+}
+
+func CheckBloodVolume(b *Brain, blood *Blood, t BloodThresholdsType) {
+    if blood.Amount <= t.MinVolume {
+        b.AddHormone("Cortisol", 100)
+        b.AddHormone("Epinephrine", 80)
+    }
+    if blood.Amount <= t.MinVolume*0.4 {
+        b.Owner.StopHeart()
+    }
+}
+
+func (b *Brain) BloodStatus() {
+    blood := &b.Owner.Body.Blood
+
+    bloodThresholds := BloodThresholdsType{
+        MinOxygen:  30,
+        MinGlucose: 30,
+        MinWater:   30,
+        MaxToxins:  60,
+        MinVolume:  30,
+    }
+
+    checks := []BloodCheckFunc{
+        CheckBloodOxygen,
+        CheckBloodGlucose,
+        CheckBloodWater,
+        CheckBloodToxins,
+        CheckBloodVolume,
+    }
+
+    for _, check := range checks {
+        check(b, blood, bloodThresholds)
+    }
+}
+
+func (b *Brain) HormonesHandler() {
+    if b.Owner.Body.Blood.Hormones.Adrenaline < 15 {
+        b.AddHormone("Adrenaline", 1)
+    }
+    if b.Owner.Body.Blood.Hormones.Cortisol > 15 {
+        b.RemoveHormone("Cortisol", 1)
+    }
+    if b.Owner.Body.Blood.Hormones.Dopamine > 15 {
+        b.RemoveHormone("Dopamine", 1)
+    }
+    if b.Owner.Body.Blood.Hormones.Epinephrine > 1 {
+        b.RemoveHormone("Epinephrine", 1)
+    }
+    if b.Owner.Body.Blood.Hormones.Endorphin > 10 {
+        b.RemoveHormone("Endorphin", 1)
+    }
+    if b.Owner.Body.Blood.Hormones.Serotonin > 30 {
+        b.RemoveHormone("Serotonin", 1)
+    }
+
+}
 // ----------------- Cognitive Map -----------------
 
 func (b *Brain) CognitiveMapHandler(obs []Tile) {
@@ -119,7 +228,12 @@ func (b *Brain) CognitiveMapHandler(obs []Tile) {
                 PlantStage: tile.Plant.PlantStage,
             }
         }
-        b.AddLocationToCognitiveMap(tile.Location, cognitiveMapTile)
+        // Create a properly oriented location for the cognitive map
+        mappedLocation := Location{
+            X: tile.Location.X,
+            Y: tile.Location.Y,
+        }
+        b.AddLocationToCognitiveMap(mappedLocation, cognitiveMapTile)
     }
 }
 
@@ -271,15 +385,6 @@ func (b *Brain) CalculatePainLevel() {
 
 // ----------------- Oxygen levels -----------------
 
-// Breath 
-func (b *Brain) Breath() {
-    b.OxygenLevel += 10
-}
-
-// ConsumeOxygen
-func (b *Brain) ConsumeOxygen() {
-    b.OxygenLevel -= 10
-}
 
 // CheckIfCanBreah - Check if the person can breath
 func (b *Brain) CheckIfCanBreath() bool {

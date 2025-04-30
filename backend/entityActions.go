@@ -5,8 +5,6 @@ import (
 	"math/rand"
 )
 
-// ---------------- Actions ----------------
-
 // ---------------- General actions ------------
 
 // ClearAirway - Clear the airway of the person - Nose or Mouth
@@ -40,9 +38,6 @@ func (b *Brain) GetFoodForStorage(action TargetedAction) {
 
 }
 
-
-
-
 func (b *Brain) Craft(item string) *Item {
     switch item {
     case "Stone Axe":
@@ -75,10 +70,11 @@ func (b *Brain) DrinkWaterTask(TargetedAction TargetedAction) {
 
 func (b *Brain) EatFoodTask() {
     if b.CheckIfCurrentMotorTaskIsDone(b.MotorCortexCurrentTask, "Eat food") {
-        food := b.Owner.WorldProvider.GetTile(b.Owner.Location.X, b.Owner.Location.Y)
-        if food.Plant != nil && len(food.Plant.Fruit) > 0 {
-            food := food.Plant.Fruit[0]
-            b.Owner.Eat(food)
+        tile := b.Owner.WorldProvider.GetTile(b.Owner.Location.X, b.Owner.Location.Y)
+        if tile.Plant != nil && len(tile.Plant.Fruit) > 0 {
+            edible := tile.Plant.Fruit[0]
+            b.Owner.WorldProvider.RemovePlant(tile.Plant)
+            b.Owner.Eat(edible)
         } else {
             fmt.Println("I can't find food where I am, but the motor cortex thinks I've found food.")
         }
@@ -137,12 +133,12 @@ func (b *Brain) ChopDownTree(tree *Plant) *Item {
 
 // Eat - Consume food
 func (e *Entity) Eat(food Food) {
-    e.Brain.DecreaseHungerLevel(food.GetNutritionalValue())
+    e.Body.Torso.Stomach.Contains = append(e.Body.Torso.Stomach.Contains, food)
 }
 // Drink - Consume a liquid
 func (e *Entity) Drink(liquid Liquid) {
     switch liquid.Name {
     case "Water":
-        e.Brain.DecreaseThirstLevel(50)
+        e.Body.Blood.Water += 50
     }
 }

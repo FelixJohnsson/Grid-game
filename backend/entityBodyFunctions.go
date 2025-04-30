@@ -7,28 +7,62 @@ import (
 // ---------------- Start organs -----------------
 
 func (e *Entity) StartOrgans() {
-	e.Body.Torso.Heart.IsPumping = true
-	e.Body.Torso.Lungs.IsBreathing = true
-	e.Body.Torso.Stomach.IsDigesting = true
-	e.Body.Torso.Kidneys.IsFiltering = true
+	e.StartHeart()
+	e.StartLungs()
+	e.StartStomach()
+	e.StartKidneys()
 }
 
 func (e *Entity) StartHeart() {
 	e.Body.Torso.Heart.IsPumping = true
-
-	// Start pumping blood
-	e.Body.Torso.Heart.Oxygen = 100
-	e.Body.Torso.Heart.Glucose = 100
-	e.Body.Torso.Heart.Hormones = []Hormone{ // Initial hormone levels
-		{Name: "Adrenaline", Amount: 1},   // Very low
-		{Name: "Cortisol", Amount: 15},     // Moderate
-		{Name: "Dopamine", Amount: 25},     // Moderate
-		{Name: "Epinephrine", Amount: 1},   // Very low
-		{Name: "Endorphin", Amount: 10},    // Low-moderate
-		{Name: "Serotonin", Amount: 30},    // High
-	}
 }
 
+func (e *Entity) StopHeart() {
+	e.Body.Torso.Heart.IsPumping = false
+}
+
+func (e *Entity) HeartBeat() {
+	e.Body.Blood.Oxygen -= 5
+	e.Body.Blood.Glucose -= 0.5
+	e.Body.Blood.Toxins += 1
+	e.Body.Blood.Water -= 1
+}
+
+func (e *Entity) Breath() {
+	e.Body.Blood.Oxygen += 50
+	e.Body.Blood.Glucose -= 0.5
+}
+
+func (e *Entity) Digest() {
+	item := e.Body.Torso.Stomach.Contains[0]
+	e.Body.Torso.Stomach.Contains = e.Body.Torso.Stomach.Contains[1:]
+	e.Body.Blood.Glucose += float64(item.GetNutritionalValue())
+	e.Body.Blood.Water += 5
+	LogFood(item.GetName(), e.FullName)
+}
+
+func (e *Entity) Filter() {
+	e.Body.Blood.Toxins -= 5
+	if e.Body.Blood.Toxins < 0 {
+		e.Body.Blood.Toxins = 0
+	}
+	e.Body.Blood.Water -= 0.5
+}
+
+func (e *Entity) StartLungs() {
+	e.Body.Torso.Lungs.IsBreathing = true
+	e.Body.Torso.Lungs.Contains = []string{}
+}
+
+func (e *Entity) StartStomach() {
+	e.Body.Torso.Stomach.IsDigesting = true
+	e.Body.Torso.Stomach.Contains = []Food{}
+}
+
+func (e *Entity) StartKidneys() {
+	e.Body.Torso.Kidneys.IsFiltering = true
+	e.Body.Torso.Kidneys.Toxins = []string{}
+}
 
 
 // UpdateLocation updates the internal location of the person
@@ -230,7 +264,7 @@ func (e *Entity) RemoveLimb(limb BodyPartType) {
 
 	switch limb {
 	case "Head":
-		e.Brain.turnOff("Head was removed")
+		e.Brain.KillEntity("Head was removed")
 		e.Body.Head = nil
 		return
 	case "RightHand":

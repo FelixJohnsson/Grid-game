@@ -33,7 +33,7 @@ func (b *Brain) MotorCortex() {
                 }
             }
 
-            // Sleep for 1 seconds
+            // Sleep for 250 milliseconds
             time.Sleep(250 * time.Millisecond)
         }
     }

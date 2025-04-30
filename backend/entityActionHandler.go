@@ -42,18 +42,17 @@ const (
 func (b *Brain) ActionHandler() {
 	// Take the action with the highest priority
 	action := b.RankTasks()
+	b.CurrentTask.IsActive = true
 
 	// Perform the action
 	switch action.Action {
 	// ----------------- Water ---------------
 	case FindWater:
 		b.CurrentTask = action
-		b.CurrentTask.IsActive = true
 		b.FindWaterSupply()
 		return
 	case DrinkWater:
 		b.CurrentTask = action
-		b.CurrentTask.IsActive = true
 		b.DrinkWaterTask(action)
 		return
 	case HaveWater:
@@ -64,12 +63,10 @@ func (b *Brain) ActionHandler() {
 	// ----------------- Food -----------------
 	case FindFood:
 		b.CurrentTask = action
-		b.CurrentTask.IsActive = true
 		b.FindFoodSupply()
 		return
 	case EatFood:
 		b.CurrentTask = action
-		b.CurrentTask.IsActive = true
 		b.EatFoodTask()
 	case HaveFood:
 		b.CurrentTask = action
@@ -80,7 +77,6 @@ func (b *Brain) ActionHandler() {
 	case FindLumber:
 		b.GetLumberTask()
 		b.CurrentTask = action
-		b.CurrentTask.IsActive = true
 		return
 	case HaveLumber:
 		b.CurrentTask = action
@@ -120,7 +116,6 @@ func (b *Brain) ActionHandler() {
 	// ----------------- Sticks ---------------
 	case FindSticks:
 		b.CurrentTask = action
-		b.CurrentTask.IsActive = true
 		return
 	// ----------------- Craft ---------------
 	case CraftItem:
@@ -166,6 +161,8 @@ func (b *Brain) ActionHandler() {
 	// ----------------- Misc -----------------
 	case None:
 		b.CurrentTask = action
+		b.CurrentTask.IsActive = false
+
 		return
 	}
 }
@@ -196,9 +193,9 @@ func (b *Brain) HomoSapiensCalculateWant() {
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Be able to breath")
     case b.PhysiologicalNeeds.IsInPain && !b.CheckIfWantIsAlreadyInList("Relieve pain"):
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Relieve pain")
-    case b.PhysiologicalNeeds.Thirst > 30 && !b.CheckIfWantIsAlreadyInList("Consume water"):
+    case b.Owner.Body.Blood.Water < 40 && !b.CheckIfWantIsAlreadyInList("Consume water"):
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Consume water")
-    case b.PhysiologicalNeeds.Hunger > 30 && !b.CheckIfWantIsAlreadyInList("Consume food"):
+    case b.Owner.Body.Blood.Glucose < 40 && !b.CheckIfWantIsAlreadyInList("Consume food"):
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Consume food")
     case !b.PhysiologicalNeeds.IsSufficientlyWarm && !b.CheckIfWantIsAlreadyInList("Get warm"):
         b.Owner.WantsTo = append(b.Owner.WantsTo, "Get warm")
@@ -286,13 +283,13 @@ func (b *Brain) TranslateWantToTaskList() {
 			b.AddTaskToActionList(action)
 		}
 	}
-    if b.PhysiologicalNeeds.Thirst > 30 {
+    if b.Owner.Body.Blood.Water < 40 {
 		action := TargetedAction{DrinkWater, "", false,[]BodyPartType{"Hands"}, 99}
 		if !b.IsTaskInActionList(action) {
 			b.AddTaskToActionList(action)
 		}
 	}
-	if b.PhysiologicalNeeds.Hunger > 30 {
+	if b.Owner.Body.Blood.Glucose < 40 {
 		action := TargetedAction{EatFood, "", false,[]BodyPartType{"Hands"}, 98}
 		if !b.IsTaskInActionList(action) {
 			b.AddTaskToActionList(action)

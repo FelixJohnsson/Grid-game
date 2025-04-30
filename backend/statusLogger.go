@@ -15,16 +15,16 @@ func (b *Brain) StatusLogger() {
             LogHealth(fmt.Sprintf("Pain level critical: %d/%d", b.PainLevel, b.PainTolerance), entity.FullName)
         }
         
-        if b.PhysiologicalNeeds.Hunger > 70 {
-            LogFood(fmt.Sprintf("Hunger critical: %d", b.PhysiologicalNeeds.Hunger), entity.FullName)
-        } else if b.PhysiologicalNeeds.Hunger > 30 {
-            LogFood(fmt.Sprintf("Getting hungry: %d", b.PhysiologicalNeeds.Hunger), entity.FullName)
+        if b.Owner.Body.Blood.Glucose < 20 {
+            LogFood(fmt.Sprintf("Hunger critical: %f", b.Owner.Body.Blood.Glucose), entity.FullName)
+        } else if b.Owner.Body.Blood.Glucose < 40 {
+            LogFood(fmt.Sprintf("Getting hungry: %f", b.Owner.Body.Blood.Glucose), entity.FullName)
         }
         
-        if b.PhysiologicalNeeds.Thirst > 70 {
-            LogWater(fmt.Sprintf("Thirst critical: %d", b.PhysiologicalNeeds.Thirst), entity.FullName)
-        } else if b.PhysiologicalNeeds.Thirst > 30 {
-            LogWater(fmt.Sprintf("Getting thirsty: %d", b.PhysiologicalNeeds.Thirst), entity.FullName)
+        if b.Owner.Body.Blood.Water < 20 {
+            LogWater(fmt.Sprintf("Thirst critical: %f", b.Owner.Body.Blood.Water), entity.FullName)
+        } else if b.Owner.Body.Blood.Water < 40 {
+            LogWater(fmt.Sprintf("Getting thirsty: %f", b.Owner.Body.Blood.Water), entity.FullName)
         }
         
         if entity.IsBleeding {
@@ -69,25 +69,25 @@ func (b *Brain) StatusLogger() {
 		
 		// Color-code hunger level
 		hungerColor := Green
-		if b.PhysiologicalNeeds.Hunger > 30 {
+		if b.Owner.Body.Blood.Glucose < 40 {
 			hungerColor = Yellow
 		} 
-		if b.PhysiologicalNeeds.Hunger > 70 {
+		if b.Owner.Body.Blood.Glucose < 20 {
 			hungerColor = Red
 		}
 		
 		// Color-code thirst level
 		thirstColor := Green
-		if b.PhysiologicalNeeds.Thirst > 30 {
+		if b.Owner.Body.Blood.Water < 40 {
 			thirstColor = Yellow
 		}
-		if b.PhysiologicalNeeds.Thirst > 70 {
+		if b.Owner.Body.Blood.Water < 20 {
 			thirstColor = Red
 		}
 		
-		fmt.Printf("  Hunger: %s%d%s | Thirst: %s%d%s | Rest: %d\n", 
-			hungerColor, b.PhysiologicalNeeds.Hunger, Reset,
-			thirstColor, b.PhysiologicalNeeds.Thirst, Reset,
+		fmt.Printf("  Hunger: %s%f%s | Thirst: %s%f%s | Rest: %d\n", 
+			hungerColor, b.Owner.Body.Blood.Glucose, Reset,
+			thirstColor, b.Owner.Body.Blood.Water, Reset,
 			b.PhysiologicalNeeds.Rested)
 		fmt.Printf("  Safe: %d | Scared: %d | In Safe Area: %t\n", 
 			entity.FeelingSafe, entity.FeelingScared, b.PhysiologicalNeeds.IsInSafeArea)

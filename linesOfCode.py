@@ -74,3 +74,7 @@ if __name__ == "__main__":
 # 15/09/2024 - Milestone: 4 entities surviving by themselves
 #Total files scanned: 35
 #Total lines of code: 3965
+
+# 30/04/2025
+#Total files scanned: 39
+#Total lines of code: 5047

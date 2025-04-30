@@ -301,39 +301,47 @@ type Torso struct {
 	Kidneys *Kidneys
 }
 
-type Hormone struct {
-	Name string
-	Amount int
+type Hormones struct {
+	Adrenaline int
+	Cortisol int
+	Dopamine int
+	Epinephrine int
+	Endorphin int
+	Serotonin int
 }
 
 type Heart struct {
 	Vessel int
 	IsPumping bool
-	Oxygen int
-	Glucose int
-	Hormones []Hormone
-	OxygenLevel int
-	OxygenDemandAmount int
 }
 
 type Lungs struct {
 	Vessel int
 	IsBreathing bool
 	Oxygen int
+	Contains []string
 }
 
 type Stomach struct {
 	Vessel int
 	IsDigesting bool
-	Glucose int
-	Contains []string
+	Contains []Food
 }
 
 type Kidneys struct {
 	Vessel int
 	IsFiltering bool
-	Glucose int
 	Toxins []string
+}
+
+type Blood struct {
+    Oxygen   float64
+    Glucose  float64
+    Toxins   float64
+	Water    float64
+	Hormones Hormones
+	Type     string
+	Amount   float64
 }
 
 type EntityBody struct {
@@ -353,6 +361,8 @@ type EntityBody struct {
 
 	Wings         *LimbThatCanMove
 	Tail          *LimbThatCanMove
+
+	Blood Blood
 
 }
 
@@ -622,8 +632,8 @@ type EntityCleaned struct {
 
 	Thinking 	 string       `json:"Thinking"`
 
-	Head 		 *Head `json:"Head"`
-	Torso 		 *LimbStatus  `json:"Torso"`
+	Head 		 *Head        `json:"Head"`
+	Torso 		 *Torso       `json:"Torso"`
 	RightArm 	 *Arm         `json:"RightArm"`
 	LeftArm 	 *Arm         `json:"LeftArm"`
 	RightLeg 	 *Leg         `json:"RightLeg"`

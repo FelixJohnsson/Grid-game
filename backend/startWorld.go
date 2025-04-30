@@ -127,25 +127,7 @@ func InitializeWorld() *World {
 	newPerson1 := world.CreateNewPersonEntity(2, 2, Human)
 	newPerson1.Title = "Leader"
 	newPerson1.Thinking = "I am the leader of this group."
-	newPerson1.Brain.PhysiologicalNeeds.Thirst = 70
 	newPerson1.Brain.turnOn()
-
-	// Create wolf
-	wolf1 := world.CreateNewAnimalEntity(Wolf, 50, 10)
-	wolf2 := world.CreateNewAnimalEntity(Wolf, 50, 12)
-	wolf3 := world.CreateNewAnimalEntity(Wolf, 48, 10)
-
-	// Add relationships of the wolves to each other
-	wolf1.AddRelationship(wolf2, "Pack member", 100)
-	wolf1.AddRelationship(wolf3, "Pack member", 100)
-	wolf2.AddRelationship(wolf1, "Pack member", 100)
-	wolf2.AddRelationship(wolf3, "Pack member", 100)
-	wolf3.AddRelationship(wolf1, "Pack member", 100)
-	wolf3.AddRelationship(wolf2, "Pack member", 100)
-
-    //wolf1.Brain.turnOn()
-    //wolf2.Brain.turnOn()
-    //wolf3.Brain.turnOn()
 
 	stoneAxe := CreateNewItem("Stone Axe")
 	newPerson1.GrabWithRightHand(stoneAxe)
@@ -166,6 +148,7 @@ func InitializeWorld() *World {
 
 	// Add some apple trees
 	world.MakePlantsAroundLocation(30, 25, 5, AppleTree)
+    world.MakePlantsAroundLocation(50, 50, 5, AppleTree)
 
 	// Add some high grass
 	world.MakePlantsAroundLocation(10, 10, 10, HighGrass)

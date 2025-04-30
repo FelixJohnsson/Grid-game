@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 )
 
 // NewBrain creates a new Brain and assigns an owner to it.
@@ -34,106 +33,45 @@ func NewBrain(Owner *Entity) *Brain {
     }
 }
 
-// OxygenHandler is a function that handles the oxygen level of the person
-func (b *Brain) OxygenHandler() {
-    if b.CheckIfCanBreath() {
-        b.Breath()
+func (b *Brain) HeartHandler() {
+    if b.Owner.Body.Torso.Heart.IsPumping {
+        b.Owner.HeartBeat()
     } else {
-        b.CanBreath = false
-    }
-    b.ConsumeOxygen()
-
-    if b.OxygenLevel <= 0 {
-        b.turnOff("Oxygen level is 0")
+        b.KillEntity("Heart stopped")
         return
     }
 }
 
-// IncreaseHungerLevel is a function that increases the hunger level of the person
-func (b *Brain) IncreaseHungerLevel() {
-    b.PhysiologicalNeeds.Hunger += 1
-}
-
-//DecreaseHungerLevel is a function that decreases the hunger level of the person
-func (b *Brain) DecreaseHungerLevel(amount int) {
-    b.PhysiologicalNeeds.Hunger -= amount
-    if b.PhysiologicalNeeds.Hunger < 0 {
-        b.PhysiologicalNeeds.Hunger = 0
+func (b *Brain) LungsHandler() {
+	if b.CheckIfCanBreath() && b.Owner.Body.Blood.Oxygen < 100 {
+        b.Owner.Breath()
+    } else {
+		b.AddHormone("Adrenaline", 70)
+		b.AddHormone("Cortisol", 70)
     }
 }
 
-//IncreaseThirstLevel is a function that increases the thirst level of the person
-func (b *Brain) IncreaseThirstLevel() {
-    b.PhysiologicalNeeds.Thirst += 1
-}
-
-//DecreaseThirstLevel is a function that decreases the thirst level of the person
-func (b *Brain) DecreaseThirstLevel(amount int) {
-    b.PhysiologicalNeeds.Thirst -= amount
-    if b.PhysiologicalNeeds.Thirst < 0 {
-        b.PhysiologicalNeeds.Thirst = 0
+func (b *Brain) StomachHandler() {
+    if b.Owner.Body.Torso.Stomach.IsDigesting && len(b.Owner.Body.Torso.Stomach.Contains) > 0 {
+        b.Owner.Digest()
     }
 }
 
-// FoodHandler is a function that handles the food level of the person
-func (b *Brain) FoodHandler() {
-    previousHunger := b.PhysiologicalNeeds.Hunger
-    b.IncreaseHungerLevel()
-    currentHunger := b.PhysiologicalNeeds.Hunger
-
-    // Log messages at important thresholds
-    if GlobalInfoPanel != nil {
-        // Only log when crossing thresholds to avoid spam
-        if previousHunger < 30 && currentHunger >= 30 {
-            LogFood(fmt.Sprintf("%s is getting hungry (%d%%)", b.Owner.FullName, currentHunger), b.Owner.FullName)
-        } else if previousHunger < 50 && currentHunger >= 50 {
-            LogFood(fmt.Sprintf("%s is very hungry (%d%%)", b.Owner.FullName, currentHunger), b.Owner.FullName)
-        } else if previousHunger < 70 && currentHunger >= 70 {
-            LogFood(fmt.Sprintf("%s is starving (%d%%)", b.Owner.FullName, currentHunger), b.Owner.FullName)
-        } else if previousHunger < 90 && currentHunger >= 90 {
-            LogFood(fmt.Sprintf("%s is near death from starvation (%d%%)", b.Owner.FullName, currentHunger), b.Owner.FullName)
-        }
-    }
-
-    if b.PhysiologicalNeeds.Hunger >= 100 {
-        if GlobalInfoPanel != nil {
-            LogDeath(fmt.Sprintf("%s has died from starvation", b.Owner.FullName), b.Owner.FullName)
-        }
-        b.KillEntity("Starved")
-    }
-}
-
-// ThirstHandler is a function that handles the thirst level of the person
-func (b *Brain) ThirstHandler() {
-    previousThirst := b.PhysiologicalNeeds.Thirst
-    b.IncreaseThirstLevel()
-    currentThirst := b.PhysiologicalNeeds.Thirst
-    
-    // Log messages at important thresholds
-    if GlobalInfoPanel != nil {
-        // Only log when crossing thresholds to avoid spam
-        if previousThirst < 30 && currentThirst >= 30 {
-            LogWater(fmt.Sprintf("%s is getting thirsty (%d%%)", b.Owner.FullName, currentThirst), b.Owner.FullName)
-        } else if previousThirst < 50 && currentThirst >= 50 {
-            LogWater(fmt.Sprintf("%s is very thirsty (%d%%)", b.Owner.FullName, currentThirst), b.Owner.FullName)
-        } else if previousThirst < 70 && currentThirst >= 70 {
-            LogWater(fmt.Sprintf("%s is dehydrated (%d%%)", b.Owner.FullName, currentThirst), b.Owner.FullName)
-        } else if previousThirst < 90 && currentThirst >= 90 {
-            LogWater(fmt.Sprintf("%s is near death from dehydration (%d%%)", b.Owner.FullName, currentThirst), b.Owner.FullName)
-        }
-    }
-    
-    if b.PhysiologicalNeeds.Thirst >= 100 {
-        if GlobalInfoPanel != nil {
-            LogDeath(fmt.Sprintf("%s has died from dehydration", b.Owner.FullName), b.Owner.FullName)
-        }
-        b.KillEntity("Dehydrated")
+func (b *Brain) KidneysHandler() {
+    if b.Owner.Body.Torso.Kidneys.IsFiltering && b.Owner.Body.Blood.Toxins > 0 {
+        b.Owner.Filter()
+    } else {
+        b.KillEntity("Kidneys stopped")
+        return
     }
 }
 
 func (b *Brain) KillEntity(reason string){
     b.Owner.IsIncapacitated = true
     b.Owner.Brain.turnOff(reason)
+    b.Owner.Brain.Active = false
+    b.Owner.StopHeart()
+    LogDeath(reason, b.Owner.FullName)
 }
 
 
@@ -147,5 +85,78 @@ func (b *Brain) IsUnderAttackHandler() {
         b.Owner.UpdateRelationship(b.IsUnderAttack.From.FullName, "Enemy", 100)
         b.AddMemoryToShortTerm("Under attack", b.IsUnderAttack.From.FullName, b.IsUnderAttack.From.Location)
         b.AddMemoryToLongTerm("Under attack", b.IsUnderAttack.From.FullName, b.IsUnderAttack.From.Location)
+    }
+}
+
+
+// ----------------- Hormones ------------------
+
+func (b *Brain) AddHormone(hormone string, amount int) {
+    switch hormone {
+    case "Adrenaline":
+        b.Owner.Body.Blood.Hormones.Adrenaline += amount
+        if b.Owner.Body.Blood.Hormones.Adrenaline > 100 {
+            b.Owner.Body.Blood.Hormones.Adrenaline = 100
+        }
+    case "Cortisol":
+        b.Owner.Body.Blood.Hormones.Cortisol += amount
+        if b.Owner.Body.Blood.Hormones.Cortisol > 100 {
+            b.Owner.Body.Blood.Hormones.Cortisol = 100
+        }
+    case "Dopamine":
+        b.Owner.Body.Blood.Hormones.Dopamine += amount
+        if b.Owner.Body.Blood.Hormones.Dopamine > 100 {
+            b.Owner.Body.Blood.Hormones.Dopamine = 100
+        }
+    case "Epinephrine":
+        b.Owner.Body.Blood.Hormones.Epinephrine += amount
+        if b.Owner.Body.Blood.Hormones.Epinephrine > 100 {
+            b.Owner.Body.Blood.Hormones.Epinephrine = 100
+        }
+    case "Endorphin":
+        b.Owner.Body.Blood.Hormones.Endorphin += amount
+        if b.Owner.Body.Blood.Hormones.Endorphin > 100 {
+            b.Owner.Body.Blood.Hormones.Endorphin = 100
+        }
+    case "Serotonin":
+        b.Owner.Body.Blood.Hormones.Serotonin += amount
+        if b.Owner.Body.Blood.Hormones.Serotonin > 100 {
+            b.Owner.Body.Blood.Hormones.Serotonin = 100
+        }
+    }
+}
+
+func (b *Brain) RemoveHormone(hormone string, amount int) {
+    switch hormone {
+    case "Adrenaline":
+        b.Owner.Body.Blood.Hormones.Adrenaline -= amount
+        if b.Owner.Body.Blood.Hormones.Adrenaline < 0 {
+            b.Owner.Body.Blood.Hormones.Adrenaline = 0
+        }
+    case "Cortisol":
+        b.Owner.Body.Blood.Hormones.Cortisol -= amount
+        if b.Owner.Body.Blood.Hormones.Cortisol < 0 {
+            b.Owner.Body.Blood.Hormones.Cortisol = 0
+        }
+    case "Dopamine":
+        b.Owner.Body.Blood.Hormones.Dopamine -= amount
+        if b.Owner.Body.Blood.Hormones.Dopamine < 0 {
+            b.Owner.Body.Blood.Hormones.Dopamine = 0
+        }
+    case "Epinephrine":
+        b.Owner.Body.Blood.Hormones.Epinephrine += amount
+        if b.Owner.Body.Blood.Hormones.Epinephrine < 0 {
+            b.Owner.Body.Blood.Hormones.Epinephrine = 0
+        }
+    case "Endorphin":
+        b.Owner.Body.Blood.Hormones.Endorphin -= amount
+        if b.Owner.Body.Blood.Hormones.Endorphin < 0 {
+            b.Owner.Body.Blood.Hormones.Endorphin = 0
+        }
+    case "Serotonin":
+        b.Owner.Body.Blood.Hormones.Serotonin -= amount
+        if b.Owner.Body.Blood.Hormones.Serotonin < 0 {
+            b.Owner.Body.Blood.Hormones.Serotonin = 0
+        }
     }
 }
