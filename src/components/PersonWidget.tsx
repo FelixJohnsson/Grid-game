@@ -30,6 +30,7 @@ const Map = ({ world, grab }: Props) => {
           {world.map((row, y) => (
             <div key={y} className="flex">
               {row.map((tile, x) => (
+                // Keep this legacy component compile-safe with both keys.
                 <div
                   key={x}
                   style={{
@@ -49,7 +50,7 @@ const Map = ({ world, grab }: Props) => {
                       {tile.Items.map((item, index) => (
                         <div
                           key={index}
-                          className={tile.Person ? "hidden" : ""}
+                          className={tile.Entity || tile.Person ? "hidden" : ""}
                           onMouseEnter={(e) => handleMouseEnter(e, item.Name)}
                           onMouseLeave={handleMouseLeave}
                         >
@@ -64,7 +65,7 @@ const Map = ({ world, grab }: Props) => {
                       <div
                         className="bg-orange-800"
                         onMouseEnter={(e) =>
-                          handleMouseEnter(e, tile.Plant.Name)
+                          handleMouseEnter(e, tile.Plant?.Name ?? "Plant")
                         }
                         onMouseLeave={handleMouseLeave}
                       >
@@ -85,14 +86,11 @@ const Map = ({ world, grab }: Props) => {
                     </div>
                   ) : null}
 
-                  {tile.Person ? (
+                  {tile.Entity || tile.Person ? (
                     <div>
                       <Person
-                        person={tile.Person}
-                        currentTile={tile}
-                        grab={grab}
-                        onMouseEnter={handleMouseEnter}
-                        onMouseLeave={handleMouseLeave}
+                        person={tile.Entity ?? tile.Person!}
+                        tileSize={12}
                       />
                     </div>
                   ) : null}

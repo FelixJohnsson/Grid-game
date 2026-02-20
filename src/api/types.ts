@@ -8,6 +8,35 @@ export interface Location {
   Y: number;
 }
 
+export type CognitiveMapEntity = {
+  FullName: string;
+  SpeciesType: string;
+  IsAlive: boolean;
+};
+
+export type CognitiveMapPlant = {
+  Name: string;
+  IsAlive: boolean;
+  ProducesFruit: boolean;
+  PlantStage: number;
+  FruitCount?: number;
+  HasRipeFruit?: boolean;
+};
+
+export type CognitiveMapKnownTile = {
+  Location: Location;
+  TileType: TileType;
+  Entity?: CognitiveMapEntity;
+  Plant?: CognitiveMapPlant;
+  Items?: Record<string, number>;
+  LastSeenUnixMs?: number;
+};
+
+export type CognitiveMapResponse = {
+  message: CognitiveMapKnownTile[];
+  status: number;
+};
+
 export type Material = {
   Name: string;
   Type: string;
@@ -55,10 +84,12 @@ class Fruit {
 
 export type CleanedTile = {
   Type: TileType;
-  Person: PersonCleaned;
-  Items: Item[];
-  Plant: PlantCleaned;
-  Shelter: Shelter;
+  // Backend currently returns Entity. Keep Person as fallback for compatibility.
+  Entity?: PersonCleaned;
+  Person?: PersonCleaned;
+  Items?: Item[];
+  Plant?: PlantCleaned;
+  Shelter?: Shelter;
 };
 
 export enum TileType {
@@ -113,6 +144,10 @@ export type PersonCleaned = {
   Location: Location;
 
   Thinking: string;
+  LastDialogue?: string;
+  DialogueWith?: string;
+  DialogueAtMs?: number;
+  DialogueMode?: "Said" | "Heard";
 
   Head: HeadCleaned;
   Torso?: LimbStatus;
@@ -134,8 +169,12 @@ export type PersonCleaned = {
   IsIncapacitated: boolean;
 
   Relationships: Relationship[];
+  Personalities?: Personality[];
 
   CurrentTask: TargetedAction;
+  BaseClaimed?: boolean;
+  BaseLocation?: Location;
+  BaseStockpile?: Record<string, number>;
 };
 
 enum PlantStage {
@@ -161,6 +200,8 @@ export type Relationship = {
   Relationship: string;
   Intensity: number;
 };
+
+export type Personality = "Friendly" | "Hostile";
 
 export type HeadCleaned = {
   LimbStatus: LimbStatus;

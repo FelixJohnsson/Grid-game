@@ -129,11 +129,21 @@ func (b *Brain) getNeighbors(node *Node) []*Node {
 
 	for _, dir := range directions {
 		nx, ny := node.X+dir[0], node.Y+dir[1]
-		if nx >= 0 && ny >= 0 && nx < SIZE_OF_MAP && ny < SIZE_OF_MAP && b.Owner.WorldProvider.CanWalk(nx, ny) {
-			neighbors = append(neighbors, &Node{X: nx, Y: ny, G: math.MaxFloat64})
+		if nx < 0 || ny < 0 || nx >= SIZE_OF_MAP || ny >= SIZE_OF_MAP {
+			continue
 		}
+		if !b.Owner.WorldProvider.CanWalk(nx, ny) {
+			continue
+		}
+
+		tile := b.Owner.WorldProvider.GetTile(nx, ny)
+		if tile.Entity != nil && tile.Entity.FullName != b.Owner.FullName {
+			// Treat occupied tiles as blocked for pathfinding.
+			continue
+		}
+
+		neighbors = append(neighbors, &Node{X: nx, Y: ny, G: math.MaxFloat64})
 	}
 
 	return neighbors
 }
-

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
 	"sync"
@@ -15,7 +16,7 @@ type DefaultResponse struct {
 }
 type PersonResponse struct {
 	Message []*Entity `json:"message"`
-	Status  int      `json:"status"`
+	Status  int       `json:"status"`
 }
 type BuildingResponse struct {
 	Message []Building `json:"message"`
@@ -35,8 +36,13 @@ type AttackRequest struct {
 }
 
 type WorldResponse struct {
-    Message [][]CleanedTile `json:"message"`
-    Status  int             `json:"status"`
+	Message [][]CleanedTile `json:"message"`
+	Status  int             `json:"status"`
+}
+
+type CognitiveMapResponse struct {
+	Message []CognitiveMapKnownTileCleaned `json:"message"`
+	Status  int                            `json:"status"`
 }
 
 var (
@@ -80,20 +86,20 @@ func (w *World) personHandler(writer http.ResponseWriter, r *http.Request) {
 
 // Handler for /world endpoint
 func (w *World) worldHandler(writer http.ResponseWriter, r *http.Request) {
-    // Ignore favicon requests
-    if r.URL.Path == "/favicon.ico" {
-        http.NotFound(writer, r)
-        return
-    }
+	// Ignore favicon requests
+	if r.URL.Path == "/favicon.ico" {
+		http.NotFound(writer, r)
+		return
+	}
 
-    logRequest(r)
+	logRequest(r)
 
-    response := WorldResponse{
-        Message: w.CleanTiles(),
-        Status:  200,
-    }
+	response := WorldResponse{
+		Message: w.CleanTiles(),
+		Status:  200,
+	}
 
-    writeJSONResponse(writer, response)
+	writeJSONResponse(writer, response)
 }
 
 // Handler for /move endpoint
@@ -111,6 +117,10 @@ func (w *World) moveHandler(writer http.ResponseWriter, r *http.Request) {
 
 	// We need to calculate the new coordinates based on the direction
 	person := w.GetPersonByFullName(moveRequest.FullName)
+	if person == nil {
+		http.Error(writer, "Person not found", http.StatusBadRequest)
+		return
+	}
 	startingCoordinates := person.Location
 	switch moveRequest.Direction {
 	case "up":
@@ -124,7 +134,10 @@ func (w *World) moveHandler(writer http.ResponseWriter, r *http.Request) {
 	}
 
 	// Move the person in the world
-	w.MoveEntity(person, startingCoordinates.X, startingCoordinates.Y)
+	if err := w.MoveEntity(person, startingCoordinates.X, startingCoordinates.Y); err != nil {
+		http.Error(writer, "Unable to move person: "+err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	response := WorldResponse{
 		Message: w.CleanTiles(),
@@ -181,7 +194,7 @@ func (w *World) grabHandler(writer http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	
+
 	response := WorldResponse{
 		Message: w.CleanTiles(),
 		Status:  200,
@@ -229,6 +242,61 @@ func (w *World) attackHandler(writer http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(writer, response)
 }
 
+// Handler for /resetWorld endpoint
+func (w *World) resetWorldHandler(writer http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(writer, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	logRequest(r)
+
+	focusEntity := w.ResetWorld()
+	if focusEntity == nil {
+		http.Error(writer, "Failed to reset world", http.StatusInternalServerError)
+		return
+	}
+
+	response := WorldResponse{
+		Message: w.CleanTiles(),
+		Status:  200,
+	}
+	writeJSONResponse(writer, response)
+}
+
+// Handler for /entityCognitiveMap endpoint
+func (w *World) entityCognitiveMapHandler(writer http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(writer, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	logRequest(r)
+
+	fullName := r.URL.Query().Get("fullName")
+	if fullName == "" {
+		http.Error(writer, "Missing fullName query parameter", http.StatusBadRequest)
+		return
+	}
+
+	person := w.GetPersonByFullName(fullName)
+	if person == nil {
+		http.Error(writer, "Person not found", http.StatusNotFound)
+		return
+	}
+	if person.Brain == nil {
+		http.Error(writer, "Person has no brain state", http.StatusInternalServerError)
+		return
+	}
+
+	response := CognitiveMapResponse{
+		Message: cleanCognitiveMap(person.Brain.GetKnownTilesSnapshot()),
+		Status:  200,
+	}
+
+	writeJSONResponse(writer, response)
+}
+
 // Default handler for root and undefined paths
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	// Ignore favicon requests
@@ -238,7 +306,12 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if isDuplicateRequest(r) {
-		http.Error(w, "Duplicate request detected", http.StatusTooManyRequests)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusTooManyRequests)
+		_ = json.NewEncoder(w).Encode(DefaultResponse{
+			Message: "Duplicate request detected",
+			Status:  http.StatusTooManyRequests,
+		})
 		return
 	}
 
@@ -289,8 +362,24 @@ func writeJSONResponse(w http.ResponseWriter, response interface{}) {
 }
 
 func main() {
+	enableDisplay := flag.Bool("display", false, "Run Raylib display loop in parallel with the API server")
+	flag.Parse()
+
 	// Initialize the world
-	world := InitializeWorld()
+	world, focusEntity := InitializeWorld()
+
+	// Optional visualization loop. Running this in a goroutine keeps API startup non-blocking.
+	if *enableDisplay {
+		if focusEntity == nil {
+			fmt.Println("Display requested, but no focus entity is available. Continuing without display.")
+		} else {
+			go func() {
+				fmt.Println("Starting Raylib display loop...")
+				world.LaunchGame(focusEntity)
+				fmt.Println("Raylib display loop exited.")
+			}()
+		}
+	}
 
 	// Define routes with CORS middleware and pass the world instance
 	http.Handle("/world", corsMiddleware(http.HandlerFunc(world.worldHandler)))
@@ -299,6 +388,8 @@ func main() {
 	http.Handle("/move", corsMiddleware(http.HandlerFunc(world.moveHandler)))
 	http.Handle("/entityGrab", corsMiddleware(http.HandlerFunc(world.grabHandler)))
 	http.Handle("/entityAttack", corsMiddleware(http.HandlerFunc(world.attackHandler)))
+	http.Handle("/resetWorld", corsMiddleware(http.HandlerFunc(world.resetWorldHandler)))
+	http.Handle("/entityCognitiveMap", corsMiddleware(http.HandlerFunc(world.entityCognitiveMapHandler)))
 
 	// Default handler for the root path or undefined paths
 	http.Handle("/", corsMiddleware(http.HandlerFunc(defaultHandler)))

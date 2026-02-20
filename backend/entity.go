@@ -6,6 +6,13 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 )
 
+func randomPersonality() Personality {
+	if rand.Intn(2) == 0 {
+		return Friendly
+	}
+	return Hostile
+}
+
 func NewAnimalEntity(worldAccessor WorldAccessor, species SpeciesType, body *EntityBody, x, y int) *Entity {
 	Age := rand.Intn(10) + 2
 	FirstName := gofakeit.FirstName()
@@ -14,43 +21,48 @@ func NewAnimalEntity(worldAccessor WorldAccessor, species SpeciesType, body *Ent
 	DNA := NewDNA()
 
 	animal := &Entity{
-		Age:              Age,
-		Title:            "",
-		FirstName:        FirstName,
-		FamilyName:       FamilyName,
-		FullName:         FirstName + " " + FamilyName,
-		Initials:         string(FirstName[0]) + string(FamilyName[0]),
-		IsChild:          Age < 18,
-		Gender:           Gender,
-		Occupation:       Unemployed,
-		IsMoving:         TargetedAction{},
-		IsTalking:        TargetedAction{},
-		IsSitting:        TargetedAction{},
-		IsEating:         TargetedAction{},
-		IsSleeping:       TargetedAction{},
-		IsBleeding:       false,
-		Thinking:         "",
-		WantsTo:          make([]string, 0),
-		FeelingSafe: 	  0,
-		FeelingScared:    0,
-		Relationships:    []Relationship{},
-		Genes:            DNA,
-		Species:          species,
+		Age:           Age,
+		Title:         "",
+		FirstName:     FirstName,
+		FamilyName:    FamilyName,
+		FullName:      FirstName + " " + FamilyName,
+		Initials:      string(FirstName[0]) + string(FamilyName[0]),
+		IsChild:       Age < 18,
+		Gender:        Gender,
+		Occupation:    Unemployed,
+		IsMoving:      TargetedAction{},
+		IsTalking:     TargetedAction{},
+		IsSitting:     TargetedAction{},
+		IsEating:      TargetedAction{},
+		IsSleeping:    TargetedAction{},
+		IsBleeding:    false,
+		Thinking:      "",
+		LastDialogue:  "",
+		DialogueWith:  "",
+		DialogueAtMs:  0,
+		DialogueMode:  "",
+		WantsTo:       make([]string, 0),
+		FeelingSafe:   0,
+		FeelingScared: 0,
+		Relationships: []Relationship{},
+		Personalities: []Personality{randomPersonality()},
+		Genes:         DNA,
+		Species:       species,
 
-		OwnedItems:       []*Item{},
+		OwnedItems: []*Item{},
 
-		VisionRange:      5,
-		Location:         Location{X: x, Y: y},
-		WorldProvider:    worldAccessor,
-		Body:			  body,
-		Brain:            nil,
+		VisionRange:   5,
+		Location:      Location{X: x, Y: y},
+		WorldProvider: worldAccessor,
+		Body:          body,
+		Brain:         nil,
 
-		Strength:         1,
-		Agility:          1,
-		Intelligence:     1,
-		Charisma:         1,
-		Stamina:          1,
-		Curiosity:        25,
+		Strength:     1,
+		Agility:      1,
+		Intelligence: 1,
+		Charisma:     1,
+		Stamina:      1,
+		Curiosity:    25,
 
 		CombatExperience: 1,
 		CombatSkill:      1,
@@ -71,43 +83,49 @@ func NewPersonEntity(worldAccessor WorldAccessor, x, y int, species SpeciesType)
 	DNA := NewDNA()
 
 	person := &Entity{
-		Age:              Age,
-		Title:            "",
-		FirstName:        FirstName,
-		FamilyName:       FamilyName,
-		FullName:         FirstName + " " + FamilyName,
-		Initials:         string(FirstName[0]) + string(FamilyName[0]),
-		IsChild:          Age < 18,
-		Gender:           Gender,
-		Occupation:       Unemployed,
-		IsMoving:         TargetedAction{},
-		IsTalking:        TargetedAction{},
-		IsSitting:        TargetedAction{},
-		IsEating:         TargetedAction{},
-		IsSleeping:       TargetedAction{},
-		IsBleeding:       false,
-		Thinking:         "",
-		WantsTo:          make([]string, 0),
-		FeelingSafe: 	  0,
-		FeelingScared:    0,
-		Relationships:    []Relationship{},
-		Genes:            DNA,
-		Species:          species,
+		Age:           Age,
+		Title:         "",
+		FirstName:     FirstName,
+		FamilyName:    FamilyName,
+		FullName:      FirstName + " " + FamilyName,
+		Initials:      string(FirstName[0]) + string(FamilyName[0]),
+		IsChild:       Age < 18,
+		Gender:        Gender,
+		Occupation:    Unemployed,
+		IsMoving:      TargetedAction{},
+		IsTalking:     TargetedAction{},
+		IsSitting:     TargetedAction{},
+		IsEating:      TargetedAction{},
+		IsSleeping:    TargetedAction{},
+		IsBleeding:    false,
+		Thinking:      "",
+		LastDialogue:  "",
+		DialogueWith:  "",
+		DialogueAtMs:  0,
+		DialogueMode:  "",
+		WantsTo:       make([]string, 0),
+		FeelingSafe:   0,
+		FeelingScared: 0,
+		Relationships: []Relationship{},
+		Genes:         DNA,
+		Species:       species,
 
-		OwnedItems:       []*Item{},
+		OwnedItems: []*Item{},
 
-		VisionRange:      5,
-		Location:         Location{X: x, Y: y},
-		WorldProvider:    worldAccessor,
-		Body:			  Body,
-		Brain:            nil,
+		VisionRange:   5,
+		Location:      Location{X: x, Y: y},
+		WorldProvider: worldAccessor,
+		Body:          Body,
+		Brain:         nil,
 
-		Strength:         1,
-		Agility:          1,
-		Intelligence:     1,
-		Charisma:         1,
-		Stamina:          1,
-		Curiosity:        25,
+		Strength:     1,
+		Agility:      1,
+		Intelligence: 1,
+		Charisma:     1,
+		Stamina:      1,
+		Curiosity:    25,
+
+		Personalities: []Personality{randomPersonality()},
 
 		CombatExperience: 1,
 		CombatSkill:      1,
@@ -128,6 +146,13 @@ func (e *Entity) AddRelationship(entity *Entity, relationship string, intensity 
 	if entity == nil {
 		return
 	}
+	for i, existing := range e.Relationships {
+		if existing.WithEntity == entity.FullName {
+			e.Relationships[i].Relationship = relationship
+			e.Relationships[i].Intensity = intensity
+			return
+		}
+	}
 	e.Relationships = append(e.Relationships, Relationship{WithEntity: entity.FullName, Relationship: relationship, Intensity: intensity})
 }
 
@@ -145,9 +170,19 @@ func (e *Entity) UpdateRelationship(fullName string, relationship string, intens
 		if rel.WithEntity == fullName {
 			e.Relationships[i].Relationship = relationship
 			e.Relationships[i].Intensity = intensity
-			break
+			return
 		}
 	}
+	e.Relationships = append(e.Relationships, Relationship{WithEntity: fullName, Relationship: relationship, Intensity: intensity})
+}
+
+func (e *Entity) GetRelationshipIntensity(fullName string) (int, bool) {
+	for _, relationship := range e.Relationships {
+		if relationship.WithEntity == fullName {
+			return relationship.Intensity, true
+		}
+	}
+	return 0, false
 }
 
 // ---------------- Finding ----------------------------
@@ -175,13 +210,13 @@ func (e *Entity) FindLumberTrees() []*Plant {
 // FindTheClosestPlant - Find the closest plant from a list of plants
 func (e *Entity) FindTheClosestPlant(plants []*Plant) *Plant {
 	closestPlant := plants[0]
-		for _, tree := range plants {
-			if e.WorldProvider.CalculateDistance(e.Location, tree.Location) < e.WorldProvider.CalculateDistance(e.Location, closestPlant.Location) {
-				closestPlant = tree
-			}
+	for _, tree := range plants {
+		if e.WorldProvider.CalculateDistance(e.Location, tree.Location) < e.WorldProvider.CalculateDistance(e.Location, closestPlant.Location) {
+			closestPlant = tree
 		}
+	}
 
-		return closestPlant
+	return closestPlant
 }
 
 // FindClosestGrass - Find the closest grass from a list
@@ -206,21 +241,24 @@ const (
 	Human SpeciesType = "Homo sapiens"
 )
 
-
 // ---------------- Create a new person ----------------
 
 func (w *World) CreateNewPersonEntity(x, y int, species SpeciesType) *Entity {
-    person := NewPersonEntity(w, x, y, species)
-	w.AddEntity(x, y, person)
+	person := NewPersonEntity(w, x, y, species)
+	if err := w.AddEntity(x, y, person); err != nil {
+		return nil
+	}
 
-    return person
+	return person
 }
 
 func (w *World) CreateNewAnimalEntity(species SpeciesType, x, y int) *Entity {
 	switch species {
 	case Wolf:
 		wolf := NewAnimalEntity(w, species, CreateQuadrupedalBody(), x, y)
-		w.AddEntity(x, y, wolf)
+		if err := w.AddEntity(x, y, wolf); err != nil {
+			return nil
+		}
 		return wolf
 	default:
 	}

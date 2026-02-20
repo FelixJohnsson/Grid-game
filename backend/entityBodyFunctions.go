@@ -64,7 +64,6 @@ func (e *Entity) StartKidneys() {
 	e.Body.Torso.Kidneys.Toxins = []string{}
 }
 
-
 // UpdateLocation updates the internal location of the person
 func (e *Entity) UpdateLocation(x, y int) {
 	e.Location.X = x
@@ -160,7 +159,8 @@ func (e *Entity) DropFromRightHand(item string) {
 		if heldItem.Name == item {
 			e.Body.RightArm.Hand.Items = append(e.Body.RightArm.Hand.Items[:i], e.Body.RightArm.Hand.Items[i+1:]...)
 			e.WorldProvider.AddItem(e.Location.X, e.Location.Y, heldItem)
-			e.Brain.AddMemoryToShortTerm("Dropped my " + item, e.FullName, e.Location)
+			e.removeOwnedItemByPointer(heldItem)
+			e.Brain.AddMemoryToShortTerm("Dropped my "+item, e.FullName, e.Location)
 			return
 		}
 	}
@@ -170,9 +170,23 @@ func (e *Entity) DropFromRightHand(item string) {
 func (e *Entity) DropFromLeftHand(item string) {
 	for i, heldItem := range e.Body.LeftArm.Hand.Items {
 		if heldItem.Name == item {
-			e.Body.RightArm.Hand.Items = append(e.Body.RightArm.Hand.Items[:i], e.Body.RightArm.Hand.Items[i+1:]...)
+			e.Body.LeftArm.Hand.Items = append(e.Body.LeftArm.Hand.Items[:i], e.Body.LeftArm.Hand.Items[i+1:]...)
 			e.WorldProvider.AddItem(e.Location.X, e.Location.Y, heldItem)
-			e.Brain.AddMemoryToShortTerm("Dropped my " + item, e.FullName, e.Location)
+			e.removeOwnedItemByPointer(heldItem)
+			e.Brain.AddMemoryToShortTerm("Dropped my "+item, e.FullName, e.Location)
+			return
+		}
+	}
+}
+
+func (e *Entity) removeOwnedItemByPointer(target *Item) {
+	if target == nil {
+		return
+	}
+
+	for i, ownedItem := range e.OwnedItems {
+		if ownedItem == target {
+			e.OwnedItems = append(e.OwnedItems[:i], e.OwnedItems[i+1:]...)
 			return
 		}
 	}
@@ -268,7 +282,7 @@ func (e *Entity) RemoveLimb(limb BodyPartType) {
 		e.Body.Head = nil
 		return
 	case "RightHand":
-		e.Body.RightArm.Hand = nil 
+		e.Body.RightArm.Hand = nil
 		return
 	case "LeftHand":
 		e.Body.LeftArm.Hand = nil
@@ -300,4 +314,3 @@ func (e *Entity) WalkStepTo(x, y int) {
 	e.IsMoving = TargetedAction{"Walk", strconv.Itoa(x) + ", " + strconv.Itoa(y), true, requiredLimbs, 10}
 	e.WorldProvider.MoveEntity(e, x, y)
 }
-

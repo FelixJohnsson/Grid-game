@@ -11,8 +11,8 @@ const InformationBar = ({ persons }: Props) => {
         <h1 className="text-lg underline">Persons</h1>
         <div>
           {persons
-            ? persons.map((person, i) => (
-                <div key={i}>
+            ? persons.map((person) => (
+                <div key={person.FullName}>
                   <p className="bg-orange-500 text-sm">{person.FullName}</p>
                 </div>
               ))

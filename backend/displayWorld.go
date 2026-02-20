@@ -1,3 +1,6 @@
+//go:build display
+// +build display
+
 package main
 
 import (
@@ -25,9 +28,9 @@ func (w *World) DisplayMapInTerminal() {
 						fmt.Print("A")
 					} else if w.Tiles[x][y].Plant.Name == OakTree {
 						fmt.Print(Yellow + "T" + Reset)
-					} else if (w.Tiles[x][y].Plant.Name == HighGrass) {
+					} else if w.Tiles[x][y].Plant.Name == HighGrass {
 						fmt.Print(Green + "H" + Reset)
-					} else if (w.Tiles[x][y].Plant.Name == Flower) {
+					} else if w.Tiles[x][y].Plant.Name == Flower {
 						fmt.Print(Red + "F" + Reset)
 					}
 
@@ -45,11 +48,14 @@ func (w *World) DisplayMapInTerminal() {
 	}
 }
 
-
 // DisplayCognitiveMap draws a mini-map based on the player's cognitive map
 func (w *World) DisplayCognitiveMap(player *Entity, windowWidth, windowHeight int32) {
 	// Return if player or cognitive map is nil
-	if player == nil || player.Brain.CognitiveMap.KnownTiles == nil {
+	if player == nil || player.Brain == nil {
+		return
+	}
+	knownTiles := player.Brain.GetKnownTilesSnapshot()
+	if len(knownTiles) == 0 {
 		return
 	}
 
@@ -63,32 +69,32 @@ func (w *World) DisplayCognitiveMap(player *Entity, windowWidth, windowHeight in
 	// Draw mini-map background and border
 	rl.DrawRectangle(mapX-5, mapY-5, mapWidth+10, mapHeight+10, rl.DarkGray)
 	rl.DrawRectangle(mapX, mapY, mapWidth, mapHeight, rl.Black)
-	
+
 	// Draw title
 	rl.DrawText("Cognitive Map", mapX, mapY-20, 16, rl.DarkBlue)
 
 	// Calculate the center of the mini-map (in tile coordinates)
 	centerX := player.Location.X
 	centerY := player.Location.Y
-	
+
 	// Calculate visible tile range
 	tilesVisibleX := int(mapWidth / tileSize)
 	tilesVisibleY := int(mapHeight / tileSize)
-	
+
 	minX := centerX - tilesVisibleX/2
 	maxX := centerX + tilesVisibleX/2
 	minY := centerY - tilesVisibleY/2
 	maxY := centerY + tilesVisibleY/2
 
 	// Draw the known tiles from cognitive map
-	for loc, tile := range player.Brain.CognitiveMap.KnownTiles {
+	for loc, tile := range knownTiles {
 		// Check if this tile is in the visible range
 		if loc.X >= minX && loc.X <= maxX && loc.Y >= minY && loc.Y <= maxY {
 			// Calculate position on mini-map with X and Y swapped to fix rotation
 			// This flips the map to match main map orientation
-			posX := mapX + int32(loc.Y-minY) * tileSize
-			posY := mapY + int32(loc.X-minX) * tileSize
-			
+			posX := mapX + int32(loc.Y-minY)*tileSize
+			posY := mapY + int32(loc.X-minX)*tileSize
+
 			// Draw tile based on cognitive map knowledge
 			if tile.Entity.IsAlive {
 				// Draw entities
@@ -125,40 +131,40 @@ func (w *World) DisplayCognitiveMap(player *Entity, windowWidth, windowHeight in
 			}
 		}
 	}
-	
+
 	// Draw player position (center of mini-map)
 	var playerPosX int32 = mapX + mapWidth/2
 	var playerPosY int32 = mapY + mapHeight/2
-	
+
 	// Draw player marker (white dot with border)
 	rl.DrawCircle(playerPosX, playerPosY, 3, rl.Black)
 	rl.DrawCircle(playerPosX, playerPosY, 2, rl.White)
-	
+
 	// Add legend
 	legendY := mapY + mapHeight + 10
 	rl.DrawText("Legend:", mapX, legendY, 14, rl.Black)
-	
+
 	// First row of legend items
 	legendY += 20
 	rl.DrawRectangle(mapX, legendY, 10, 10, rl.Red)
-	rl.DrawText("Human", mapX + 15, legendY, 12, rl.Black)
-	
-	rl.DrawRectangle(mapX + 70, legendY, 10, 10, rl.Gray)
-	rl.DrawText("Wolf", mapX + 85, legendY, 12, rl.Black)
-	
+	rl.DrawText("Human", mapX+15, legendY, 12, rl.Black)
+
+	rl.DrawRectangle(mapX+70, legendY, 10, 10, rl.Gray)
+	rl.DrawText("Wolf", mapX+85, legendY, 12, rl.Black)
+
 	// Second row
 	legendY += 15
 	rl.DrawRectangle(mapX, legendY, 10, 10, rl.Brown)
-	rl.DrawText("Tree", mapX + 15, legendY, 12, rl.Black)
-	
-	rl.DrawRectangle(mapX + 70, legendY, 10, 10, rl.Blue)
-	rl.DrawText("Water", mapX + 85, legendY, 12, rl.Black)
+	rl.DrawText("Tree", mapX+15, legendY, 12, rl.Black)
+
+	rl.DrawRectangle(mapX+70, legendY, 10, 10, rl.Blue)
+	rl.DrawText("Water", mapX+85, legendY, 12, rl.Black)
 }
 
 // DisplayMap draws the game map to the screen using Raylib
 func (w *World) DisplayMap(player *Entity) {
 	var tileSize int32 = 8
-	
+
 	for y := 0; y < w.Height; y++ {
 		for x := 0; x < w.Width; x++ {
 			tile := w.Tiles[x][y]
@@ -216,67 +222,65 @@ func (w *World) DisplayInfoPanel(player *Entity, windowWidth, windowHeight int32
 	// Panel dimensions
 	var panelWidth int32 = 400
 	var panelX int32 = windowWidth - panelWidth
-	
+
 	// Draw panel background
 	rl.DrawRectangle(panelX, 0, panelWidth, windowHeight, rl.LightGray)
 	rl.DrawLine(panelX, 0, panelX, windowHeight, rl.DarkGray)
-	
+
 	// Draw panel title
 	rl.DrawText("Information Panel", panelX+10, 10, 20, rl.Black)
-	
+
 	// Draw entity status section
 	if player != nil {
 		rl.DrawText("Entity Status", panelX+10, 40, 18, rl.DarkBlue)
 		rl.DrawText(fmt.Sprintf("Name: %s", player.FullName), panelX+10, 65, 16, rl.Black)
 		rl.DrawText(fmt.Sprintf("Position: (%d, %d)", player.Location.X, player.Location.Y), panelX+10, 85, 16, rl.Black)
-		
+
 		// Health status (with color)
 		textColor := rl.Black
 
-		rl.DrawText(fmt.Sprintf("Pain: %d/%d", player.Brain.PainLevel, player.Brain.PainTolerance), 
+		rl.DrawText(fmt.Sprintf("Pain: %d/%d", player.Brain.PainLevel, player.Brain.PainTolerance),
 			panelX+10, 105, 16, textColor)
-		
-		rl.DrawText(fmt.Sprintf("Hunger: %f", player.Body.Blood.Glucose), 
+
+		rl.DrawText(fmt.Sprintf("Hunger: %f", player.Body.Blood.Glucose),
 			panelX+10, 125, 16, textColor)
 
-		rl.DrawText(fmt.Sprintf("Thirst: %f", player.Body.Blood.Water), 
+		rl.DrawText(fmt.Sprintf("Thirst: %f", player.Body.Blood.Water),
 			panelX+10, 145, 16, textColor)
 
-		rl.DrawText(fmt.Sprintf("Oxygen: %f", player.Body.Blood.Oxygen), 
+		rl.DrawText(fmt.Sprintf("Oxygen: %f", player.Body.Blood.Oxygen),
 			panelX+10, 165, 16, textColor)
 
-		rl.DrawText(fmt.Sprintf("Toxins: %f", player.Body.Blood.Toxins), 
+		rl.DrawText(fmt.Sprintf("Toxins: %f", player.Body.Blood.Toxins),
 			panelX+10, 185, 16, textColor)
-		
-		rl.DrawText(fmt.Sprintf("Adrenaline: %d", player.Body.Blood.Hormones.Adrenaline), 
+
+		rl.DrawText(fmt.Sprintf("Adrenaline: %d", player.Body.Blood.Hormones.Adrenaline),
 			panelX+10, 205, 16, textColor)
 
-		rl.DrawText(fmt.Sprintf("Cortisol: %d", player.Body.Blood.Hormones.Cortisol), 
+		rl.DrawText(fmt.Sprintf("Cortisol: %d", player.Body.Blood.Hormones.Cortisol),
 			panelX+10, 225, 16, textColor)
 
-		rl.DrawText(fmt.Sprintf("Dopamine: %d", player.Body.Blood.Hormones.Dopamine), 
+		rl.DrawText(fmt.Sprintf("Dopamine: %d", player.Body.Blood.Hormones.Dopamine),
 			panelX+10, 245, 16, textColor)
 
-		rl.DrawText(fmt.Sprintf("Epinephrine: %d", player.Body.Blood.Hormones.Epinephrine), 
+		rl.DrawText(fmt.Sprintf("Epinephrine: %d", player.Body.Blood.Hormones.Epinephrine),
 			panelX+10, 265, 16, textColor)
 
-		rl.DrawText(fmt.Sprintf("Endorphin: %d", player.Body.Blood.Hormones.Endorphin), 
+		rl.DrawText(fmt.Sprintf("Endorphin: %d", player.Body.Blood.Hormones.Endorphin),
 			panelX+10, 285, 16, textColor)
 
-		rl.DrawText(fmt.Sprintf("Serotonin: %d", player.Body.Blood.Hormones.Serotonin), 
+		rl.DrawText(fmt.Sprintf("Serotonin: %d", player.Body.Blood.Hormones.Serotonin),
 			panelX+10, 305, 16, textColor)
-			
-			
-		
+
 		// Current task
 		if player.Brain.CurrentTask.IsActive {
-			rl.DrawText(fmt.Sprintf("Task: %s → %s", 
-				player.Brain.CurrentTask.Action, player.Brain.CurrentTask.Target), 
+			rl.DrawText(fmt.Sprintf("Task: %s → %s",
+				player.Brain.CurrentTask.Action, player.Brain.CurrentTask.Target),
 				panelX+10, 325, 16, rl.DarkPurple)
 		} else {
 			rl.DrawText("No active task", panelX+10, 325, 16, rl.Gray)
 		}
-		
+
 		// Current thought
 		if len(player.Thinking) > 0 {
 			thought := player.Thinking
@@ -287,25 +291,25 @@ func (w *World) DisplayInfoPanel(player *Entity, windowWidth, windowHeight int32
 		}
 	}
 	var startY int32 = 370
-	
+
 	// Draw message log section
 	rl.DrawText("Message Log", panelX+10, startY, 18, rl.DarkBlue)
 	rl.DrawLine(panelX+5, startY, panelX+panelWidth-10, startY, rl.DarkGray)
-	
+
 	messages := GlobalInfoPanel.GetMessages()
-	
+
 	var lineHeight int32 = 20
 	maxMsgsVisible := (windowHeight - startY + 50) / lineHeight
-	
+
 	// Display most recent messages
 	numToShow := int(maxMsgsVisible)
 	if numToShow > len(messages) {
 		numToShow = len(messages)
 	}
-	
+
 	for i := 0; i < numToShow; i++ {
 		msg := messages[i]
-		
+
 		// Choose color based on message type
 		color := rl.Black
 		switch msg.Type {
@@ -328,16 +332,16 @@ func (w *World) DisplayInfoPanel(player *Entity, windowWidth, windowHeight int32
 		case DEATH:
 			color = rl.Black
 		}
-		
+
 		// Format message text
 		text := msg.Text
 		if len(text) > 35 {
 			text = text[:32] + "..."
 		}
-		
+
 		// Calculate display position
 		yPos := startY + 40 + int32(i)*lineHeight
-		
+
 		// Display message
 		timeStr := msg.Timestamp.Format("15:04:05")
 		rl.DrawText(timeStr, panelX+10, yPos, 12, rl.DarkGray)
@@ -353,11 +357,11 @@ func (w *World) LaunchGame(player *Entity) {
 	LogInfo("Game started", "System")
 	LogInfo("Welcome to the simulation", "System")
 	LogInfo(fmt.Sprintf("Player character: %s", player.FullName), "System")
-	
+
 	// Window dimensions
 	windowWidth := int32(1200)
 	windowHeight := int32(1000)
-	
+
 	// Initialize the Raylib window
 	rl.InitWindow(windowWidth, windowHeight, "Grid Game Simulation")
 	defer rl.CloseWindow()
@@ -378,22 +382,22 @@ func (w *World) LaunchGame(player *Entity) {
 			// It's time to render a new frame
 			rl.BeginDrawing()
 			rl.ClearBackground(rl.RayWhite)
-			
+
 			// Call the DisplayMap function to draw the world map
 			w.DisplayMap(player)
-			
+
 			// Display the information panel
 			w.DisplayInfoPanel(player, windowWidth, windowHeight)
 
 			// Display the cognitive mini-map
 			w.DisplayCognitiveMap(player, windowWidth, windowHeight)
-			
+
 			// Display time since last update
 			timeSinceUpdate := time.Since(lastUpdate)
 			rl.DrawText(timeSinceUpdate.String(), 10, 10, 12, rl.Black)
-			
+
 			lastUpdate = time.Now()
-			
+
 			rl.EndDrawing()
 		default:
 			// No tick yet, let's yield to the OS to avoid busy-waiting

@@ -38,4 +38,43 @@ export const grabItem = async (item: T.Item, person: T.PersonCleaned) => {
   return data.message;
 };
 
+export const resetWorld = async (): Promise<T.CleanedTile[][]> => {
+  const data: T.WorldResponse = await api.post("resetWorld", {});
+  return data.message;
+};
+
+export const getEntityCognitiveMap = async (
+  fullName: string
+): Promise<T.CognitiveMapKnownTile[]> => {
+  const query = new URLSearchParams({ fullName }).toString();
+  const response = await fetch(address + `entityCognitiveMap?${query}`);
+  const raw = await response.text();
+
+  let data: unknown;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    if (raw.startsWith("Duplicate request detected")) {
+      throw new Error(
+        "Cognitive map endpoint unavailable (duplicate guard from default route). Restart backend."
+      );
+    }
+    throw new Error("Cognitive map endpoint returned non-JSON response.");
+  }
+
+  if (!response.ok) {
+    throw new Error(`Cognitive map request failed (${response.status}).`);
+  }
+
+  if (!data || typeof data !== "object" || !Array.isArray((data as { message?: unknown }).message)) {
+    const message = (data as { message?: unknown })?.message;
+    if (typeof message === "string" && message.includes("Welcome to the API")) {
+      throw new Error("Cognitive map endpoint unavailable on backend. Restart backend.");
+    }
+    throw new Error("Unexpected cognitive map response shape.");
+  }
+
+  return (data as T.CognitiveMapResponse).message;
+};
+
 export default api;
